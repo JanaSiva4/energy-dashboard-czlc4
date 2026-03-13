@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alza Energy Intelligence | CZLC4</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #001529; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .drop-zone { border: 2px dashed #00aaff; transition: all 0.3s; }
+        .drop-zone:hover { background-color: rgba(0, 170, 255, 0.1); border-color: #00ff88; }
+        .alza-btn { background: linear-gradient(90deg, #00aaff 0%, #00ff88 100%); color: #001529; font-weight: bold; }
+        .loader { border-top-color: #00ff88; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-6">
+
+    <div class="max-w-3xl w-full bg-slate-900 rounded-3xl shadow-2xl p-10 border border-slate-800">
+        <div class="flex items-center mb-8">
+            <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mr-4 shadow-lg shadow-blue-500/50">
+                <span class="text-2xl">⚡</span>
+            </div>
+            <h1 class="text-3xl font-bold tracking-tight">CZLC4 <span class="text-blue-400">Energy Intelligence</span></h1>
+        </div>
+
+        <p class="text-slate-400 mb-6">Nahrajte faktury za energie (PDF) pro automatickou AI analýzu a zápis do Excelu.</p>
+
+        <!-- Drop Zone -->
+        <div id="dropZone" class="drop-zone rounded-2xl p-12 text-center cursor-pointer mb-6">
+            <div class="text-5xl mb-4">📂</div>
+            <p class="text-lg" id="fileStatus">Přetáhněte PDF soubory sem nebo klikněte pro výběr</p>
+            <input type="file" id="fileInput" multiple accept=".pdf" class="hidden">
+        </div>
+
+        <!-- Progress / Loading -->
+        <div id="loadingZone" class="hidden">
+            <div class="flex items-center justify-center mb-4">
+                <div class="loader w-8 h-8 border-4 border-slate-700 rounded-full"></div>
+                <span class="ml-4 text-blue-400 font-medium">AI právě analyzuje dokumenty...</span>
+            </div>
+        </div>
+
+        <!-- Action Button -->
+        <button id="uploadBtn" class="alza-btn w-full py-4 rounded-xl text-lg uppercase tracking-widest hover:opacity-90 transition disabled:opacity-30">
+            Zpracovat a zapsat do Excelu
+        </button>
+
+        <div id="resultZone" class="mt-6 text-center hidden">
+            <p class="text-green-400 font-bold">✅ Hotovo! Data byla úspěšně zapsána do Excelu.</p>
+        </div>
+    </div>
+
+    <script>
+        const webhookUrl = 'https://n8n.dev.gcp.alza.cz/webhook/czlc4-energy-upload'; // SEM VLOŽÍTE URL Z N8N
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const fileStatus = document.getElementById('fileStatus');
+
+        dropZone.onclick = () => fileInput.click();
+
+        fileInput.onchange = (e) => {
+            const files = e.target.files;
+            fileStatus.innerText = `${files.length} souborů připraveno k odeslání`;
+        };
+
+        uploadBtn.onclick = async () => {
+            if (fileInput.files.length === 0) return alert('Nahrajte prosím soubory.');
+
+            uploadBtn.classList.add('hidden');
+            document.getElementById('loadingZone').classList.remove('hidden');
+
+            const formData = new FormData();
+            for (const file of fileInput.files) {
+                formData.append('data', file);
+            }
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    document.getElementById('loadingZone').classList.add('hidden');
+                    document.getElementById('resultZone').classList.remove('hidden');
+                } else {
+                    alert('Chyba při komunikaci s n8n.');
+                }
+            } catch (err) {
+                alert('Chyba: ' + err.message);
+            }
+        };
+    </script>
+</body>
+</html>

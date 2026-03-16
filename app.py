@@ -7,34 +7,48 @@ st.set_page_config(page_title="Energy Intelligence Pro", layout="wide")
 
 st.markdown("""
 <style>
-   /* ZAROVNÁNÍ OBSAHU */
+  /* ZAROVNÁNÍ OBSAHU */
     [data-testid="stMainViewContainer"] .block-container {
-        max-width: 1200px !important;
+        max-width: 1250px !important;
         margin-left: auto !important;
         margin-right: auto !important;
     }
     
-    /* SYTÁ A TMAVŠÍ MODRO-FIALOVÁ PLOCHA (O 2 STUPNĚ TMAVŠÍ) */
+    /* POZADÍ CELÉ APPKY */
     .stApp {
-        /* Barvy jsou nyní hlubší: #051c3d (tmavě modrá) a #2e0b54 (temně fialová) */
         background: linear-gradient(135deg, #051c3d 0%, #2e0b54 40%, #1a0633 70%, #030821 100%) !important;
         background-attachment: fixed !important;
         color: #f0f0f0;
     }
 
-    /* --- STATISTIKY (HORNÍ BOXY) --- */
-    div[data-testid="stMetric"] {
-        /* Tmavší pozadí boxů, aby ladily k ploše */
-        background: rgba(0, 0, 0, 0.25) !important;
-        backdrop-filter: blur(15px);
-        padding: 15px;
-        border-radius: 15px;
-        /* Rámeček jako blesk - zářivě bílá */
-        border: 1px solid rgba(255, 255, 255, 0.6) !important; 
-        box-shadow: 0 0 15px rgba(0, 242, 255, 0.4) !important;
+    /* --- 1. ZELENÝ UPLOAD BOX (OPRAVENO) --- */
+    /* Toto vynutí barvu u nahrávacího boxu */
+    [data-testid="stFileUploader"] {
+        background-color: transparent !important;
+    }
+    
+    [data-testid="stFileUploadDropzone"] {
+        background-color: rgba(0, 255, 150, 0.05) !important; /* Velmi jemná zelená */
+        border: 2px dashed #00ff96 !important; /* Neonová zelená blesková čára */
+        border-radius: 15px !important;
+        box-shadow: 0 0 20px rgba(0, 255, 150, 0.2) !important;
     }
 
-    /* --- TLAČÍTKO (BLESKOVĚ BÍLÉ) --- */
+    /* Vnitřní texty v uploadu */
+    [data-testid="stFileUploadDropzone"] div, [data-testid="stFileUploadDropzone"] span {
+        color: #00ff96 !important; /* Zelený text uvnitř */
+    }
+
+    /* --- 2. DIGITÁLNÍ ARCHIV (TABULKA) --- */
+    /* Změna barvy pozadí pod tabulkou, aby nebyla šedá */
+    [data-testid="stDataFrame"] {
+        background-color: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid #00ff96 !important; /* Zelený okraj kolem tabulky */
+        border-radius: 10px;
+        padding: 5px;
+    }
+
+    /* --- 3. TLAČÍTKO ANALÝZY --- */
     div[data-testid="stButton"] > button {
         background-color: rgba(255, 255, 255, 0.05) !important;
         border: 2px solid #ffffff !important;
@@ -44,105 +58,27 @@ st.markdown("""
         font-weight: bold !important;
         text-transform: uppercase;
         letter-spacing: 2.5px;
-        height: 50px !important;
     }
 
-    div[data-testid="stButton"] > button:hover {
-        background-color: rgba(255, 255, 255, 0.15) !important;
-        box-shadow: 0 0 20px #ffffff, 0 0 40px #00fbff !important;
-        transform: scale(1.02);
-    }
-
-    /* --- KARTY PRO ELEKTŘINU, PLYN A VODU --- */
+    /* --- 4. KARTY ELEKTŘINA, PLYN, VODA --- */
     .energy-card {
-        /* Tmavší podklad karet pro lepší čitelnost na fialové */
-        background: rgba(10, 10, 20, 0.4) !important;
+        background: rgba(0, 0, 0, 0.4) !important;
         border-radius: 18px;
         padding: 22px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(20px);
         margin-bottom: 25px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5) !important;
     }
 
-    /* Barevné horní linky karet (bleskový glow) */
-    .el-border { 
-        border-top: 4px solid #00f2ff !important; 
-        box-shadow: 0 -8px 20px rgba(0, 242, 255, 0.3) !important;
-    }
-    .gas-border { 
-        border-top: 4px solid #d500f9 !important; /* Sytá fialová */
-        box-shadow: 0 -8px 20px rgba(213, 0, 249, 0.3) !important;
-    }
-    .water-border { 
-        border-top: 4px solid #0091ea !important; /* Hluboká modrá */
-        box-shadow: 0 -8px 20px rgba(0, 145, 234, 0.3) !important;
-    }
+    .el-border { border-top: 4px solid #00f2ff !important; box-shadow: 0 -8px 20px rgba(0, 242, 255, 0.3) !important; }
+    .gas-border { border-top: 4px solid #d500f9 !important; box-shadow: 0 -8px 20px rgba(213, 0, 249, 0.3) !important; }
+    .water-border { border-top: 4px solid #00d4ff !important; box-shadow: 0 -8px 20px rgba(0, 145, 234, 0.3) !important; }
 
-    /* Texty uvnitř karet */
-    .label-text { font-size: 0.75rem; color: #aabfff; text-transform: uppercase; margin-top: 14px; font-weight: bold; letter-spacing: 0.5px; }
-    .value-text { font-size: 1.15rem; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px; margin-bottom: 2px; }
-
-     /* --- ZELENÝ NABÍJECÍ UPLOAD BOX --- */
-    [data-testid="stFileUploadDropzone"] {
-        /* Průhledná neonově zelená, aby pod ní prosvítala fialová plocha */
-        background-color: rgba(0, 255, 150, 0.05) !important;
-        /* Výraznější neonově zelený přerušovaný okraj */
-        border: 2px dashed #00ff96 !important;
-        border-radius: 15px !important;
-        /* Jemná zelená záře */
-        box-shadow: 0 0 15px rgba(0, 255, 150, 0.2) !important;
-        transition: all 0.3s ease !important;
-    }
-
-    /* Efekt při najetí myší nad upload box (rozsvítí se) */
-    [data-testid="stFileUploadDropzone"]:hover {
-        background-color: rgba(0, 255, 150, 0.1) !important;
-        box-shadow: 0 0 25px rgba(0, 255, 150, 0.4) !important;
-    }
-
-    /* Texty uvnitř upload boxu (aby byly čitelné) */
-    [data-testid="stFileUploadDropzone"] p {
-        color: #ffffff !important;
-    }
-
-    /* Tlačítko "Browse files" uvnitř zelené zóny */
-    [data-testid="stFileUploadDropzone"] button {
-        background-color: #00ff96 !important;
-        color: #000000 !important;
-        font-weight: bold !important;
-        border: none !important;
-    }
-
-    /* --- DECENTNÍ ŠTÍTKY V MULTISELECTU (MODRÁ/FIALOVÁ) --- */
+    /* Decentní štítky v multiselectu */
     span[data-baseweb="tag"] {
-        background-color: rgba(255, 255, 255, 0.07) !important;
-        border: 1px solid rgba(0, 242, 255, 0.3) !important; /* Tenký azurový okraj */
-        box-shadow: none !important;
-        color: #ffffff !important;
-    }
-    }
-
-    /* ČISTÉ ŠTÍTKY V MULTISELECTU (BEZ ZÁŘE) */
-    span[data-baseweb="tag"] {
-        background-color: rgba(255, 255, 255, 0.1) !important; /* Jemný šedý nádech */
-        border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Tenký decentní okraj */
-        box-shadow: none !important; /* ŽÁDNÁ ZÁŘE */
-        color: #ffffff !important;
-        border-radius: 4px !important;
-    }
-
-    /* Úprava celého vyhledávacího pole, aby nesvítilo */
-    div[data-baseweb="select"] > div {
-        background-color: rgba(0, 0, 0, 0.2) !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        box-shadow: none !important;
-    }
-
-    /* Ikonka křížku pro smazání štítku */
-    span[data-baseweb="tag"] svg {
-        fill: white !important;
-    }
+        color: white !important;
     }
 </style>
 """, unsafe_allow_html=True)

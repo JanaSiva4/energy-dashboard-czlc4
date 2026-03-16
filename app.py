@@ -85,17 +85,22 @@ with col_side:
     uploaded_files = st.file_uploader("Vložte PDF", accept_multiple_files=True, type=['pdf'])
     
     vyber = st.multiselect(
-        "Pole k analýze:",
+        "Pole k vytažení:",
         [
-            "ELEKTŘINA: Spotřeba (kWh)", "ELEKTŘINA: průměrná cena (Kč/kWh)",
-            "ELEKTŘINA: Cena sil. el. (fakturovaná)", "ELEKTŘINA: Cena distribuce (fakturovaná)",
-            "ELEKTŘINA: Cena celkem (fakturovaná)", "FSX (společné prostory): Spotřeba (kWh)",
-            "FSX (společné prostory): Cena celkem (fakturovaná)", "PLYN: Spotřeba (m3)",
-            "PLYN: Spotřeba (kWh)", "PLYN: průměrná cena (Kč/kWh)", "PLYN: Cena celkem (fakturovaná)"
+           "ELEKTŘINA: Spotřeba (kWh)", 
+            "ELEKTŘINA: Cena sil. el. (fakturovaná)", 
+            "ELEKTŘINA: Cena distribuce (fakturovaná)",
+            "ELEKTŘINA: Cena celkem (fakturovaná)",
+            "FSX: Spotřeba (kWh)",
+            "FSX: Cena celkem (fakturovaná)",
+            "PLYN: Spotřeba (kWh)",
+            "PLYN: Cena celkem (fakturovaná)",
+            "VODA: Spotřeba (m3)",
+            "VODA: Cena celkem (fakturovaná)"
         ],
-        default=["ELEKTŘINA: Spotřeba (kWh)", "ELEKTŘINA: Cena celkem (fakturovaná)"]
+        default=["ELEKTŘINA: Spotřeba (kWh)", "PLYN: Spotřeba (kWh)", "VODA: Spotřeba (m3)"]
     )
-    analyze_btn = st.button("SPUSTIT ANALÝZU")
+    analyze_btn = st.button("🚀 SPUSTIT ANALÝZU")
 
 with col_main:
     if analyze_btn and uploaded_files:

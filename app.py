@@ -73,7 +73,7 @@ st.markdown("""
     /* UPLOAD BOX (ZŮSTÁVÁ ZELENÝ) */
     [data-testid="stFileUploadDropzone"] {
         background-color: rgba(0, 255, 100, 0.1) !important;
-        border: 2px dashed #00ff96 !important;
+        border: 8px dashed #00ff96 !important;
     }
 
     /* MULTISELECT POLE - TEĎ MENŠÍ A NESVÍTÍ */

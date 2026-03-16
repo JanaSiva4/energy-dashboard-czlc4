@@ -7,61 +7,78 @@ st.set_page_config(page_title="Energy Intelligence Pro", layout="wide")
 
 st.markdown("""
 <style>
-    /* ZAROVNÁNÍ HLAVNÍHO OBSAHU */
+   /* ZAROVNÁNÍ OBSAHU */
     [data-testid="stMainViewContainer"] .block-container {
-        max-width: 1100px !important;
+        max-width: 1200px !important;
         margin-left: auto !important;
         margin-right: auto !important;
     }
     
-    /* TVOJE PŮVODNÍ MODROFIALOVÁ PLOCHA - VRÁCENO */
+    /* VÝRAZNÁ MODRO-FIALOVÁ PLOCHA */
     .stApp {
-        background: radial-gradient(circle at 10% 20%, rgb(0, 21, 41) 0%, rgb(0, 10, 20) 90.2%);
-        color: #e0e0e0;
+        /* Přidáno více fialové (#7b1fa2 a #4a148c) pro sytost */
+        background: linear-gradient(135deg, #0d47a1 0%, #7b1fa2 40%, #4a148c 70%, #1a237e 100%) !important;
+        background-attachment: fixed !important;
+        color: #ffffff;
     }
 
-    /* --- STATISTIKY (BÍLOMODRÝ BLESKOVÝ EFEKT) --- */
+    /* --- STATISTIKY (HORNÍ BOXY) --- */
     div[data-testid="stMetric"] {
-        background-color: rgba(255, 255, 255, 0.03) !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(10px);
         padding: 15px;
-        border-radius: 12px;
-        /* Jasně bílomodrý okraj jako blesk */
-        border: 2px solid #b0f0ff !important; 
-        box-shadow: 0 0 15px rgba(176, 240, 255, 0.6), inset 0 0 10px rgba(176, 240, 255, 0.1) !important;
+        border-radius: 15px;
+        border: 2px solid #ffffff !important; 
+        box-shadow: 0 0 20px rgba(0, 242, 255, 0.6) !important;
     }
 
-    /* --- TLAČÍTKO (BLESKOVĚ JASNÉ) --- */
+    /* --- TLAČÍTKO (BLESKOVĚ BÍLÉ) --- */
     div[data-testid="stButton"] > button {
-        background-color: transparent !important;
-        border: 2px solid #ffffff !important; /* Bílá základna pro efekt blesku */
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        border: 2px solid #ffffff !important;
         color: #ffffff !important;
-        /* Silná bílomodrá záře */
-        box-shadow: 0 0 10px #ffffff, 0 0 20px #00d4ff !important;
+        box-shadow: 0 0 15px #ffffff, 0 0 30px #00d4ff !important;
         transition: all 0.3s ease-in-out !important;
         font-weight: bold !important;
         text-transform: uppercase;
-        letter-spacing: 1.5px;
+        letter-spacing: 2px;
+        height: 50px !important;
     }
 
-    div[data-testid="stButton"] > button:hover {
-        background-color: rgba(255, 255, 255, 0.15) !important;
-        /* Při najetí blesk "udeří" víc */
-        box-shadow: 0 0 20px #ffffff, 0 0 40px #00fbff !important;
-        transform: scale(1.04);
+    /* --- KARTY PRO ELEKTŘINU, PLYN A VODU (OPRAVENO) --- */
+    .energy-card {
+        background: rgba(255, 255, 255, 0.07) !important;
+        border-radius: 20px;
+        padding: 25px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(15px);
+        margin-bottom: 20px;
+        /* Základní záře pro karty */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
     }
 
-    /* --- UPLOAD BOX --- */
+    /* Barevné horní linky karet s bleskovým efektem */
+    .el-border { 
+        border-top: 5px solid #00f2ff !important; 
+        box-shadow: 0 -5px 20px rgba(0, 242, 255, 0.4) !important;
+    }
+    .gas-border { 
+        border-top: 5px solid #ff00ff !important; 
+        box-shadow: 0 -5px 20px rgba(255, 0, 255, 0.4) !important;
+    }
+    .water-border { 
+        border-top: 5px solid #00d4ff !important; 
+        box-shadow: 0 -5px 20px rgba(0, 212, 255, 0.4) !important;
+    }
+
+    /* Texty uvnitř karet */
+    .label-text { font-size: 0.8rem; color: #b0f0ff; text-transform: uppercase; margin-top: 15px; font-weight: bold; }
+    .value-text { font-size: 1.2rem; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+
+    /* UPLOAD BOX */
     [data-testid="stFileUploadDropzone"] {
-        background-color: rgba(255, 255, 255, 0.02) !important;
-        border: 2px dashed #b0f0ff !important;
-        box-shadow: 0 0 10px rgba(176, 240, 255, 0.2) !important;
-    }
-
-    /* Šedé štítky v multiselectu */
-    span[data-baseweb="tag"] {
-        background-color: #1a2a3a !important;
-        border: 1px solid #b0f0ff !important;
-        color: white !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 2px dashed #ffffff !important;
     }
 </style>
 """, unsafe_allow_html=True)

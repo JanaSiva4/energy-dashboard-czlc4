@@ -169,6 +169,8 @@ with col_main:
         # Prázdný graf pro design
         dummy_df = pd.DataFrame({"Faktura": ["A", "B", "C"], "Kč": [0, 0, 0]})
         fig = px.bar(dummy_df, x="Faktura", y="Kč", title="Graf se zobrazí po analýze", template="plotly_dark")
+    # Změna ze svítivé zelené na šedou
+        color_discrete_sequence=['#555555'])
         fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
         st.plotly_chart(fig, use_container_width=True)
         st.info("💡 Nahrajte faktury v levém panelu pro zobrazení výsledků.")

@@ -137,7 +137,7 @@ with col_side:
         default=["ELEKTŘINA: Spotřeba (kWh)", "PLYN: Spotřeba (kWh)", "VODA: Spotřeba (m3)"]
     )
     st.write(" ") # přidá malou mezeru
-    _, mid_btn, _ = st.columns([1, 8, 1]) # vytvoří 3 pod-sloupečky (kraje malé, střed velký)
+    _, mid_btn, _ = st.columns([1,5, 4, 0,5]) # vytvoří 3 pod-sloupečky (kraje malé, střed velký)
     with mid_btn:
         analyze_btn = st.button("🚀 SPUSTIT ANALÝZU")
 

@@ -14,85 +14,54 @@ st.markdown("""
         margin-right: auto !important;
     }
     
-    /* Temné pozadí */
+    /* Temné pozadí aplikace */
     .stApp {
-        background: radial-gradient(circle at 10% 20%, rgb(0, 21, 41) 0%, rgb(0, 10, 20) 90.2%);
+        background: radial-gradient(circle at 10% 20%, rgb(0, 15, 30) 0%, rgb(0, 5, 10) 90.2%);
         color: #e0e0e0;
     }
 
-    /* --- OPRAVA: TLAČÍTKO PŘESNĚ NA STŘED --- */
-    div[data-testid="stButton"] {
-        display: flex !important;
-        justify-content: center !important;
-        width: 100% !important;
-        margin-top: 20px !important;
+    /* --- STATISTIKY (HORNÍ BOXY) --- */
+    div[data-testid="stMetric"] {
+        background-color: rgba(0, 212, 255, 0.03) !important;
+        padding: 15px;
+        border-radius: 12px;
+        /* Bílomodrý bleskový okraj */
+        border: 2px solid #00d4ff !important;
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.4), inset 0 0 10px rgba(0, 212, 255, 0.1) !important;
     }
 
-/* --- NOVÁ OPRAVA: TOTÁLNÍ VYCENTROVÁNÍ --- */
-    div.stButton {
-        text-align: center !important;
-    }
-
-    div.stButton > button {
-        display: block !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-        background-color: transparent !important;
-        border: 2px solid #00ff96 !important;
-        color: #00ff96 !important;
-        box-shadow: 0 0 15px rgba(0, 255, 150, 0.3) !important;
-        transition: all 0.4s ease !important;
-        padding: 10px 25px !important;
-        width: auto !important;
-    }
-
-    div.stButton > button:hover {
-        background-color: rgba(0, 255, 150, 0.1) !important;
-        box-shadow: 0 0 30px rgba(0, 255, 150, 0.6) !important;
-    }
-
+    /* --- TLAČÍTKO (BLESKOVÝ EFEKT) --- */
     div[data-testid="stButton"] > button {
         background-color: transparent !important;
-        border: 2px solid #00ff96 !important;
-        color: #00ff96 !important;
-        box-shadow: 0 0 15px rgba(0, 255, 150, 0.3) !important;
-        transition: all 0.4s ease !important;
-        width: auto !important; /* Tlačítko se neroztáhne, zůstane kompaktní */
-        padding-left: 30px !important;
-        padding-right: 30px !important;
-        height: 50px !important;
+        border: 2px solid #00fbff !important; /* Extra jasná modrá */
+        color: #00fbff !important;
+        box-shadow: 0 0 15px rgba(0, 251, 255, 0.4), 0 0 30px rgba(0, 251, 255, 0.2) !important;
+        transition: all 0.3s ease-in-out !important;
+        font-weight: bold !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
     div[data-testid="stButton"] > button:hover {
-        background-color: rgba(0, 255, 150, 0.1) !important;
-        box-shadow: 0 0 30px rgba(0, 255, 150, 0.6) !important;
-        transform: scale(1.02);
+        background-color: rgba(0, 251, 255, 0.1) !important;
+        box-shadow: 0 0 40px rgba(0, 251, 255, 0.8) !important; /* Při najetí se "rozsvítí" víc */
+        color: white !important;
+        transform: scale(1.03);
     }
 
-    /* ZÁŘE KOLEM STATISTIK */
-    div[data-testid="stMetric"] {
-        background-color: rgba(0, 255, 150, 0.05) !important;
-        padding: 15px;
-        border-radius: 12px;
-        border: 2px solid rgba(0, 255, 150, 0.5) !important;
-        box-shadow: 0 0 20px rgba(0, 255, 150, 0.3) !important;
-    }
-
-    /* ZELENÝ UPLOAD BOX */
+    /* --- NADECHUJÍCÍ SE MODRÝ UPLOAD BOX --- */
     [data-testid="stFileUploadDropzone"] {
-        background-color: rgba(0, 255, 100, 0.05) !important;
-        border: 2px dashed #00ff96 !important;
+        background-color: rgba(0, 212, 255, 0.02) !important;
+        border: 2px dashed #00d4ff !important;
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.1) !important;
     }
 
-    /* Glassmorphism karty */
-    .energy-card {
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 15px;
-        padding: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        margin-bottom: 20px;
-    }
+    /* Šedé štítky v multiselectu (pro lepší čitelnost) */
+    span[data-baseweb="tag"] {
+        background-color: #1a2a3a !important;
+        border: 1px solid #00d4ff !important;
+        color: white !important;
+    }    
 </style>
 """, unsafe_allow_html=True)
 

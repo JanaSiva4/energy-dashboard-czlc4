@@ -73,14 +73,14 @@ st.markdown("""
     /* UPLOAD BOX (ZŮSTÁVÁ ZELENÝ) */
     [data-testid="stFileUploadDropzone"] {
         background-color: rgba(0, 255, 100, 0.1) !important;
-        border: 8px dashed #00ff96 !important;
+        border: 2px dashed #00ff96 !important;
     }
 
     /* MULTISELECT POLE - TEĎ MENŠÍ A NESVÍTÍ */
     div[data-baseweb="select"] > div {
         background-color: rgba(255, 255, 255, 0.05) !important; /* Zrušena zelená */
         border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Decentní šedobílá */
-        min-height: 30px !important; /* ZMENŠENÍ KOLONKY */
+        min-height: 40px !important; /* ZMENŠENÍ KOLONKY */
     }
 
     /* Štítky v multiselectu - MENŠÍ A NESVÍTÍ */
@@ -92,7 +92,7 @@ st.markdown("""
         font-size: 0.75rem !important;
     }
 
-    /* DIGITÁLNÍ ARCHIV (TABULKA) (ZŮSTÁVÁ ZELENÝ) */
+    /* DIGITÁLNÍ ARCHIV (TABULKA) (POZADÍ ZELENÝ) */
     [data-testid="stDataFrame"] {
         background-color: rgba(0, 255, 100, 0.05) !important;
         padding: 10px;

@@ -25,20 +25,49 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         margin-bottom: 20px;
     }
-    .el-border { border-top: 5px solid #FFD700; }   /* Žlutá pro elektřinu */
-    .gas-border { border-top: 5px solid #FF8C00; }  /* Oranžová pro plyn */
-    .water-border { border-top: 5px solid #00BFFF; } /* Modrá pro vodu */
+    .el-border { border-top: 5px solid #FFD700; }
+    .gas-border { border-top: 5px solid #FF8C00; }
+    .water-border { border-top: 5px solid #00BFFF; }
 
-    /* Styl textu v kartách */
     .label-text { font-size: 0.75rem; color: #888; text-transform: uppercase; margin-top: 12px; letter-spacing: 1px; }
     .value-text { font-size: 1.1rem; color: #ffffff; font-weight: 400; }
 
-    /* Decentní metriky nahoře */
+    /* --- NOVÉ: ZÁŘÍCÍ METRIKY NAHOŘE --- */
     div[data-testid="stMetric"] {
-        background-color: rgba(255, 255, 255, 0.02);
+        background-color: rgba(0, 255, 150, 0.05) !important;
         padding: 15px;
-        border-radius: 10px;
-        border: 1px solid rgba(0, 170, 255, 0.2);
+        border-radius: 12px;
+        border: 2px solid rgba(0, 255, 150, 0.4) !important;
+        box-shadow: 0 0 15px rgba(0, 170, 255, 0.3), inset 0 0 10px rgba(0, 255, 150, 0.1) !important;
+    }
+
+    /* --- NOVÉ: ZELENÝ UPLOAD BOX --- */
+    [data-testid="stFileUploadDropzone"] {
+        background-color: rgba(0, 255, 100, 0.05) !important;
+        border: 2px dashed rgba(0, 255, 150, 0.4) !important;
+    }
+
+    /* --- NOVÉ: ŠEDÝ MULTISELECT (BEZ ČERVENÉ) --- */
+    .stMultiSelect span[data-baseweb="tag"] {
+        background-color: #3d4651 !important;
+        border: 1px solid #5d6773 !important;
+    }
+
+    /* --- NOVÉ: ZÁŘÍCÍ TLAČÍTKO S HOVER EFEKTEM --- */
+    div.stButton > button {
+        background-color: rgba(0, 255, 150, 0.1) !important;
+        border: 2px solid #00ff96 !important;
+        color: white !important;
+        box-shadow: 0 0 15px rgba(0, 255, 150, 0.3) !important;
+        transition: all 0.4s ease !important;
+        width: 100%;
+        font-weight: bold;
+    }
+
+    div.stButton > button:hover {
+        opacity: 0.4 !important; /* Bleskové zprůhlednění */
+        box-shadow: 0 0 30px rgba(0, 255, 150, 0.6) !important;
+        transform: scale(1.02);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -50,7 +79,7 @@ st.write("---")
 if 'vysledky' not in st.session_state:
     st.session_state.vysledky = []
 
-# --- 2. HORNÍ STATISTIKY ---
+# --- 2. HORNÍ STATISTIKY (S NOVOU ZÁŘÍ) ---
 pocet = len(st.session_state.vysledky)
 c1, c2, c3, c4 = st.columns(4)
 with c1: st.metric("Zpracováno", str(pocet))
@@ -117,17 +146,16 @@ with col_main:
             st.info("Nahrajte faktury pro zobrazení archivu.")
 
     with t2:
-        st.markdown('<div class="archive-card">Účtenka - PHM Shell - 1.250 Kč</div>', unsafe_allow_html=True)
+        st.markdown('<div class="energy-card">Účtenka - PHM Shell - 1.250 Kč</div>', unsafe_allow_html=True)
 
     with t3:
-        st.markdown('<div class="archive-card">Kancelářské potřeby - 4.200 Kč</div>', unsafe_allow_html=True)
+        st.markdown('<div class="energy-card">Kancelářské potřeby - 4.200 Kč</div>', unsafe_allow_html=True)
 
-    # --- 5. FINÁLNÍ WOW PŘEHLED (3 SLOPCE) ---
+    # --- 5. FINÁLNÍ WOW PŘEHLED ---
     if st.session_state.vysledky:
         st.write("---")
         st.subheader("📊 Finální přehled")
         
-        # Inicializace kategorií
         data_elektro, data_plyn, data_voda = [], [], []
 
         for res in st.session_state.vysledky:
@@ -142,20 +170,22 @@ with col_main:
                     elif "VODA" in klic.upper():
                         if polozka not in data_voda: data_voda.append(polozka)
 
-        # Vykreslení moderních sloupců
         c1, c2, c3 = st.columns(3)
 
         with c1:
-            st.markdown('<div class="energy-card el-border"><h3>⚡ Elektřina & FSX</h3></div>', unsafe_allow_html=True)
+            st.markdown('<div class="energy-card el-border"><h3>⚡ Elektřina & FSX</h3>', unsafe_allow_html=True)
             for item in data_elektro:
                 st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
         with c2:
-            st.markdown('<div class="energy-card gas-border"><h3>🔥 Plyn</h3></div>', unsafe_allow_html=True)
+            st.markdown('<div class="energy-card gas-border"><h3>🔥 Plyn</h3>', unsafe_allow_html=True)
             for item in data_plyn:
                 st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
         with c3:
-            st.markdown('<div class="energy-card water-border"><h3>💧 Voda</h3></div>', unsafe_allow_html=True)
+            st.markdown('<div class="energy-card water-border"><h3>💧 Voda</h3>', unsafe_allow_html=True)
             for item in data_voda:
                 st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)

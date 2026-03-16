@@ -9,22 +9,7 @@ st.set_page_config(page_title="CZLC4 Energy Intelligence", layout="wide")
 # DESIGN (Tmavě modrá Alza)
 st.markdown("""
     <style>
-    /* Hlavní pozadí */
     .stApp { background-color: #001529; color: white; }
-    
-    /* Změna barvy těch červených kolonek (multiselect) */
-    span[data-baseweb="tag"] {
-        background-color: #004990 !important; /* Elegantní modrá místo červené */
-        border: 1px solid #00aaff !important;
-        color: white !important;
-    }
-    
-    /* Ikona křížku v kolonkách */
-    span[data-baseweb="tag"] svg {
-        fill: white !important;
-    }
-
-    /* Ostatní prvky designu */
     [data-testid="stSidebar"] { background-color: #000c17; color: white; }
     div[data-testid="stMetric"] {
         background-color: rgba(255, 255, 255, 0.05);

@@ -83,10 +83,44 @@ st.markdown("""
     .label-text { font-size: 0.75rem; color: #aabfff; text-transform: uppercase; margin-top: 14px; font-weight: bold; letter-spacing: 0.5px; }
     .value-text { font-size: 1.15rem; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px; margin-bottom: 2px; }
 
-    /* UPLOAD BOX (Ztmavena vnitřní plocha) */
+     /* --- ZELENÝ NABÍJECÍ UPLOAD BOX --- */
     [data-testid="stFileUploadDropzone"] {
-        background-color: rgba(0, 0, 0, 0.2) !important;
-        border: 1px dashed rgba(255, 255, 255, 0.5) !important;
+        /* Průhledná neonově zelená, aby pod ní prosvítala fialová plocha */
+        background-color: rgba(0, 255, 150, 0.05) !important;
+        /* Výraznější neonově zelený přerušovaný okraj */
+        border: 2px dashed #00ff96 !important;
+        border-radius: 15px !important;
+        /* Jemná zelená záře */
+        box-shadow: 0 0 15px rgba(0, 255, 150, 0.2) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    /* Efekt při najetí myší nad upload box (rozsvítí se) */
+    [data-testid="stFileUploadDropzone"]:hover {
+        background-color: rgba(0, 255, 150, 0.1) !important;
+        box-shadow: 0 0 25px rgba(0, 255, 150, 0.4) !important;
+    }
+
+    /* Texty uvnitř upload boxu (aby byly čitelné) */
+    [data-testid="stFileUploadDropzone"] p {
+        color: #ffffff !important;
+    }
+
+    /* Tlačítko "Browse files" uvnitř zelené zóny */
+    [data-testid="stFileUploadDropzone"] button {
+        background-color: #00ff96 !important;
+        color: #000000 !important;
+        font-weight: bold !important;
+        border: none !important;
+    }
+
+    /* --- DECENTNÍ ŠTÍTKY V MULTISELECTU (MODRÁ/FIALOVÁ) --- */
+    span[data-baseweb="tag"] {
+        background-color: rgba(255, 255, 255, 0.07) !important;
+        border: 1px solid rgba(0, 242, 255, 0.3) !important; /* Tenký azurový okraj */
+        box-shadow: none !important;
+        color: #ffffff !important;
+    }
     }
 
     /* ČISTÉ ŠTÍTKY V MULTISELECTU (BEZ ZÁŘE) */

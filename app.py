@@ -28,6 +28,29 @@ st.markdown("""
         margin-top: 20px !important;
     }
 
+/* --- NOVÁ OPRAVA: TOTÁLNÍ VYCENTROVÁNÍ --- */
+    div.stButton {
+        text-align: center !important;
+    }
+
+    div.stButton > button {
+        display: block !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        background-color: transparent !important;
+        border: 2px solid #00ff96 !important;
+        color: #00ff96 !important;
+        box-shadow: 0 0 15px rgba(0, 255, 150, 0.3) !important;
+        transition: all 0.4s ease !important;
+        padding: 10px 25px !important;
+        width: auto !important;
+    }
+
+    div.stButton > button:hover {
+        background-color: rgba(0, 255, 150, 0.1) !important;
+        box-shadow: 0 0 30px rgba(0, 255, 150, 0.6) !important;
+    }
+
     div[data-testid="stButton"] > button {
         background-color: transparent !important;
         border: 2px solid #00ff96 !important;

@@ -70,12 +70,22 @@ st.markdown("""
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5) !important;
     }
 
-    .el-border { border-top: 4px solid #00f2ff !important; box-shadow: 0 -8px 20px rgba(0, 242, 255, 0.3) !important; }
-    .gas-border { border-top: 4px solid #d500f9 !important; box-shadow: 0 -8px 20px rgba(213, 0, 249, 0.3) !important; }
-    .water-border { border-top: 4px solid #0091ea !important; box-shadow: 0 -8px 20px rgba(0, 145, 234, 0.3) !important; }
-
-    .label-text { font-size: 0.75rem; color: #aabfff; text-transform: uppercase; margin-top: 14px; font-weight: bold; letter-spacing: 0.5px; }
-    .value-text { font-size: 1.15rem; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px; margin-bottom: 2px; }
+    .el-border { 
+        border-top: 4px solid #FFD700 !important; /* Žlutooranžová / Zlatá */
+        box-shadow: 0 -8px 20px rgba(255, 215, 0, 0.3) !important; 
+    }
+    .fsx-border { 
+        border-top: 4px solid #BB86FC !important; /* Světle fialová pro FSX */
+        box-shadow: 0 -8px 20px rgba(187, 134, 252, 0.3) !important; 
+    }
+    .gas-border { 
+        border-top: 4px solid #FF5722 !important; /* Sytě oranžová pro Plyn */
+        box-shadow: 0 -8px 20px rgba(255, 87, 34, 0.3) !important; 
+    }
+    .water-border { 
+        border-top: 4px solid #00BFFF !important; /* Světle modrá pro Vodu */
+        box-shadow: 0 -8px 20px rgba(0, 191, 255, 0.3) !important; 
+    }
 
     /* --- ÚPRAVY: MENŠÍ POLE A ZRUŠENÍ ZÁŘE --- */
     

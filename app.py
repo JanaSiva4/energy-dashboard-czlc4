@@ -68,6 +68,7 @@ st.markdown("""
         opacity: 0.3 !important; /* Bleskový efekt */
         box-shadow: 0 0 30px rgba(0, 255, 150, 0.6) !important;
     }
+    }
         
         width: 100%; /* Pokud chceš, aby bylo na celou šířku, nech 100%, pokud ne, dej třeba 200px */
     }

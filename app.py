@@ -1,176 +1,123 @@
 import streamlit as st
 import pandas as pd
 import requests
-import plotly.express as px
 
 # Nastavení stránky
 st.set_page_config(page_title="CZLC4 Energy Intelligence", layout="wide")
 
-# --- ÚPLNĚ NOVÝ "ENERGY HIGH-TECH" DESIGN (CSS) ---
+# --- DESIGN (CSS) ---
 st.markdown("""
 <style>
-    /* Temné high-tech pozadí */
-    .stApp { 
-        background-color: #001529; 
-        color: white; 
-    }
-
-    /* Sidebar v tmavší barvě */
-    [data-testid="stSidebar"] { 
-        background-color: #000c17; 
-        color: white; 
-    }
-
-    /* Změna barev multiselect kolonek */
-    span[data-baseweb="tag"] {
-        background-color: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        color: white !important;
-        border-radius: 5px !important;
-    }
-
-    /* Ikona křížku */
-    span[data-baseweb="tag"] svg {
-        fill: white !important;
-    }
-
-    /* Karty se statistikami (Neon Blue) */
+    .stApp { background-color: #001529; color: white; }
+    [data-testid="stSidebar"] { background-color: #000c17; color: white; }
+    
+    /* Karty metrik */
     div[data-testid="stMetric"] {
         background-color: #000c17;
         padding: 20px;
         border-radius: 15px;
         border: 2px solid #00aaff;
-        box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
     }
+    div[data-testid="stMetricValue"] { color: #00ff88 !important; font-weight: bold; }
 
-    /* Barva čísel v metrikách (Alza Green) */
-    div[data-testid="stMetricValue"] { 
-        color: #00ff88 !important; 
-        font-weight: bold;
-    }
-
-    /* Tlačítko v Alza zelené */
+    /* Tlačítko */
     .stButton>button {
         background-color: #00ff88;
         color: #001529;
         font-weight: bold;
         border-radius: 10px;
-        border: none;
-        height: 3em;
         width: 100%;
-        transition: 0.3s;
     }
-    .stButton>button:hover {
-        background-color: #00cc6e;
+    
+    /* Styl pro Archivní sekce */
+    .archive-card {
+        background-color: rgba(255, 255, 255, 0.05);
+        padding: 15px;
+        border-radius: 10px;
+        border-left: 5px solid #00aaff;
+        margin-bottom: 10px;
     }
-
-    /* Nadpisy */
-    h1, h2, h3 { color: white !important; }
 </style>
 """, unsafe_allow_html=True)
 
 st.title("⚡ CZLC4 Energy Intelligence")
 st.write("---")
 
-# Inicializace stavu pro výsledky
+# Inicializace stavu
 if 'vysledky' not in st.session_state:
     st.session_state.vysledky = []
 
-# --- 1. HORNÍ STATISTIKY (Napojené na data) ---
+# --- 1. HORNÍ STATISTIKY ---
 pocet = len(st.session_state.vysledky)
 c1, c2, c3, c4 = st.columns(4)
-with c1:
-    st.metric(label="Zpracováno faktur", value=str(pocet))
-with c2:
-    st.metric(label="Celková suma", value="Dle analýzy")
-with c3:
-    st.metric(label="Úspora času", value=f"{pocet * 5} min")
-with c4:
-    st.metric(label="Stav AI", value="Ready" if pocet == 0 else "Online")
+with c1: st.metric("Zpracováno faktur", str(pocet))
+with c2: st.metric("Typy nákladů", "3 kategorie")
+with c3: st.metric("Úspora času", f"{pocet * 5} min")
+with c4: st.metric("Stav AI", "Ready" if pocet == 0 else "Online")
 
 st.write("---")
 
-# --- 2. HLAVNÍ PLOCHA (Sidebar + Main) ---
+# --- 2. HLAVNÍ PLOCHA ---
 col_side, col_main = st.columns([1, 3])
 
 with col_side:
     st.subheader("⚙️ Konfigurace")
     uploaded_files = st.file_uploader("Nahrajte PDF faktury", accept_multiple_files=True, type=['pdf'])
-
+    
     vyber = st.multiselect(
         "Data k vytažení:",
-        [
-            "ELEKTŘINA: Spotřeba (kWh)", 
-            "ELEKTŘINA: průměrná cena (Kč/kWh)",
-            "ELEKTŘINA: Cena sil. el. (fakturovaná)", 
-            "ELEKTŘINA: Cena distribuce (fakturovaná)",
-            "ELEKTŘINA: Cena celkem (fakturovaná)",
-            "FSX (společné prostory): Spotřeba (kWh)",
-            "FSX (společné prostory): Cena celkem (fakturovaná)",
-            "PLYN: Spotřeba (m3)",
-            "PLYN: Spotřeba (kWh)",
-            "PLYN: průměrná cena (Kč/kWh)",
-            "PLYN: Cena celkem (fakturovaná)"
-        ],
-        default=["ELEKTŘINA: Spotřeba (kWh)", "ELEKTŘINA: Cena celkem (fakturovaná)", "PLYN: Cena celkem (fakturovaná)"]
+        ["ELEKTŘINA: Spotřeba (kWh)", "ELEKTŘINA: Cena celkem (fakturovaná)", "PLYN: Cena celkem (fakturovaná)", "FSX: Cena celkem (fakturovaná)"],
+        default=["ELEKTŘINA: Spotřeba (kWh)", "ELEKTŘINA: Cena celkem (fakturovaná)"]
     )
     analyze_btn = st.button("🚀 SPUSTIT AI ANALÝZU")
 
 with col_main:
     # --- LOGIKA ANALÝZY ---
     if analyze_btn and uploaded_files:
-        st.subheader("🤖 Průběh AI analýzy")
-        st.session_state.vysledky = [] # Resetovat staré výsledky při novém startu
-
-        # Produkční URL (bez -test) pro automatické spouštění
+        st.session_state.vysledky = []
         webhook_url = "https://n8n.dev.gcp.alza.cz/webhook/faktury-upload"
 
         for file in uploaded_files:
             with st.spinner(f"Analyzuji: {file.name}..."):
                 try:
-                    # Posíláme jako 'data', aby to n8n uzel 'Extract from File' viděl
                     files = {"data": (file.name, file.getvalue(), "application/pdf")}
                     payload = {"p": str(vyber)} 
-
                     response = requests.post(webhook_url, files=files, data=payload)
-
+                    
                     if response.status_code == 200:
                         data = response.json()
-                        if isinstance(data, list):
-                            data = data[0]
+                        if isinstance(data, list): data = data[0]
                         data["Faktura"] = file.name
+                        data["Kategorie"] = "Energie"
                         st.session_state.vysledky.append(data)
-                    else:
-                        st.error(f"Chyba u {file.name}: n8n vrátilo kód {response.status_code}")
                 except Exception as e:
-                    st.error(f"Nepodařilo se spojit s n8n: {e}")
-        
-        # Refresh pro zobrazení statistik
+                    st.error(f"Chyba: {e}")
         st.rerun()
 
-    # Zobrazení výsledků
-    if st.session_state.vysledky:
-        df = pd.DataFrame(st.session_state.vysledky)
-        st.success("✅ Analýza dokončena!")
+    # --- 3. DIGITÁLNÍ ARCHIV (Místo grafu) ---
+    st.subheader("📁 Digitální archiv dokumentů")
+    
+    tab1, tab2, tab3 = st.tabs(["⚡ Energie & Utility", "🚗 Cestovní náklady", "📄 Ostatní faktury"])
 
-        # Zobrazení tabulky výsledků
-        st.dataframe(df, use_container_width=True)
+    with tab1:
+        if st.session_state.vysledky:
+            st.write("### Poslední analýzy energií")
+            df = pd.DataFrame(st.session_state.vysledky)
+            st.dataframe(df, use_container_width=True)
+        else:
+            st.info("Zatím zde nejsou žádné záznamy o energiích.")
 
-        # Dynamický graf podle prvního vybraného pole
-        if len(vyber) > 0:
-            y_col = vyber[0] if vyber[0] in df.columns else df.columns[0]
-            fig = px.bar(df, x="Faktura", y=y_col, 
-                         title=f"Srovnání: {y_col}", 
-                         template="plotly_dark",
-                         color_discrete_sequence=['#708090']) # Šedá barva
+    with tab2:
+        st.write("### Evidence cestovních nákladů")
+        st.markdown("""
+        <div class="archive-card"><b>Vzor:</b> Účtenka - Pohonné hmoty (Shell) - 1.250 Kč <span style='color:#888'>(Čeká na nahrání)</span></div>
+        <div class="archive-card"><b>Vzor:</b> Jízdenka - ČD (Praha-Brno) - 340 Kč <span style='color:#888'>(Čeká na nahrání)</span></div>
+        """, unsafe_allow_html=True)
+        st.warning("Sekce pro Cestovní náklady je v přípravě.")
 
-            fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-            st.plotly_chart(fig, use_container_width=True)
-    elif not uploaded_files:
-        st.subheader("📈 Srovnání nákladů")
-        # Prázdný graf pro design
-        dummy_df = pd.DataFrame({"Faktura": ["A", "B", "C"], "Kč": [0, 0, 0]})
-        fig = px.bar(dummy_df, x="Faktura", y="Kč", title="Graf se zobrazí po analýze", template="plotly_dark")
-        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-        st.plotly_chart(fig, use_container_width=True)
-        st.info("💡 Nahrajte faktury v levém panelu pro zobrazení výsledků.")
+    with tab3:
+        st.write("### Ostatní provozní faktury")
+        st.markdown("""
+        <div class="archive-card"><b>Vzor:</b> Kancelářské potřeby - 4.200 Kč <span style='color:#888'>(Čeká na nahrání)</span></div>
+        <div class="archive-card"><b>Vzor:</b> Čistící prostředky - 1.150 Kč <span style='color:#888'>(Čeká na nahrání)</span></div>
+        """, unsafe_allow_html=True)

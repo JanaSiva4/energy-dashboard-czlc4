@@ -50,7 +50,13 @@ st.markdown("""
         color: #00ff96 !important;
         box-shadow: 0 0 15px rgba(0, 255, 150, 0.3) !important;
         transition: all 0.4s ease !important;
-        width: 100%;
+        
+        /* TYTO DVA ŘÁDKY TO DÁJÍ NA STŘED */
+        display: block !important;
+        margin: 0 auto !important;
+        
+        width: 100%; /* Pokud chceš, aby bylo na celou šířku, nech 100%, pokud ne, dej třeba 200px */
+    }
     }
     div.stButton > button:hover {
         opacity: 0.3 !important;

@@ -59,10 +59,10 @@ st.markdown("""
         transform: scale(1.02);
     }
 
-    /* --- KARTY PRO ELEKTŘINU, PLYN A VODU --- */
+    /* --- KARTY PRO ELEKTŘINU, FSX, PLYN A VODU --- */
     .energy-card {
         background: rgba(10, 10, 20, 0.4) !important;
-        border-radius: 18px;
+        border-radius: 10px;
         padding: 10px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(20px);

@@ -80,7 +80,7 @@ st.markdown("""
     div[data-baseweb="select"] > div {
         background-color: rgba(255, 255, 255, 0.05) !important; /* Zrušena zelená */
         border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Decentní šedobílá */
-        min-height: 60px !important; /* ZMENŠENÍ KOLONKY */
+        min-height: 30px !important; /* ZMENŠENÍ KOLONKY */
     }
 
     /* Štítky v multiselectu - MENŠÍ A NESVÍTÍ */
@@ -88,8 +88,8 @@ st.markdown("""
         background-color: rgba(255, 255, 255, 0.1) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important; /* ZRUŠENA ZELENÁ ZÁŘE */
         color: white !important;
-        height: 22px !important; /* MENŠÍ ŠTÍTKY */
-        font-size: 0.75rem !important;
+        height: 26px !important; /* MENŠÍ ŠTÍTKY */
+        font-size: 0.9rem !important;
     }
 
     /* DIGITÁLNÍ ARCHIV (TABULKA) (POZADÍ ZELENÝ) */

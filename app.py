@@ -14,54 +14,55 @@ st.markdown("""
         margin-right: auto !important;
     }
     
-    /* Temné pozadí aplikace */
+    /* TVOJE PŮVODNÍ MODROFIALOVÁ PLOCHA - VRÁCENO */
     .stApp {
-        background: radial-gradient(circle at 10% 20%, rgb(0, 15, 30) 0%, rgb(0, 5, 10) 90.2%);
+        background: radial-gradient(circle at 10% 20%, rgb(0, 21, 41) 0%, rgb(0, 10, 20) 90.2%);
         color: #e0e0e0;
     }
 
-    /* --- STATISTIKY (HORNÍ BOXY) --- */
+    /* --- STATISTIKY (BÍLOMODRÝ BLESKOVÝ EFEKT) --- */
     div[data-testid="stMetric"] {
-        background-color: rgba(0, 212, 255, 0.03) !important;
+        background-color: rgba(255, 255, 255, 0.03) !important;
         padding: 15px;
         border-radius: 12px;
-        /* Bílomodrý bleskový okraj */
-        border: 2px solid #00d4ff !important;
-        box-shadow: 0 0 20px rgba(0, 212, 255, 0.4), inset 0 0 10px rgba(0, 212, 255, 0.1) !important;
+        /* Jasně bílomodrý okraj jako blesk */
+        border: 2px solid #b0f0ff !important; 
+        box-shadow: 0 0 15px rgba(176, 240, 255, 0.6), inset 0 0 10px rgba(176, 240, 255, 0.1) !important;
     }
 
-    /* --- TLAČÍTKO (BLESKOVÝ EFEKT) --- */
+    /* --- TLAČÍTKO (BLESKOVĚ JASNÉ) --- */
     div[data-testid="stButton"] > button {
         background-color: transparent !important;
-        border: 2px solid #00fbff !important; /* Extra jasná modrá */
-        color: #00fbff !important;
-        box-shadow: 0 0 15px rgba(0, 251, 255, 0.4), 0 0 30px rgba(0, 251, 255, 0.2) !important;
+        border: 2px solid #ffffff !important; /* Bílá základna pro efekt blesku */
+        color: #ffffff !important;
+        /* Silná bílomodrá záře */
+        box-shadow: 0 0 10px #ffffff, 0 0 20px #00d4ff !important;
         transition: all 0.3s ease-in-out !important;
         font-weight: bold !important;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
     }
 
     div[data-testid="stButton"] > button:hover {
-        background-color: rgba(0, 251, 255, 0.1) !important;
-        box-shadow: 0 0 40px rgba(0, 251, 255, 0.8) !important; /* Při najetí se "rozsvítí" víc */
-        color: white !important;
-        transform: scale(1.03);
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        /* Při najetí blesk "udeří" víc */
+        box-shadow: 0 0 20px #ffffff, 0 0 40px #00fbff !important;
+        transform: scale(1.04);
     }
 
-    /* --- NADECHUJÍCÍ SE MODRÝ UPLOAD BOX --- */
+    /* --- UPLOAD BOX --- */
     [data-testid="stFileUploadDropzone"] {
-        background-color: rgba(0, 212, 255, 0.02) !important;
-        border: 2px dashed #00d4ff !important;
-        box-shadow: 0 0 15px rgba(0, 212, 255, 0.1) !important;
+        background-color: rgba(255, 255, 255, 0.02) !important;
+        border: 2px dashed #b0f0ff !important;
+        box-shadow: 0 0 10px rgba(176, 240, 255, 0.2) !important;
     }
 
-    /* Šedé štítky v multiselectu (pro lepší čitelnost) */
+    /* Šedé štítky v multiselectu */
     span[data-baseweb="tag"] {
         background-color: #1a2a3a !important;
-        border: 1px solid #00d4ff !important;
+        border: 1px solid #b0f0ff !important;
         color: white !important;
-    }    
+    }
 </style>
 """, unsafe_allow_html=True)
 

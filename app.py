@@ -191,41 +191,41 @@ with col_main:
     else:
         st.info("Nahrajte faktury.")
 
-# --- 5. FINÁLNÍ PŘEHLED (PŘEHLEDNÉ KOSTKY) ---
+# --- 5. FINÁLNÍ PŘEHLED (ČISTÝ A JEDNODUCHÝ) ---
     if st.session_state.vysledky:
         st.write("---")
         st.subheader("📊 Finální přehled")
         
-        # Vytvoření 4 sloupců
-        c1, c2, c3, c4 = st.columns(4)
-        
-        # Definice kategorií pro přehlednější kód
-        kategorie = [
-            {"nadpis": "⚡ Elektřina", "klic": "ELEKTŘINA", "sloupec": c1, "styl": "el-border"},
-            {"nadpis": "🏢 FSX", "klic": "FSX", "sloupec": c2, "styl": "fsx-border"},
-            {"nadpis": "🔥 Plyn", "klic": "PLYN", "sloupec": c3, "styl": "gas-border"},
-            {"nadpis": "💧 Voda", "klic": "VODA", "sloupec": c4, "styl": "water-border"}
+        # Vytvoření 4 sloupců pro kategorie
+        cols = st.columns(4)
+        kats = [
+            ("⚡ Elektřina", "ELEKTŘINA", "el-border", cols[0]),
+            ("🏢 FSX", "FSX", "fsx-border", cols[1]),
+            ("🔥 Plyn", "PLYN", "gas-border", cols[2]),
+            ("💧 Voda", "VODA", "water-border", cols[3])
         ]
 
-        for kat in kategorie:
-            with kat["sloupec"]:
-                # Horní barevná karta s názvem energie
-                st.markdown(f'<div class="energy-card {kat["styl"]}"><h3>{kat["nadpis"]}</h3></div>', unsafe_allow_html=True)
+        for label, key, style, col in kats:
+            with col:
+                # Horní barevná hlavička (zůstává tvůj design)
+                st.markdown(f'<div class="energy-card {style}"><h3>{label}</h3></div>', unsafe_allow_html=True)
                 
-                # Procházíme výsledky a pro každou skupinu dat vytvoříme samostatnou "kostku"
+                # Výpis dat v čistých řádcích
                 for res in st.session_state.vysledky:
-                    # Najdeme data, která patří do této kategorie
-                    data_souboru = {k: v for k, v in res.items() if kat["klic"] in k.upper() and v and str(v).lower() != "n/a"}
+                    data_souboru = {k: v for k, v in res.items() if key in k.upper() and v and str(v).lower() != "n/a"}
                     
                     if data_souboru:
-                        # Čistá vizuální "kostka" bez názvů souborů
-                        st.markdown(f"""
-                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); backdrop-filter: blur(5px);">
-                        """, unsafe_allow_html=True)
+                        # Kontejner pro jednu sadu dat (jednu fakturu)
+                        st.markdown('<div style="margin-bottom: 20px; padding: 5px;">', unsafe_allow_html=True)
                         
-                        # Vypíšeme čistě jen parametry a hodnoty
                         for klic, hodnota in data_souboru.items():
                             parametr = klic.split(":")[-1].strip()
-                            st.markdown(f'<div class="label-text" style="margin-top:8px">{parametr}</div><div class="value-text" style="font-size:1.15rem; color: #ffffff;">{hodnota}</div>', unsafe_allow_html=True)
-                        
+                            # ČISTÝ ŘÁDEK: Název vlevo, Hodnota vpravo
+                            st.markdown(f"""
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 5px 0; font-family: sans-serif;">
+                                    <span style="color: #888; font-size: 0.8rem; text-transform: uppercase;">{parametr}</span>
+                                    <span style="color: #fff; font-weight: bold; font-size: 1rem;">{hodnota}</span>
+                                </div>
+                            """, unsafe_allow_html=True)
+                            
                         st.markdown('</div>', unsafe_allow_html=True)

@@ -96,7 +96,7 @@ with col_side:
             "VODA: Spotřeba (m3)",
             "VODA: Cena celkem (fakturovaná)"
         ],
-        default=["ELEKTŘINA: Spotřeba (kWh)", "PLYN: Spotřeba (kWh)", "VODA: Spotřeba (m3)"]
+        default=["ELEKTŘINA: Spotřeba (kWh)", "PLYN: Spotřeba (kWh)", "VODA: Spotřeba (m3)"])
     
     if st.button("🚀 SPUSTIT ANALÝZU", use_container_width=True):
         if uploaded_files:

@@ -63,10 +63,10 @@ st.markdown("""
     .energy-card {
         background: rgba(10, 10, 20, 0.4) !important;
         border-radius: 18px;
-        padding: 15px;
+        padding: 10px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(20px);
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5) !important;
     }
 

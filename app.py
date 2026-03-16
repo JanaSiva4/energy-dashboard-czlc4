@@ -72,7 +72,7 @@ st.markdown("""
 
     .el-border { 
         border-top: 2px solid #FFD700 !important; /* Žlutooranžová / Zlatá */
-        box-shadow: 0 -5px 20px rgba(255, 215, 0, 0.3) !important; 
+        box-shadow: 0 -8px 20px rgba(255, 215, 0, 0.2) !important; 
     }
     .fsx-border { 
         border-top: 2px solid #BB86FC !important; /* Světle fialová pro FSX */

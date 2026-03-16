@@ -29,7 +29,7 @@ st.markdown("""
         border-radius: 8px;
         border: 1px solid rgba(255, 255, 255, 0.6) !important;
         box-shadow: 0 0 15px rgba(0, 242, 255, 0.4) !important;
-        height: 90px !important;
+        height: 70px !important;
     }
     /* Zvětší to velké číslo (hodnotu) */
 [data-testid="stMetricValue"] {

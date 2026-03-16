@@ -7,7 +7,7 @@ st.set_page_config(page_title="Energy Intelligence Pro", layout="wide")
 
 st.markdown("""
 <style>
-    /* --- ZAROVNÁNÍ NA STŘED --- */
+    /* ZAROVNÁNÍ NA STŘED */
     [data-testid="stMainViewContainer"] .block-container {
         max-width: 1100px !important;
         margin-left: auto !important;
@@ -18,10 +18,9 @@ st.markdown("""
     .stApp { 
         background: radial-gradient(circle at 10% 20%, rgb(0, 21, 41) 0%, rgb(0, 10, 20) 90.2%);
         color: #e0e0e0; 
-        font-weight: 300; 
     }
 
-    /* --- ZÁŘE KOLEM STATISTIK (ZPRACOVÁNO, KATEGORIE ATD.) --- */
+    /* ZÁŘE KOLEM STATISTIK */
     div[data-testid="stMetric"] {
         background-color: rgba(0, 255, 150, 0.05) !important;
         padding: 15px;
@@ -30,25 +29,25 @@ st.markdown("""
         box-shadow: 0 0 20px rgba(0, 255, 150, 0.3) !important;
     }
 
-    /* --- BARVA VLOŽTE PDF (ZELENÁ) --- */
+    /* ZELENÝ UPLOAD BOX */
     [data-testid="stFileUploadDropzone"] {
         background-color: rgba(0, 255, 100, 0.05) !important;
         border: 2px dashed #00ff96 !important;
     }
 
-    /* --- BARVY MULTISELECTU (ŠEDÁ) --- */
+    /* ŠEDÉ ŠTÍTKY V MULTISELECTU */
     span[data-baseweb="tag"] {
         background-color: #3d4651 !important;
         border: 1px solid #5d6773 !important;
         color: white !important;
     }
 
-    /* --- JEDINÁ ZMĚNA: TLAČÍTKO PŘESNĚ NA STŘED --- */
+    /* --- KLÍČOVÁ OPRAVA: TLAČÍTKO NA STŘED --- */
+    /* Tento blok vynutí, aby se obal tlačítka choval jako flex-kontejner na střed */
     div.stButton {
         display: flex !important;
         justify-content: center !important;
         width: 100% !important;
-        padding-top: 10px;
     }
 
     div.stButton > button {
@@ -57,9 +56,11 @@ st.markdown("""
         color: #00ff96 !important;
         box-shadow: 0 0 15px rgba(0, 255, 150, 0.3) !important;
         transition: all 0.4s ease !important;
+        
+        /* Vrácení původní velikosti (tlačítko se smrskne k textu) */
         width: auto !important; 
-        padding-left: 40px !important;
-        padding-right: 40px !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
     }
 
     div.stButton > button:hover {
@@ -107,7 +108,7 @@ with col_side:
     st.caption("Konfigurace")
     uploaded_files = st.file_uploader("Vložte PDF", accept_multiple_files=True, type=['pdf'])
 
-    # KOMPLETNÍ SEZNAM POLÍ (ZACHOVÁN)
+    # POLE K VYTAŽENÍ - STRIKTNĚ ZACHOVÁNA
     vyber = st.multiselect(
         "Pole k vytažení:",
         [

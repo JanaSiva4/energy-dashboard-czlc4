@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 import requests
 
-# 1. Konfigurace
+# 1. Základní nastavení
 st.set_page_config(page_title="CZLC4 Energy Intel Pro", layout="wide")
 
-# 2. FINÁLNÍ DESIGN (ZELENÁ + NEONOVÉ BLESKY)
+# 2. DESIGN (CSS) - KOMPLETNÍ FIX
 st.markdown("""
 <style>
     /* Hlavní pozadí */
@@ -14,65 +14,59 @@ st.markdown("""
         color: #e0e0e0; 
     }
 
-    /* --- OPRAVA: DECENTNÍ ZELENÁ MÍSTO ŠEDÉ --- */
-    [data-testid="stFileUploadDropzone"] {
-        border: 2px dashed rgba(0, 255, 150, 0.4) !important;
-        background-color: rgba(0, 255, 150, 0.05) !important;
+    /* Zelené ovládací prvky místo šedé (decentní smaragdová) */
+    [data-testid="stFileUploadDropzone"], .stMultiSelect div[role="listbox"], .stButton button {
+        border: 1px solid rgba(0, 180, 100, 0.4) !important;
+        background-color: rgba(0, 180, 100, 0.05) !important;
     }
     
-    /* Zelené tlačítko a multiselect */
-    .stButton button {
-        background-color: rgba(0, 200, 100, 0.2) !important;
-        border: 1px solid #00ff96 !important;
-        color: white !important;
-    }
-    .stMultiSelect div[role="listbox"] {
-        background-color: rgba(0, 200, 100, 0.1) !important;
-        border: 1px solid rgba(0, 255, 150, 0.3) !important;
-    }
-
-    /* --- HORNÍ METRIKY SE ZELENÝM BLESKEM (GLOW) --- */
+    /* Horní statistiky se zeleným Glow efektem (jako blesky) */
     div[data-testid="stMetric"] {
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid #00ff96;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 0 20px rgba(0, 255, 150, 0.3); /* Zelená záře */
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(0, 255, 150, 0.3);
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 0 15px rgba(0, 255, 130, 0.2); /* Zelená záře */
         backdrop-filter: blur(10px);
     }
     
     /* Bílá čísla v metrikách */
     div[data-testid="stMetricValue"] > div {
         color: #ffffff !important;
-        font-size: 1.8rem !important;
+        font-weight: 700;
     }
 
-    /* Spodní zářící karty (Elektřina, Plyn, Voda) */
+    /* Zářící karty dole */
     .energy-card {
         background: rgba(0, 0, 0, 0.5);
         border-radius: 12px;
         padding: 20px;
+        backdrop-filter: blur(15px);
         margin-bottom: 20px;
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .el-glow { border-top: 4px solid #FFD700; box-shadow: 0 0 35px rgba(255, 215, 0, 0.4); }
-    .gas-glow { border-top: 4px solid #FF8C00; box-shadow: 0 0 35px rgba(255, 140, 0, 0.4); }
-    .water-glow { border-top: 4px solid #00BFFF; box-shadow: 0 0 35px rgba(0, 191, 255, 0.4); }
 
+    /* Neonové záře pro spodní kategorie */
+    .el-glow { border-top: 3px solid #FFD700; box-shadow: 0 0 30px rgba(255, 215, 0, 0.4); }
+    .gas-glow { border-top: 3px solid #FF8C00; box-shadow: 0 0 30px rgba(255, 140, 0, 0.4); }
+    .water-glow { border-top: 3px solid #00BFFF; box-shadow: 0 0 30px rgba(0, 191, 255, 0.4); }
+
+    /* Bílá čísla v kartách */
     .value-text { font-size: 1.3rem; color: #ffffff !important; font-weight: 600; }
-    .label-text { font-size: 0.8rem; color: #aaa; text-transform: uppercase; }
+    .label-text { font-size: 0.8rem; color: #888; text-transform: uppercase; margin-top: 10px; }
+    .card-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 15px; }
 </style>
 """, unsafe_allow_html=True)
 
-# HLAVNÍ TITULEK
+# TITULEK
 st.title("⚡ Energy Intelligence Pro")
 st.write("---")
 
-# Inicializace session_state
+# Inicializace stavu
 if 'vysledky' not in st.session_state:
     st.session_state.vysledky = []
 
-# --- 1. HORNÍ STATISTIKY (S BLESKEM) ---
+# --- 2. HORNÍ STATISTIKY S NOVOU ZÁŘÍ ---
 pocet = len(st.session_state.vysledky)
 c1, c2, c3, c4 = st.columns(4)
 with c1: st.metric("Zpracováno", str(pocet))
@@ -82,13 +76,13 @@ with c4: st.metric("Stav", "Online")
 
 st.write("---")
 
-# --- 2. ANALÝZA A ARCHIV ---
+# --- 3. HLAVNÍ PLOCHA ---
 col_side, col_main = st.columns([1, 3])
 
 with col_side:
-    st.caption("Konfigurace nahrávání")
+    st.caption("Konfigurace")
     uploaded_files = st.file_uploader("Vložte PDF", accept_multiple_files=True, type=['pdf'])
-    vyber = st.multiselect("Pole k analýze:", 
+    vyber = st.multiselect("Pole k vytažení:", 
                            ["ELEKTŘINA: Spotřeba (kWh)", "PLYN: Spotřeba (kWh)", "VODA: Spotřeba (m3)"],
                            default=["ELEKTŘINA: Spotřeba (kWh)", "PLYN: Spotřeba (kWh)"])
     
@@ -111,13 +105,14 @@ with col_main:
     if st.session_state.vysledky:
         st.dataframe(pd.DataFrame(st.session_state.vysledky), use_container_width=True)
     else:
-        st.info("Nahrajte PDF faktury pro zobrazení archivu.")
+        st.info("Zatím žádná data k zobrazení.")
 
-    # --- 3. FINÁLNÍ ZÁŘÍCÍ PŘEHLED ---
+    # --- 4. FINÁLNÍ ZÁŘÍCÍ PŘEHLED ---
     if st.session_state.vysledky:
         st.write("---")
         st.subheader("📊 Finální přehled")
         
+        # Třídění dat (zjednodušeno pro ukázku)
         data_el, data_pl, data_vo = [], [], []
         for res in st.session_state.vysledky:
             for k, v in res.items():
@@ -129,17 +124,17 @@ with col_main:
 
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.markdown('<div class="energy-card el-glow"><h3>⚡ Elektřina</h3>', unsafe_allow_html=True)
+            st.markdown('<div class="energy-card el-glow"><div class="card-title">⚡ Elektřina</div>', unsafe_allow_html=True)
             for i in data_el:
                 st.markdown(f'<div class="label-text">{i["label"]}</div><div class="value-text">{i["val"]}</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         with c2:
-            st.markdown('<div class="energy-card gas-glow"><h3>🔥 Plyn</h3>', unsafe_allow_html=True)
+            st.markdown('<div class="energy-card gas-glow"><div class="card-title">🔥 Plyn</div>', unsafe_allow_html=True)
             for i in data_pl:
                 st.markdown(f'<div class="label-text">{i["label"]}</div><div class="value-text">{i["val"]}</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         with c3:
-            st.markdown('<div class="energy-card water-glow"><h3>💧 Voda</h3>', unsafe_allow_html=True)
+            st.markdown('<div class="energy-card water-glow"><div class="card-title">💧 Voda</div>', unsafe_allow_html=True)
             for i in data_vo:
                 st.markdown(f'<div class="label-text">{i["label"]}</div><div class="value-text">{i["val"]}</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)

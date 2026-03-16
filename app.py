@@ -62,7 +62,7 @@ st.markdown("""
     /* --- KARTY PRO ELEKTŘINU, PLYN A VODU --- */
     .energy-card {
         background: rgba(10, 10, 20, 0.4) !important;
-        border-radius: 12px;
+        border-radius: 18px;
         padding: 15px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(20px);

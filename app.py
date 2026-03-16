@@ -43,38 +43,27 @@ st.markdown("""
         color: white !important;
     }
 
-    /* --- VYCENTROVÁNÍ KONTEJNERU TLAČÍTKA --- */
+    /* --- JEDINÁ ZMĚNA: TLAČÍTKO PŘESNĚ NA STŘED --- */
     div.stButton {
-        display: flex;
-        justify-content: center;
-        width: 100%;
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+        padding-top: 10px;
     }
 
-    /* --- STYL TLAČÍTKA (ZÁŘE A HOVER) --- */
     div.stButton > button {
         background-color: transparent !important;
         border: 2px solid #00ff96 !important;
         color: #00ff96 !important;
         box-shadow: 0 0 15px rgba(0, 255, 150, 0.3) !important;
         transition: all 0.4s ease !important;
-        
-        /* Šířka tlačítka - pokud chceš menší, změň na např. 200px */
         width: auto !important; 
-        padding-left: 30px !important;
-        padding-right: 30px !important;
+        padding-left: 40px !important;
+        padding-right: 40px !important;
     }
 
     div.stButton > button:hover {
         opacity: 0.3 !important; /* Bleskový efekt */
-        box-shadow: 0 0 30px rgba(0, 255, 150, 0.6) !important;
-    }
-    }
-        
-        width: 100%; /* Pokud chceš, aby bylo na celou šířku, nech 100%, pokud ne, dej třeba 200px */
-    }
-    }
-    div.stButton > button:hover {
-        opacity: 0.3 !important;
         box-shadow: 0 0 30px rgba(0, 255, 150, 0.6) !important;
     }
 
@@ -118,7 +107,7 @@ with col_side:
     st.caption("Konfigurace")
     uploaded_files = st.file_uploader("Vložte PDF", accept_multiple_files=True, type=['pdf'])
 
-    # VRÁCENO: KOMPLETNÍ SEZNAM POLÍ
+    # KOMPLETNÍ SEZNAM POLÍ (ZACHOVÁN)
     vyber = st.multiselect(
         "Pole k vytažení:",
         [

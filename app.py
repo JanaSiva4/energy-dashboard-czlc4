@@ -31,7 +31,15 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 242, 255, 0.4) !important;
         height: 90px !important;
     }
+    /* Zvětší to velké číslo (hodnotu) */
+[data-testid="stMetricValue"] {
+    font-size: 2.5rem !important; 
+}
 
+/* Zvětší ten malý nápis nad ním */
+[data-testid="stMetricLabel"] p {
+    font-size: 1.1rem !important;
+}
     /* --- TLAČÍTKO (BLESKOVĚ BÍLÉ) --- */
     div[data-testid="stButton"] > button {
         background-color: rgba(255, 255, 255, 0.05) !important;

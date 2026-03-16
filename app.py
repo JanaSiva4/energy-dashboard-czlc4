@@ -133,24 +133,48 @@ with col_main:
 
     with t3:
         st.markdown('<div class="archive-card">Kancelářské potřeby - 4.200 Kč</div>', unsafe_allow_html=True)
-# --- 4. ČISTÁ SUMÁRNÍ TABULKA ---
+# --- 4. ROZDĚLENÝ PŘEHLED (3 SLOPCE) ---
     if st.session_state.vysledky:
         st.write("---")
-        st.subheader("📝 Souhrn nalezených hodnot")
+        st.subheader("📊 Finální přehled podle energií")
 
-        # Posbíráme všechna data do jednoho seznamu dvojic (Klíč, Hodnota)
-        summary_data = []
+        # Rozdělení dat do kategorií
+        data_elektro = []
+        data_plyn = []
+        data_voda = []
+
         for res in st.session_state.vysledky:
             for klic, hodnota in res.items():
-                # Ignorujeme metadata a prázdné hodnoty
-                if klic not in ["Soubor", "Faktura", "Kategorie"] and hodnota and str(hodnota).lower() != "n/a":
-                    summary_data.append({"Pole": klic, "Hodnota": hodnota})
+                if hodnota and str(hodnota).lower() != "n/a" and klic not in ["Soubor", "Faktura", "Kategorie"]:
+                    polozka = {"Parametr": klic.split(":")[-1].strip(), "Hodnota": hodnota}
+                    
+                    if "ELEKTŘINA" in klic.upper() or "FSX" in klic.upper():
+                        data_elektro.append(polozka)
+                    elif "PLYN" in klic.upper():
+                        data_plyn.append(polozka)
+                    elif "VODA" in klic.upper():
+                        data_voda.append(polozka)
 
-        if summary_data:
-            # Převedeme na DataFrame a zobrazíme jako čistou tabulku bez indexů
-            summary_df = pd.DataFrame(summary_data)
-            
-            # Pokud se stejné pole opakuje (víc faktur), můžeme je seskupit nebo nechat pod sebou
-            st.table(summary_df) 
-        else:
-            st.info("V nahraných dokumentech nebyla nalezena žádná relevantní čísla.")
+        # Vytvoření 3 sloupců
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.markdown("### ⚡ Elektřina")
+            if data_elektro:
+                st.dataframe(pd.DataFrame(data_elektro), hide_index=True, use_container_width=True)
+            else:
+                st.caption("Žádná data")
+
+        with col2:
+            st.markdown("### 🔥 Plyn")
+            if data_plyn:
+                st.dataframe(pd.DataFrame(data_plyn), hide_index=True, use_container_width=True)
+            else:
+                st.caption("Žádná data")
+
+        with col3:
+            st.markdown("### 💧 Voda / Ostatní")
+            if data_voda:
+                st.dataframe(pd.DataFrame(data_voda), hide_index=True, use_container_width=True)
+            else:
+                st.caption("Žádná data")

@@ -71,20 +71,20 @@ st.markdown("""
     }
 
     .el-border { 
-        border-top: 2px solid #FFD700 !important; /* Žlutooranžová / Zlatá */
-        box-shadow: 0 -8px 20px rgba(255, 215, 0, 0.1) !important; 
+        border-top: 1px solid #FFD700 !important; /* Žlutooranžová / Zlatá */
+        box-shadow: 0 -8px 20px rgba(255, 215, 0, 0.2) !important; 
     }
     .fsx-border { 
-        border-top: 2px solid #BB86FC !important; /* Světle fialová pro FSX */
-        box-shadow: 0 -8px 20px rgba(187, 134, 252, 0.1) !important; 
+        border-top: 1px solid #BB86FC !important; /* Světle fialová pro FSX */
+        box-shadow: 0 -8px 20px rgba(187, 134, 252, 0.2) !important; 
     }
     .gas-border { 
-        border-top: 2px solid #FF5722 !important; /* Sytě oranžová pro Plyn */
-        box-shadow: 0 -8px 20px rgba(255, 87, 34, 0.1) !important; 
+        border-top: 1px solid #FF5722 !important; /* Sytě oranžová pro Plyn */
+        box-shadow: 0 -8px 20px rgba(255, 87, 34, 0.2) !important; 
     }
     .water-border { 
-        border-top: 2px solid #00BFFF !important; /* Světle modrá pro Vodu */
-        box-shadow: 0 -8px 20px rgba(0, 191, 255, 0.1) !important; 
+        border-top: 1px solid #00BFFF !important; /* Světle modrá pro Vodu */
+        box-shadow: 0 -8px 20px rgba(0, 191, 255, 0.2) !important; 
     }
 
     /* --- ÚPRAVY: MENŠÍ POLE A ZRUŠENÍ ZÁŘE --- */

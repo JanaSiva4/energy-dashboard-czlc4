@@ -29,7 +29,7 @@ st.markdown("""
         border-radius: 15px;
         border: 1px solid rgba(255, 255, 255, 0.6) !important;
         box-shadow: 0 0 15px rgba(0, 242, 255, 0.4) !important;
-        height: 120px !important;
+        height: 90px !important;
     }
 
     /* --- TLAČÍTKO (BLESKOVĚ BÍLÉ) --- */

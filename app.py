@@ -73,15 +73,11 @@ st.title("⚡ CZLC4 Energy Intelligence")
 st.write("---")
 
 # --- 1. HORNÍ STATISTIKY ---
-# Tyto hodnoty se aktualizují, pokud budou v datech
-zpracovano = 0
-suma = 0
-
 c1, c2, c3, c4 = st.columns(4)
 with c1:
-    m1 = st.metric(label="Zpracováno faktur", value=str(zprocessed_count := 0))
+    st.metric(label="Zpracováno faktur", value="0")
 with c2:
-    m2 = st.metric(label="Celková suma", value="0 Kč")
+    st.metric(label="Celková suma", value="0 Kč")
 with c3:
     st.metric(label="Úspora času", value="0 min")
 with c4:
@@ -116,7 +112,7 @@ with col_side:
     analyze_btn = st.button("🚀 SPUSTIT AI ANALÝZU")
 
 with col_main:
-    # --- 3. LOGIKA ANALÝZY ---
+    # --- LOGIKA ANALÝZY ---
     if analyze_btn and uploaded_files:
         st.subheader("🤖 Průběh AI analýzy")
         vysledky = []
@@ -135,7 +131,8 @@ with col_main:
                     
                     if response.status_code == 200:
                         data = response.json()
-                        if isinstance(data, list): data = data[0]
+                        if isinstance(data, list):
+                            data = data[0]
                         data["Faktura"] = file.name
                         vysledky.append(data)
                     else:
@@ -143,22 +140,20 @@ with col_main:
                 except Exception as e:
                     st.error(f"Nepodařilo se spojit s n8n: {e}")
 
-        # Zobrazení výsledků (tabulka a graf)
         if vysledky:
             df = pd.DataFrame(vysledky)
             st.success("✅ Analýza dokončena!")
-            st.dataframe(df, use_container_width=True)
             
             # Zobrazení tabulky výsledků
             st.dataframe(df, use_container_width=True)
 
-            # Dynamický graf podle prvního vybraného pole
+            # Dynamický graf s novou šedou barvou
             if len(vyber) > 0:
                 y_col = vyber[0] if vyber[0] in df.columns else df.columns[0]
                 fig = px.bar(df, x="Faktura", y=y_col, 
                              title=f"Srovnání: {y_col}", 
                              template="plotly_dark",
-                             color_discrete_sequence=['#708090'])
+                             color_discrete_sequence=['#808080']) # Šedá barva
                 fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
                 st.plotly_chart(fig, use_container_width=True)
         else:

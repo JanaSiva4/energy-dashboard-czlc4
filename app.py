@@ -33,12 +33,12 @@ st.markdown("""
     }
     /* Zvětší to velké číslo (hodnotu) */
 [data-testid="stMetricValue"] {
-    font-size: 2.5rem !important; 
+    font-size: 1.5rem !important; 
 }
 
 /* Zvětší ten malý nápis nad ním */
 [data-testid="stMetricLabel"] p {
-    font-size: 1.1rem !important;
+    font-size: 0.9rem !important;
 }
     /* --- TLAČÍTKO (BLESKOVĚ BÍLÉ) --- */
     div[data-testid="stButton"] > button {

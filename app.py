@@ -89,11 +89,26 @@ st.markdown("""
         border: 1px dashed rgba(255, 255, 255, 0.5) !important;
     }
 
-    /* Štítky v multiselectu */
+    /* ČISTÉ ŠTÍTKY V MULTISELECTU (BEZ ZÁŘE) */
     span[data-baseweb="tag"] {
-        background-color: #1a0a33 !important;
-        border: 1px solid #00f2ff !important;
-        color: white !important;
+        background-color: rgba(255, 255, 255, 0.1) !important; /* Jemný šedý nádech */
+        border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Tenký decentní okraj */
+        box-shadow: none !important; /* ŽÁDNÁ ZÁŘE */
+        color: #ffffff !important;
+        border-radius: 4px !important;
+    }
+
+    /* Úprava celého vyhledávacího pole, aby nesvítilo */
+    div[data-baseweb="select"] > div {
+        background-color: rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: none !important;
+    }
+
+    /* Ikonka křížku pro smazání štítku */
+    span[data-baseweb="tag"] svg {
+        fill: white !important;
+    }
     }
 </style>
 """, unsafe_allow_html=True)

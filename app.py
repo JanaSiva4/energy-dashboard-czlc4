@@ -13,7 +13,23 @@ st.markdown("""
         background: radial-gradient(circle at 10% 20%, rgb(0, 21, 41) 0%, rgb(60, 0, 120) 50%, rgb(0, 0, 0) 100%);
         color: #e0e0e0; 
     }
+/* --- NASTAVENÍ TABULKY ARCHIVU (SEM VLOŽIT) --- */
+    [data-testid="stDataFrame"] {
+        background-color: rgba(0, 255, 150, 0.1) !important; /* Pozadí tabulky - světle zelená */
+        border: 1px solid rgba(0, 255, 150, 0.4) !important;  /* Okraj tabulky */
+        border-radius: 10px;
+    }
 
+    /* Hlavičky tabulky (sloupce nahoře) */
+    [data-testid="stDataFrame"] div[role="columnheader"] {
+        background-color: rgba(0, 200, 100, 0.3) !important; /* Tmavší zelená pro lištu */
+        color: #ffffff !important;                          /* Bílý text v hlavičce */
+    }
+
+    /* Barva textu uvnitř buněk tabulky */
+    [data-testid="stDataFrame"] div[role="gridcell"] {
+        color: #ffffff !important;
+    }
     /* Zelené ovládací prvky místo šedé (decentní smaragdová) */
     [data-testid="stFileUploadDropzone"], .stMultiSelect div[role="listbox"], .stButton button {
         border: 1px solid rgba(0, 180, 100, 0.4) !important;

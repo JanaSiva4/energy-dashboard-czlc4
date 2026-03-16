@@ -191,52 +191,42 @@ with col_main:
     else:
         st.info("Nahrajte faktury.")
 
-# --- 5. FINÁLNÍ PŘEHLED (ROZDĚLENO NA 4 SLOUPCE) ---
+# --- 5. FINÁLNÍ PŘEHLED (PŘEHLEDNÉ KOSTKY) ---
     if st.session_state.vysledky:
         st.write("---")
         st.subheader("📊 Finální přehled")
         
-        # Rozdělení dat do 4 kategorií
-        data_elektro, data_fsx, data_plyn, data_voda = [], [], [], []
-        
-        for res in st.session_state.vysledky:
-            for klic, hodnota in res.items():
-                if hodnota and str(hodnota).lower() != "n/a" and klic not in ["Soubor", "Faktura", "Kategorie"]:
-                    polozka = {"Parametr": klic.split(":")[-1].strip(), "Hodnota": hodnota}
-                    
-                    if "ELEKTŘINA" in klic.upper():
-                        if polozka not in data_elektro: data_elektro.append(polozka)
-                    elif "FSX" in klic.upper():
-                        if polozka not in data_fsx: data_fsx.append(polozka)
-                    elif "PLYN" in klic.upper():
-                        if polozka not in data_plyn: data_plyn.append(polozka)
-                    elif "VODA" in klic.upper():
-                        if polozka not in data_voda: data_voda.append(polozka)
-
-        # VYTVOŘENÍ 4 SLOUPCŮ
+        # Vytvoření 4 sloupců
         c1, c2, c3, c4 = st.columns(4)
         
-        with c1:
-            st.markdown('<div class="energy-card el-border"><h3>⚡ Elektřina</h3>', unsafe_allow_html=True)
-            for item in data_elektro:
-                st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-        with c2:
-            # Pro FSX použijeme stejný styl jako elektřina (el-border) nebo jiný podle potřeby
-            st.markdown('<div class="energy-card el-border"><h3>🏢 FSX</h3>', unsafe_allow_html=True)
-            for item in data_fsx:
-                st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-        with c3:
-            st.markdown('<div class="energy-card gas-border"><h3>🔥 Plyn</h3>', unsafe_allow_html=True)
-            for item in data_plyn:
-                st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-        with c4:
-            st.markdown('<div class="energy-card water-border"><h3>💧 Voda</h3>', unsafe_allow_html=True)
-            for item in data_voda:
-                st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+        # Definice kategorií pro přehlednější kód
+        kategorie = [
+            {"nadpis": "⚡ Elektřina", "klic": "ELEKTŘINA", "sloupec": c1, "styl": "el-border"},
+            {"nadpis": "🏢 FSX", "klic": "FSX", "sloupec": c2, "styl": "fsx-border"},
+            {"nadpis": "🔥 Plyn", "klic": "PLYN", "sloupec": c3, "styl": "gas-border"},
+            {"nadpis": "💧 Voda", "klic": "VODA", "sloupec": c4, "styl": "water-border"}
+        ]
+
+        for kat in kategorie:
+            with kat["sloupec"]:
+                # Horní barevná karta s názvem energie
+                st.markdown(f'<div class="energy-card {kat["styl"]}"><h3>{kat["nadpis"]}</h3></div>', unsafe_allow_html=True)
+                
+                # Procházíme výsledky a pro každý soubor vytvoříme samostatnou "kostku"
+                for res in st.session_state.vysledky:
+                    # Najdeme data, která patří do této kategorie v daném souboru
+                    data_souboru = {k: v for k, v in res.items() if kat["klic"] in k.upper() and v and str(v).lower() != "n/a"}
+                    
+                    if data_souboru:
+                        # Vizuální "kostka" pro data z jednoho souboru
+                        st.markdown(f"""
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                            <div style="font-size: 0.65rem; color: #888; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">📄 {res.get('Soubor', 'Neznámý soubor')}</div>
+                        """, unsafe_allow_html=True)
+                        
+                        # Vypíšeme parametry uvnitř kostky
+                        for klic, hodnota in data_souboru.items():
+                            parametr = klic.split(":")[-1].strip()
+                            st.markdown(f'<div class="label-text" style="margin-top:8px">{parametr}</div><div class="value-text" style="font-size:1.1rem">{hodnota}</div>', unsafe_allow_html=True)
+                        
+                        st.markdown('</div>', unsafe_allow_html=True)

@@ -112,7 +112,7 @@ with col_side:
         ],
         default=["ELEKTŘINA: Spotřeba (kWh)", "PLYN: Spotřeba (kWh)", "VODA: Spotřeba (m3)"]
     )
-    analyze_btn = st.button("🚀 SPUSTIT ANALÝZU") uprostřed
+    analyze_btn = st.button("🚀 SPUSTIT ANALÝZU")
 
 with col_main:
     # --- LOGIKA WEBHOOKU ---

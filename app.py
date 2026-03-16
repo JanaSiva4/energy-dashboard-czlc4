@@ -71,6 +71,34 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+/* --- ZAROVNÁNÍ NA STŘED --- */
+[data-testid="stMainViewContainer"] .block-container {
+    max-width: 1200px; /* Nastaví šířku obsahu */
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 2rem;
+}
+
+/* --- BARVY MULTISELECTU (Štítky/Tags) --- */
+/* Změní červenou na tvou vybranou šedou */
+span[data-baseweb="tag"] {
+    background-color: #3d4651 !important; /* Pozadí štítku */
+    border: 1px solid #5d6773 !important; /* Okraj štítku */
+    color: white !important;               /* Barva textu */
+}
+
+/* --- BARVA UPLOAD BOXU (Vložte PDF) --- */
+[data-testid="stFileUploadDropzone"] {
+    background-color: rgba(0, 255, 150, 0.05) !important; /* Jemná zelená výplň */
+    border: 2px dashed #00ff96 !important;               /* Zelený přerušovaný okraj */
+}
+
+/* --- ZÁŘE KOLEM STATISTIK (Metriky) --- */
+div[data-testid="stMetric"] {
+    border: 2px solid #00ff96 !important;
+    box-shadow: 0 0 15px rgba(0, 255, 150, 0.4) !important; /* Zelená záře */
+    transition: transform 0.3s ease;
+}
 
 st.title("⚡ Energy Intelligence Pro")
 st.write("---")

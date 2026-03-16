@@ -158,7 +158,7 @@ with col_main:
                 fig = px.bar(df, x="Faktura", y=y_col, 
                              title=f"Srovnání: {y_col}", 
                              template="plotly_dark",
-                             color_discrete_sequence=['#00ff88'])
+                             color_discrete_sequence=['#708090'])
                 fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
                 st.plotly_chart(fig, use_container_width=True)
         else:

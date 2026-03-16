@@ -68,29 +68,37 @@ st.markdown("""
     .label-text { font-size: 0.75rem; color: #aabfff; text-transform: uppercase; margin-top: 14px; font-weight: bold; letter-spacing: 0.5px; }
     .value-text { font-size: 1.15rem; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px; margin-bottom: 2px; }
 
-    /* --- OPRAVENÁ ZELENÁ POZADÍ (UŽ NEBUDOU ŠEDÁ) --- */
+    /* --- TOTÁLNÍ ZELENÁ PRO VNITŘKY (OPRAVA ŠEDÉ) --- */
     
-    /* 1. UPLOAD BOX - SYTĚ ZELENÝ NÁDECH */
+    /* 1. VNITŘEK UPLOADERU */
+    [data-testid="stFileUploader"] {
+        background-color: #0a2b1f !important;
+        padding: 10px;
+        border-radius: 15px;
+    }
     [data-testid="stFileUploadDropzone"] {
-        background-color: #0a2b1f !important; /* Tmavá lesní zelená */
+        background-color: #0a2b1f !important;
         border: 2px dashed #00ff96 !important;
     }
 
-    /* 2. MULTISELECT - SYTĚ ZELENÉ POLE */
+    /* 2. VNITŘEK MULTISELECTU */
     div[data-baseweb="select"] > div {
-        background-color: #0a2b1f !important; /* Tmavá lesní zelená */
+        background-color: #0a2b1f !important;
         border: 1px solid #00ff96 !important;
     }
 
-    /* 3. DIGITÁLNÍ ARCHIV (TABULKA) - ZELENÝ PODKLAD */
+    /* 3. VNITŘEK TABULKY (ARCHIVU) */
     [data-testid="stDataFrame"] {
-        background-color: #0a2b1f !important; /* Tmavá lesní zelená */
+        background-color: #0a2b1f !important;
         border: 1px solid #00ff96 !important;
         border-radius: 10px;
-        padding: 5px;
+    }
+    /* Vynucení barvy u samotné tabulky */
+    [data-testid="stDataFrame"] > div {
+        background-color: #0a2b1f !important;
     }
 
-    /* Štítky v multiselectu (vnitřní políčka) */
+    /* Štítky v multiselectu */
     span[data-baseweb="tag"] {
         background-color: #1a0a33 !important;
         border: 1px solid #00ff96 !important;
@@ -108,10 +116,10 @@ if 'vysledky' not in st.session_state:
 # --- 2. HORNÍ STATISTIKY ---
 pocet = len(st.session_state.vysledky)
 c1, c2, c3, c4 = st.columns(4)
-with c1: st.metric("Zprocessed", str(pocet))
-with c2: st.metric("Categories", "3")
-with c3: st.metric("Time saved", f"{pocet * 5} min")
-with c4: st.metric("Status", "Ready" if pocet == 0 else "Online")
+with c1: st.metric("Zpracováno", str(pocet))
+with c2: st.metric("Kategorie", "3")
+with c3: st.metric("Úspora času", f"{pocet * 5} min")
+with c4: st.metric("Stav", "Ready" if pocet == 0 else "Online")
 
 st.write("---")
 
@@ -190,15 +198,5 @@ with col_main:
         with c1:
             st.markdown('<div class="energy-card el-border"><h3>⚡ Elektřina & FSX</h3>', unsafe_allow_html=True)
             for item in data_elektro:
-                st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        with c2:
-            st.markdown('<div class="energy-card gas-border"><h3>🔥 Plyn</h3>', unsafe_allow_html=True)
-            for item in data_plyn:
-                st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        with c3:
-            st.markdown('<div class="energy-card water-border"><h3>💧 Voda</h3>', unsafe_allow_html=True)
-            for item in data_voda:
                 st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)

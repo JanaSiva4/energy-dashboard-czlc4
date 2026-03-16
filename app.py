@@ -14,7 +14,7 @@ st.markdown("""
     /* Zmenšené a zjemněné metriky */
     div[data-testid="stMetric"] {
         background-color: #000c17;
-        padding: 30px 35px;
+        padding: 20px 25px;
         border-radius: 10px;
         border: 1px solid rgba(0, 170, 255, 0.4);
         min-height: 80px;

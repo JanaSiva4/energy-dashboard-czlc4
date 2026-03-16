@@ -14,7 +14,7 @@ st.markdown("""
         margin-right: auto !important;
     }
     
-    /* TVOJE MODRO-FIALOVÁ PLOCHA */
+    /* SYTÁ A TMAVŠÍ MODRO-FIALOVÁ PLOCHA */
     .stApp {
         background: linear-gradient(135deg, #051c3d 0%, #2e0b54 40%, #1a0633 70%, #030821 100%) !important;
         background-attachment: fixed !important;
@@ -68,32 +68,36 @@ st.markdown("""
     .label-text { font-size: 0.75rem; color: #aabfff; text-transform: uppercase; margin-top: 14px; font-weight: bold; letter-spacing: 0.5px; }
     .value-text { font-size: 1.15rem; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px; margin-bottom: 2px; }
 
-    /* --- ZELENÁ POZADÍ (OPRAVENO, ABY TO NEBYLO ŠEDÉ) --- */
+    /* --- ÚPRAVY: MENŠÍ POLE A ZRUŠENÍ ZÁŘE --- */
     
-    /* 1. UPLOAD BOX ZELENÝ */
+    /* UPLOAD BOX (ZŮSTÁVÁ ZELENÝ) */
     [data-testid="stFileUploadDropzone"] {
-        background-color: rgba(0, 255, 150, 0.15) !important; /* Průhledná neon zelená */
+        background-color: rgba(0, 255, 100, 0.1) !important;
         border: 2px dashed #00ff96 !important;
     }
 
-    /* 2. MULTISELECT POLE ZELENÉ */
+    /* MULTISELECT POLE - TEĎ MENŠÍ A NESVÍTÍ */
     div[data-baseweb="select"] > div {
-        background-color: rgba(0, 255, 150, 0.15) !important;
-        border: 1px solid #00ff96 !important;
+        background-color: rgba(255, 255, 255, 0.05) !important; /* Zrušena zelená */
+        border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Decentní šedobílá */
+        min-height: 30px !important; /* ZMENŠENÍ KOLONKY */
     }
 
-    /* 3. DIGITÁLNÍ ARCHIV (TABULKA) ZELENÝ */
-    [data-testid="stDataFrame"] {
-        background-color: rgba(0, 255, 150, 0.1) !important;
-        border: 1px solid #00ff96 !important;
-        border-radius: 10px;
-    }
-
-    /* Štítky v multiselectu */
+    /* Štítky v multiselectu - MENŠÍ A NESVÍTÍ */
     span[data-baseweb="tag"] {
-        background-color: #1a0a33 !important;
-        border: 1px solid #00ff96 !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important; /* ZRUŠENA ZELENÁ ZÁŘE */
         color: white !important;
+        height: 22px !important; /* MENŠÍ ŠTÍTKY */
+        font-size: 0.75rem !important;
+    }
+
+    /* DIGITÁLNÍ ARCHIV (TABULKA) (ZŮSTÁVÁ ZELENÝ) */
+    [data-testid="stDataFrame"] {
+        background-color: rgba(0, 255, 100, 0.05) !important;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #00ff96 !important;
     }
 </style>
 """, unsafe_allow_html=True)

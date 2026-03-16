@@ -7,17 +7,43 @@ st.set_page_config(page_title="Energy Intelligence Pro", layout="wide")
 
 st.markdown("""
 <style>
-    /* ZAROVNÁNÍ NA STŘED */
+    /* ZAROVNÁNÍ HLAVNÍHO OBSAHU */
     [data-testid="stMainViewContainer"] .block-container {
         max-width: 1100px !important;
         margin-left: auto !important;
         margin-right: auto !important;
     }
-
+    
     /* Temné pozadí */
-    .stApp { 
+    .stApp {
         background: radial-gradient(circle at 10% 20%, rgb(0, 21, 41) 0%, rgb(0, 10, 20) 90.2%);
-        color: #e0e0e0; 
+        color: #e0e0e0;
+    }
+
+    /* --- OPRAVA: TLAČÍTKO PŘESNĚ NA STŘED --- */
+    div[data-testid="stButton"] {
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+        margin-top: 20px !important;
+    }
+
+    div[data-testid="stButton"] > button {
+        background-color: transparent !important;
+        border: 2px solid #00ff96 !important;
+        color: #00ff96 !important;
+        box-shadow: 0 0 15px rgba(0, 255, 150, 0.3) !important;
+        transition: all 0.4s ease !important;
+        width: auto !important; /* Tlačítko se neroztáhne, zůstane kompaktní */
+        padding-left: 30px !important;
+        padding-right: 30px !important;
+        height: 50px !important;
+    }
+
+    div[data-testid="stButton"] > button:hover {
+        background-color: rgba(0, 255, 150, 0.1) !important;
+        box-shadow: 0 0 30px rgba(0, 255, 150, 0.6) !important;
+        transform: scale(1.02);
     }
 
     /* ZÁŘE KOLEM STATISTIK */
@@ -35,39 +61,6 @@ st.markdown("""
         border: 2px dashed #00ff96 !important;
     }
 
-    /* ŠEDÉ ŠTÍTKY V MULTISELECTU */
-    span[data-baseweb="tag"] {
-        background-color: #3d4651 !important;
-        border: 1px solid #5d6773 !important;
-        color: white !important;
-    }
-
-    /* --- KLÍČOVÁ OPRAVA: TLAČÍTKO NA STŘED --- */
-    /* Tento blok vynutí, aby se obal tlačítka choval jako flex-kontejner na střed */
-    div.stButton {
-        display: flex !important;
-        justify-content: center !important;
-        width: 100% !important;
-    }
-
-    div.stButton > button {
-        background-color: transparent !important;
-        border: 2px solid #00ff96 !important;
-        color: #00ff96 !important;
-        box-shadow: 0 0 15px rgba(0, 255, 150, 0.3) !important;
-        transition: all 0.4s ease !important;
-        
-        /* Vrácení původní velikosti (tlačítko se smrskne k textu) */
-        width: auto !important; 
-        padding-left: 20px !important;
-        padding-right: 20px !important;
-    }
-
-    div.stButton > button:hover {
-        opacity: 0.3 !important; /* Bleskový efekt */
-        box-shadow: 0 0 30px rgba(0, 255, 150, 0.6) !important;
-    }
-
     /* Glassmorphism karty */
     .energy-card {
         background: rgba(255, 255, 255, 0.03);
@@ -77,11 +70,6 @@ st.markdown("""
         backdrop-filter: blur(10px);
         margin-bottom: 20px;
     }
-    .el-border { border-top: 5px solid #FFD700; }
-    .gas-border { border-top: 5px solid #FF8C00; }
-    .water-border { border-top: 5px solid #00BFFF; }
-    .label-text { font-size: 0.75rem; color: #888; text-transform: uppercase; margin-top: 12px; }
-    .value-text { font-size: 1.1rem; color: #ffffff; }
 </style>
 """, unsafe_allow_html=True)
 

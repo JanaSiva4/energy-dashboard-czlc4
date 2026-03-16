@@ -116,7 +116,7 @@ with col_side:
     analyze_btn = st.button("🚀 SPUSTIT AI ANALÝZU")
 
 with col_main:
-    # --- LOGIKA ANALÝZY ---
+    # --- 3. LOGIKA ANALÝZY ---
     if analyze_btn and uploaded_files:
         st.subheader("🤖 Průběh AI analýzy")
         vysledky = []
@@ -135,9 +135,7 @@ with col_main:
                     
                     if response.status_code == 200:
                         data = response.json()
-                        # Ošetření, pokud n8n vrátí list objektů
-                        if isinstance(data, list):
-                            data = data[0]
+                        if isinstance(data, list): data = data[0]
                         data["Faktura"] = file.name
                         vysledky.append(data)
                     else:
@@ -145,9 +143,11 @@ with col_main:
                 except Exception as e:
                     st.error(f"Nepodařilo se spojit s n8n: {e}")
 
+        # Zobrazení výsledků (tabulka a graf)
         if vysledky:
             df = pd.DataFrame(vysledky)
             st.success("✅ Analýza dokončena!")
+            st.dataframe(df, use_container_width=True)
             
             # Zobrazení tabulky výsledků
             st.dataframe(df, use_container_width=True)

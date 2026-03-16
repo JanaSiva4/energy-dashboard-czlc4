@@ -80,7 +80,7 @@ st.markdown("""
     div[data-baseweb="select"] > div {
         background-color: rgba(255, 255, 255, 0.05) !important; /* Zrušena zelená */
         border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Decentní šedobílá */
-        min-height: 40px !important; /* ZMENŠENÍ KOLONKY */
+        min-height: 60px !important; /* ZMENŠENÍ KOLONKY */
     }
 
     /* Štítky v multiselectu - MENŠÍ A NESVÍTÍ */

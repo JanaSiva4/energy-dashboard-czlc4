@@ -14,7 +14,7 @@ st.markdown("""
         margin-right: auto !important;
     }
     
-    /* SYTÁ A TMAVŠÍ MODRO-FIALOVÁ PLOCHA */
+    /* TVOJE MODRO-FIALOVÁ PLOCHA */
     .stApp {
         background: linear-gradient(135deg, #051c3d 0%, #2e0b54 40%, #1a0633 70%, #030821 100%) !important;
         background-attachment: fixed !important;
@@ -68,135 +68,25 @@ st.markdown("""
     .label-text { font-size: 0.75rem; color: #aabfff; text-transform: uppercase; margin-top: 14px; font-weight: bold; letter-spacing: 0.5px; }
     .value-text { font-size: 1.15rem; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px; margin-bottom: 2px; }
 
-    /* --- TOTÁLNÍ ZELENÁ PRO VNITŘKY (OPRAVA ŠEDÉ) --- */
+    /* --- ZELENÁ POZADÍ (OPRAVENO, ABY TO NEBYLO ŠEDÉ) --- */
     
-    /* 1. VNITŘEK UPLOADERU */
-    [data-testid="stFileUploader"] {
-        background-color: #0a2b1f !important;
-        padding: 10px;
-        border-radius: 15px;
-    }
+    /* 1. UPLOAD BOX ZELENÝ */
     [data-testid="stFileUploadDropzone"] {
-        background-color: #0a2b1f !important;
+        background-color: rgba(0, 255, 150, 0.15) !important; /* Průhledná neon zelená */
         border: 2px dashed #00ff96 !important;
     }
 
-    /* 2. VNITŘEK MULTISELECTU */
+    /* 2. MULTISELECT POLE ZELENÉ */
     div[data-baseweb="select"] > div {
-        background-color: #0a2b1f !important;
+        background-color: rgba(0, 255, 150, 0.15) !important;
         border: 1px solid #00ff96 !important;
     }
 
-    /* 3. VNITŘEK TABULKY (ARCHIVU) */
+    /* 3. DIGITÁLNÍ ARCHIV (TABULKA) ZELENÝ */
     [data-testid="stDataFrame"] {
-        background-color: #0a2b1f !important;
+        background-color: rgba(0, 255, 150, 0.1) !important;
         border: 1px solid #00ff96 !important;
         border-radius: 10px;
     }
-    /* Vynucení barvy u samotné tabulky */
-    [data-testid="stDataFrame"] > div {
-        background-color: #0a2b1f !important;
-    }
 
     /* Štítky v multiselectu */
-    span[data-baseweb="tag"] {
-        background-color: #1a0a33 !important;
-        border: 1px solid #00ff96 !important;
-        color: white !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-st.title("⚡ Energy Intelligence Pro")
-st.write("---")
-
-if 'vysledky' not in st.session_state:
-    st.session_state.vysledky = []
-
-# --- 2. HORNÍ STATISTIKY ---
-pocet = len(st.session_state.vysledky)
-c1, c2, c3, c4 = st.columns(4)
-with c1: st.metric("Zpracováno", str(pocet))
-with c2: st.metric("Kategorie", "3")
-with c3: st.metric("Úspora času", f"{pocet * 5} min")
-with c4: st.metric("Stav", "Ready" if pocet == 0 else "Online")
-
-st.write("---")
-
-# --- 3. HLAVNÍ PLOCHA ---
-col_side, col_main = st.columns([1, 3])
-
-with col_side:
-    st.caption("Konfigurace")
-    uploaded_files = st.file_uploader("Vložte PDF", accept_multiple_files=True, type=['pdf'])
-    
-    vyber = st.multiselect(
-        "Pole k vytažení:",
-        [
-            "ELEKTŘINA: Spotřeba (kWh)",
-            "ELEKTŘINA: Cena sil. el. (fakturovaná)",
-            "ELEKTŘINA: Cena distribuce (fakturovaná)",
-            "ELEKTŘINA: Cena celkem (fakturovaná)",
-            "FSX: Spotřeba (kWh)",
-            "FSX: Cena celkem (fakturovaná)",
-            "PLYN: Spotřeba (kWh)",
-            "PLYN: Cena celkem (fakturovaná)",
-            "VODA: Spotřeba (m3)",
-            "VODA: Cena celkem (fakturovaná)"
-        ],
-        default=["ELEKTŘINA: Spotřeba (kWh)", "PLYN: Spotřeba (kWh)", "VODA: Spotřeba (m3)"]
-    )
-    
-    st.write(" ") 
-    _, mid_btn, _ = st.columns([1.5, 4, 0.5]) 
-    with mid_btn:
-        analyze_btn = st.button("🚀 SPUSTIT ANALÝZU")
-
-with col_main:
-    if analyze_btn and uploaded_files:
-        st.session_state.vysledky = []
-        webhook_url = "https://n8n.dev.gcp.alza.cz/webhook/faktury-upload"
-        for file in uploaded_files:
-            with st.spinner(f"Analyzuji {file.name}..."):
-                try:
-                    files = {"data": (file.name, file.getvalue(), "application/pdf")}
-                    payload = {"p": str(vyber)}
-                    response = requests.post(webhook_url, files=files, data=payload)
-                    if response.status_code == 200:
-                        data = response.json()
-                        if isinstance(data, list): data = data[0]
-                        data["Soubor"] = file.name
-                        st.session_state.vysledky.append(data)
-                except:
-                    st.error("Chyba spojení.")
-        st.rerun()
-
-    st.subheader("📁 Digitální archiv")
-    if st.session_state.vysledky:
-        st.dataframe(pd.DataFrame(st.session_state.vysledky), use_container_width=True)
-    else:
-        st.info("Nahrajte faktury.")
-
-# --- 5. FINÁLNÍ PŘEHLED ---
-    if st.session_state.vysledky:
-        st.write("---")
-        st.subheader("📊 Finální přehled")
-        data_elektro, data_plyn, data_voda = [], [], []
-        
-        for res in st.session_state.vysledky:
-            for klic, hodnota in res.items():
-                if hodnota and str(hodnota).lower() != "n/a" and klic not in ["Soubor", "Faktura", "Kategorie"]:
-                    polozka = {"Parametr": klic.split(":")[-1].strip(), "Hodnota": hodnota}
-                    if "ELEKTŘINA" in klic.upper() or "FSX" in klic.upper():
-                        if polozka not in data_elektro: data_elektro.append(polozka)
-                    elif "PLYN" in klic.upper():
-                        if polozka not in data_plyn: data_plyn.append(polozka)
-                    elif "VODA" in klic.upper():
-                        if polozka not in data_voda: data_voda.append(polozka)
-
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.markdown('<div class="energy-card el-border"><h3>⚡ Elektřina & FSX</h3>', unsafe_allow_html=True)
-            for item in data_elektro:
-                st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)

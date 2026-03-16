@@ -14,71 +14,86 @@ st.markdown("""
         margin-right: auto !important;
     }
     
-    /* VÝRAZNÁ MODRO-FIALOVÁ PLOCHA */
+    /* SYTÁ A TMAVŠÍ MODRO-FIALOVÁ PLOCHA (O 2 STUPNĚ TMAVŠÍ) */
     .stApp {
-        /* Přidáno více fialové (#7b1fa2 a #4a148c) pro sytost */
-        background: linear-gradient(135deg, #0d47a1 0%, #7b1fa2 40%, #4a148c 70%, #1a237e 100%) !important;
+        /* Barvy jsou nyní hlubší: #051c3d (tmavě modrá) a #2e0b54 (temně fialová) */
+        background: linear-gradient(135deg, #051c3d 0%, #2e0b54 40%, #1a0633 70%, #030821 100%) !important;
         background-attachment: fixed !important;
-        color: #ffffff;
+        color: #f0f0f0;
     }
 
     /* --- STATISTIKY (HORNÍ BOXY) --- */
     div[data-testid="stMetric"] {
-        background: rgba(255, 255, 255, 0.1) !important;
-        backdrop-filter: blur(10px);
+        /* Tmavší pozadí boxů, aby ladily k ploše */
+        background: rgba(0, 0, 0, 0.25) !important;
+        backdrop-filter: blur(15px);
         padding: 15px;
         border-radius: 15px;
-        border: 2px solid #ffffff !important; 
-        box-shadow: 0 0 20px rgba(0, 242, 255, 0.6) !important;
+        /* Rámeček jako blesk - zářivě bílá */
+        border: 1px solid rgba(255, 255, 255, 0.6) !important; 
+        box-shadow: 0 0 15px rgba(0, 242, 255, 0.4) !important;
     }
 
     /* --- TLAČÍTKO (BLESKOVĚ BÍLÉ) --- */
     div[data-testid="stButton"] > button {
-        background-color: rgba(255, 255, 255, 0.15) !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
         border: 2px solid #ffffff !important;
         color: #ffffff !important;
-        box-shadow: 0 0 15px #ffffff, 0 0 30px #00d4ff !important;
+        box-shadow: 0 0 12px #ffffff, 0 0 25px rgba(0, 212, 255, 0.5) !important;
         transition: all 0.3s ease-in-out !important;
         font-weight: bold !important;
         text-transform: uppercase;
-        letter-spacing: 2px;
+        letter-spacing: 2.5px;
         height: 50px !important;
     }
 
-    /* --- KARTY PRO ELEKTŘINU, PLYN A VODU (OPRAVENO) --- */
-    .energy-card {
-        background: rgba(255, 255, 255, 0.07) !important;
-        border-radius: 20px;
-        padding: 25px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(15px);
-        margin-bottom: 20px;
-        /* Základní záře pro karty */
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+    div[data-testid="stButton"] > button:hover {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 0 20px #ffffff, 0 0 40px #00fbff !important;
+        transform: scale(1.02);
     }
 
-    /* Barevné horní linky karet s bleskovým efektem */
+    /* --- KARTY PRO ELEKTŘINU, PLYN A VODU --- */
+    .energy-card {
+        /* Tmavší podklad karet pro lepší čitelnost na fialové */
+        background: rgba(10, 10, 20, 0.4) !important;
+        border-radius: 18px;
+        padding: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        margin-bottom: 25px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* Barevné horní linky karet (bleskový glow) */
     .el-border { 
-        border-top: 5px solid #00f2ff !important; 
-        box-shadow: 0 -5px 20px rgba(0, 242, 255, 0.4) !important;
+        border-top: 4px solid #00f2ff !important; 
+        box-shadow: 0 -8px 20px rgba(0, 242, 255, 0.3) !important;
     }
     .gas-border { 
-        border-top: 5px solid #ff00ff !important; 
-        box-shadow: 0 -5px 20px rgba(255, 0, 255, 0.4) !important;
+        border-top: 4px solid #d500f9 !important; /* Sytá fialová */
+        box-shadow: 0 -8px 20px rgba(213, 0, 249, 0.3) !important;
     }
     .water-border { 
-        border-top: 5px solid #00d4ff !important; 
-        box-shadow: 0 -5px 20px rgba(0, 212, 255, 0.4) !important;
+        border-top: 4px solid #0091ea !important; /* Hluboká modrá */
+        box-shadow: 0 -8px 20px rgba(0, 145, 234, 0.3) !important;
     }
 
     /* Texty uvnitř karet */
-    .label-text { font-size: 0.8rem; color: #b0f0ff; text-transform: uppercase; margin-top: 15px; font-weight: bold; }
-    .value-text { font-size: 1.2rem; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+    .label-text { font-size: 0.75rem; color: #aabfff; text-transform: uppercase; margin-top: 14px; font-weight: bold; letter-spacing: 0.5px; }
+    .value-text { font-size: 1.15rem; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px; margin-bottom: 2px; }
 
-    /* UPLOAD BOX */
+    /* UPLOAD BOX (Ztmavena vnitřní plocha) */
     [data-testid="stFileUploadDropzone"] {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border: 2px dashed #ffffff !important;
+        background-color: rgba(0, 0, 0, 0.2) !important;
+        border: 1px dashed rgba(255, 255, 255, 0.5) !important;
+    }
+
+    /* Štítky v multiselectu */
+    span[data-baseweb="tag"] {
+        background-color: #1a0a33 !important;
+        border: 1px solid #00f2ff !important;
+        color: white !important;
     }
 </style>
 """, unsafe_allow_html=True)

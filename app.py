@@ -1,10 +1,11 @@
 import streamlit as st
 import pandas as pd
+import requests
 
 # Nastavení stránky
 st.set_page_config(page_title="CZLC4 Energy Intelligence", layout="wide")
 
-# Tvůj tmavý design (CSS)
+# Design
 st.markdown("""
     <style>
     .stApp { background-color: #001529; color: white; }
@@ -12,14 +13,11 @@ st.markdown("""
         background: linear-gradient(90deg, #00aaff 0%, #00ff88 100%); 
         color: #001529; font-weight: bold; border: none; border-radius: 10px;
     }
-    .stDataFrame { background-color: #0c2135; border-radius: 15px; }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("⚡ CZLC4 Energy Intelligence")
-st.write("Nahrajte faktury za energii (PDF) pro automatickou AI analýzu.")
 
-# Boční panel pro výběr parametrů
 with st.sidebar:
     st.header("Nastavení extrakce")
     vyber = st.multiselect(
@@ -27,23 +25,32 @@ with st.sidebar:
         ["Elektřina: Spotřeba (kWh)", "Cena sil. el.", "Cena distribuce", "Cena celkem", "Plyn: Spotřeba (kWh)", "Voda: Spotřeba (m3)"],
         default=["Elektřina: Spotřeba (kWh)", "Cena celkem"]
     )
-    st.info("Vybrané parametry budou odeslány do n8n k analýze.")
 
-# Hlavní nahrávací zóna
-uploaded_files = st.file_uploader("Přetáhněte PDF soubory sem", accept_multiple_files=True, type=['pdf'])
+uploaded_files = st.file_uploader("Nahrajte faktury (PDF)", accept_multiple_files=True, type=['pdf'])
 
 if st.button("🚀 Spustit AI analýzu"):
     if uploaded_files:
-        st.write(f"Zpracovávám {len(uploaded_files)} souborů...")
-        # Tady později propojíme tvůj n8n Webhook
-        st.success("Soubory byly odeslány do n8n. Čekám na data...")
+        st.info(f"Zpracovávám {len(uploaded_files)} souborů...")
+        results = []
+        
+        # TVOJE URL Z OBRÁZKU (pro testování používáme Test URL)
+        webhook_url = "https://n8n.dev.gcp.alza.cz/webhook-test/faktury-upload"
+        
+        for file in uploaded_files:
+            files = {"file": (file.name, file.getvalue(), "application/pdf")}
+            data = {"parametry": str(vyber)}
+            
+            try:
+                response = requests.post(webhook_url, files=files, data=data)
+                if response.status_code == 200:
+                    results.append(response.json())
+                else:
+                    st.error(f"Chyba u {file.name}: n8n vrátilo {response.status_code}")
+            except Exception as e:
+                st.error(f"Chyba spojení: {e}")
 
-        # Ukázka, jak by vypadala tabulka s výsledky
-        test_data = pd.DataFrame({
-            "Soubor": [f.name for f in uploaded_files],
-            "Stav": ["Zpracováno" for _ in uploaded_files],
-            "Celková cena (Kč)": ["Vypočítávám..." for _ in uploaded_files]
-        })
-        st.table(test_data)
+        if results:
+            st.success("Hotovo!")
+            st.dataframe(pd.DataFrame(results))
     else:
-        st.warning("Nejdříve prosím nahrajte aspoň jednu fakturu.")
+        st.warning("Nahrajte soubory.")

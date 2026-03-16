@@ -3,114 +3,90 @@ import pandas as pd
 import requests
 import plotly.express as px
 
-# Konfigurace stránky
+# Nastavení stránky
 st.set_page_config(page_title="CZLC4 Energy Intelligence", layout="wide")
 
-# --- ALZA BLUE / PURPLE STYLE (CSS) ---
+# --- NÁVRAT K PŮVODNÍMU TMAVÉMU DESIGNU ---
 st.markdown("""
     <style>
-    /* Hlavní pozadí v Alza modrofialové */
     .stApp { 
-        background: linear-gradient(135deg, #004990 0%, #2b32b2 100%); 
+        background-color: #001529; 
         color: white; 
     }
-    
-    /* Sidebar v tmavší modré */
     [data-testid="stSidebar"] { 
-        background-color: #002d5a; 
-        color: white; 
+        background-color: #000c17; 
     }
-    
-    /* Karty se statistikami - bílé s průhledností */
-    div[data-testid="stMetric"] {
-        background-color: rgba(255, 255, 255, 0.1);
+    .stMetric {
+        background-color: rgba(255, 255, 255, 0.05);
         padding: 15px;
-        border-radius: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    /* Barva čísel v metrikách */
-    div[data-testid="stMetricValue"] { 
-        color: #00ff88 !important; 
-    }
-
-    /* Tlačítko v Alza zelené */
-    .stButton>button {
-        background: #00ff88;
-        color: #002d5a;
-        font-weight: bold;
         border-radius: 10px;
-        border: none;
-        height: 3em;
-        transition: 0.3s;
     }
-    .stButton>button:hover {
-        background: #00cc6e;
-        transform: scale(1.02);
+    .stButton>button { 
+        background: linear-gradient(90deg, #00aaff 0%, #00ff88 100%); 
+        color: #001529; 
+        font-weight: bold; 
+        border: none; 
+        border-radius: 10px;
     }
-    
-    /* Nadpisy */
-    h1, h2, h3 { color: white !important; }
+    /* Úprava barev tabulky, aby byla čitelná na tmavém */
+    .stDataFrame { background-color: white; border-radius: 5px; }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("⚡ CZLC4 Energy Intelligence")
-st.write("---")
 
-# --- 1. HORNÍ STATISTIKY ---
-c1, c2, c3, c4 = st.columns(4)
-with c1:
-    st.metric(label="Zpracováno faktur", value="0")
-with c2:
-    st.metric(label="Celková suma", value="0 Kč")
-with c3:
-    st.metric(label="Úspora času", value="0 min")
-with c4:
-    st.metric(label="Stav systému", value="Online")
+# Horní statistiky (vždy viditelné)
+col_a, col_b, col_c = st.columns(3)
+col_a.metric("Nahraných faktur", "0")
+col_b.metric("Celková suma", "0 Kč")
+col_c.metric("Status AI", "Připraven")
 
 st.write("---")
 
-# --- 2. HLAVNÍ PLOCHA ---
-col_side, col_main = st.columns([1, 3])
+with st.sidebar:
+    st.header("Nastavení extrakce")
+    vyber = st.multiselect(
+        "Co chcete vyčíst?",
+        ["Elektřina: Spotřeba (kWh)", "Cena sil. el.", "Cena distribuce", "Cena celkem", "Dodavatel"],
+        default=["Elektřina: Spotřeba (kWh)", "Cena celkem"]
+    )
 
-with col_side:
-    st.subheader("📂 Vstupní data")
-    uploaded_files = st.file_uploader("Nahrajte PDF faktury", accept_multiple_files=True, type=['pdf'])
-    vyber = st.multiselect("Pole k extrakci:", ["Cena celkem", "Spotřeba", "Dodavatel"], default=["Cena celkem", "Spotřeba"])
-    analyze_btn = st.button("🚀 SPUSTIT AI ANALÝZU")
+uploaded_files = st.file_uploader("Nahrajte faktury (PDF)", accept_multiple_files=True, type=['pdf'])
 
-with col_main:
-    if not uploaded_files:
-        st.subheader("📊 Vizualizace")
-        # Prázdný graf pro design
-        dummy_df = pd.DataFrame({"Faktura": ["-", "-", "-"], "Kč": [0, 0, 0]})
-        fig = px.line(dummy_df, x="Faktura", y="Kč", title="Graf se vykreslí po nahrání dat")
-        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="white")
-        st.plotly_chart(fig, use_container_width=True)
-    
-    if analyze_btn and uploaded_files:
+if st.button("🚀 Spustit AI analýzu"):
+    if uploaded_files:
+        st.info(f"Zpracovávám {len(uploaded_files)} souborů...")
         results = []
+        # TVOJE URL Z n8n
         webhook_url = "https://n8n.dev.gcp.alza.cz/webhook-test/faktury-upload"
         
-        with st.status("AI analyzuje faktury...", expanded=True) as status:
-            for f in uploaded_files:
-                try:
-                    res = requests.post(webhook_url, files={"file": (f.name, f.getvalue())}, data={"p": str(vyber)})
-                    if res.status_code == 200:
-                        data = res.json()
-                        data["Soubor"] = f.name
-                        results.append(data)
-                except:
-                    st.error(f"Chyba spojení u {f.name}")
-            status.update(label="Hotovo!", state="complete")
+        for file in uploaded_files:
+            files = {"file": (file.name, file.getvalue(), "application/pdf")}
+            data = {"parametry": str(vyber)}
+            
+            try:
+                # Odeslání do n8n s vypnutou kompresí pro stabilitu
+                response = requests.post(webhook_url, files=files, data=data, headers={"Accept-Encoding": "identity"})
+                if response.status_code == 200:
+                    res_data = response.json()
+                    res_data["Soubor"] = file.name
+                    results.append(res_data)
+                else:
+                    st.error(f"Chyba u {file.name}")
+            except Exception as e:
+                st.error(f"Nepodařilo se připojit k n8n: {e}")
 
         if results:
             df = pd.DataFrame(results)
+            
+            # Zobrazení grafu
             if "Cena celkem" in df.columns:
                 df["Cena celkem"] = pd.to_numeric(df["Cena celkem"], errors='coerce')
-                st.subheader("📈 Srovnání nákladů")
-                fig = px.bar(df, x="Soubor", y="Cena celkem", color_discrete_sequence=['#00ff88'])
-                fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="white")
+                st.subheader("📊 Srovnání nákladů")
+                fig = px.bar(df, x="Soubor", y="Cena celkem", template="plotly_dark", color_discrete_sequence=['#00aaff'])
                 st.plotly_chart(fig, use_container_width=True)
             
+            st.subheader("📋 Detailní data")
             st.dataframe(df)
+    else:
+        st.warning("Nejdříve nahrajte faktury.")

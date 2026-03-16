@@ -171,29 +171,44 @@ if st.session_state.vysledky:
 st.write("---")
 st.subheader("📊 Finální přehled")
 data_elektro, data_plyn, data_voda = [], [], []
-for res in st.session_state.vysledky:
+
+or res in st.session_state.vysledky:
+
 for klic, hodnota in res.items():
+
 if hodnota and str(hodnota).lower() != "n/a" and klic not in ["Soubor", "Faktura", "Kategorie"]:
 polozka = {"Parametr": klic.split(":")[-1].strip(), "Hodnota": hodnota}
+
 if "ELEKTŘINA" in klic.upper() or "FSX" in klic.upper():
+
 if polozka not in data_elektro: data_elektro.append(polozka)
-elif "PLYN" in klic.upper():
+
+lif "PLYN" in klic.upper():
+
 if polozka not in data_plyn: data_plyn.append(polozka)
-elif "VODA" in klic.upper():
+
+lif "VODA" in klic.upper():
+
 if polozka not in data_voda: data_voda.append(polozka)
 c1, c2, c3 = st.columns(3)
+
 with c1:
 st.markdown('<div class="energy-card el-border"><h3>⚡ Elektřina & FSX</h3>', unsafe_allow_html=True)
+
 for item in data_elektro:
 st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
+
 with c2:
 st.markdown('<div class="energy-card gas-border"><h3>🔥 Plyn</h3>', unsafe_allow_html=True)
+
 for item in data_plyn:
 st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
+
 with c3:
 st.markdown('<div class="energy-card water-border"><h3>💧 Voda</h3>', unsafe_allow_html=True)
+
 for item in data_voda:
 st.markdown(f'<div class="label-text">{item["Parametr"]}</div><div class="value-text">{item["Hodnota"]}</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True),

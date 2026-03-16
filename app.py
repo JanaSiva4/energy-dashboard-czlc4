@@ -133,31 +133,24 @@ with col_main:
 
     with t3:
         st.markdown('<div class="archive-card">Kancelářské potřeby - 4.200 Kč</div>', unsafe_allow_html=True)
-        # --- 4. ČISTÝ VÝSLEDNÝ REPORT (Novinka) ---
+# --- 4. ČISTÁ SUMÁRNÍ TABULKA ---
     if st.session_state.vysledky:
         st.write("---")
-        st.subheader("📊 Přehled vytažených dat")
-        
-        # Projdeme všechny faktury v paměti
+        st.subheader("📝 Souhrn nalezených hodnot")
+
+        # Posbíráme všechna data do jednoho seznamu dvojic (Klíč, Hodnota)
+        summary_data = []
         for res in st.session_state.vysledky:
-            with st.expander(f"📍 Detail: {res.get('Soubor', 'Faktura')}", expanded=True):
-                # Vytvoříme sloupce pro čisté zobrazení
-                cols = st.columns(3)
-                idx = 0
-                
-                # Projdeme všechny hodnoty v datech
-                for klic, hodnota in res.items():
-                    # Ignorujeme metadata a prázdné hodnoty
-                    if klic not in ["Soubor", "Faktura", "Kategorie"] and hodnota and str(hodnota).lower() != "n/a":
-                        with cols[idx % 3]:
-                            # Zobrazíme jako malou vizitku
-                            st.markdown(f"""
-                                <div style="background: rgba(0, 255, 136, 0.1); padding: 10px; border-radius: 5px; border-left: 3px solid #00ff88; margin-bottom: 5px;">
-                                    <small style="color: #888;">{klic}</small><br>
-                                    <span style="font-size: 1.1em; color: white;">{hodnota}</span>
-                                </div>
-                            """, unsafe_allow_html=True)
-                        idx += 1
-                
-                if idx == 0:
-                    st.info("Z tohoto souboru nebyla nalezena žádná z vybraných dat.")
+            for klic, hodnota in res.items():
+                # Ignorujeme metadata a prázdné hodnoty
+                if klic not in ["Soubor", "Faktura", "Kategorie"] and hodnota and str(hodnota).lower() != "n/a":
+                    summary_data.append({"Pole": klic, "Hodnota": hodnota})
+
+        if summary_data:
+            # Převedeme na DataFrame a zobrazíme jako čistou tabulku bez indexů
+            summary_df = pd.DataFrame(summary_data)
+            
+            # Pokud se stejné pole opakuje (víc faktur), můžeme je seskupit nebo nechat pod sebou
+            st.table(summary_df) 
+        else:
+            st.info("V nahraných dokumentech nebyla nalezena žádná relevantní čísla.")

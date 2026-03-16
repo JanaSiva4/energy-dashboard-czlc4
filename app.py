@@ -71,7 +71,7 @@ st.markdown("""
     }
 
     .el-border { 
-        border-top: 4px solid #FFD700 !important; /* Žlutooranžová / Zlatá */
+        border-top: 2px solid #FFD700 !important; /* Žlutooranžová / Zlatá */
         box-shadow: 0 -8px 20px rgba(255, 215, 0, 0.3) !important; 
     }
     .fsx-border { 

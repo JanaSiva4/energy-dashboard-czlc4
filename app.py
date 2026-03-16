@@ -212,21 +212,20 @@ with col_main:
                 # Horní barevná karta s názvem energie
                 st.markdown(f'<div class="energy-card {kat["styl"]}"><h3>{kat["nadpis"]}</h3></div>', unsafe_allow_html=True)
                 
-                # Procházíme výsledky a pro každý soubor vytvoříme samostatnou "kostku"
+                # Procházíme výsledky a pro každou skupinu dat vytvoříme samostatnou "kostku"
                 for res in st.session_state.vysledky:
-                    # Najdeme data, která patří do této kategorie v daném souboru
+                    # Najdeme data, která patří do této kategorie
                     data_souboru = {k: v for k, v in res.items() if kat["klic"] in k.upper() and v and str(v).lower() != "n/a"}
                     
                     if data_souboru:
-                        # Vizuální "kostka" pro data z jednoho souboru
+                        # Čistá vizuální "kostka" bez názvů souborů
                         st.markdown(f"""
-                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                            <div style="font-size: 0.65rem; color: #888; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">📄 {res.get('Soubor', 'Neznámý soubor')}</div>
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); backdrop-filter: blur(5px);">
                         """, unsafe_allow_html=True)
                         
-                        # Vypíšeme parametry uvnitř kostky
+                        # Vypíšeme čistě jen parametry a hodnoty
                         for klic, hodnota in data_souboru.items():
                             parametr = klic.split(":")[-1].strip()
-                            st.markdown(f'<div class="label-text" style="margin-top:8px">{parametr}</div><div class="value-text" style="font-size:1.1rem">{hodnota}</div>', unsafe_allow_html=True)
+                            st.markdown(f'<div class="label-text" style="margin-top:8px">{parametr}</div><div class="value-text" style="font-size:1.15rem; color: #ffffff;">{hodnota}</div>', unsafe_allow_html=True)
                         
                         st.markdown('</div>', unsafe_allow_html=True)

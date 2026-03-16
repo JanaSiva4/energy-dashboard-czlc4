@@ -1,185 +1,117 @@
 import streamlit as st
 import pandas as pd
-import requests
 
-# Nastavení stránky
-st.set_page_config(page_title="CZLC4 Energy Intelligence", layout="wide")
+# Nastavení stránky pro "Wide" zobrazení
+st.set_page_config(page_title="Energy Intelligence Pro", layout="wide")
 
-# --- ULTRA-CLEAN DESIGN (CSS) ---
+# --- TURBO DESIGN (CSS) ---
 st.markdown("""
 <style>
-    .stApp { background-color: #001529; color: #e0e0e0; font-weight: 300; }
-    [data-testid="stSidebar"] { background-color: #000c17; color: white; }
-    
-    /* Zmenšené a zjemněné metriky */
-    div[data-testid="stMetric"] {
-        background-color: #000c17;
-        padding: 20px 25px;
-        border-radius: 10px;
-        border: 1px solid rgba(0, 170, 255, 0.4);
-        min-height: 80px;
-    }
-    div[data-testid="stMetricValue"] { 
-        color: #00ff88 !important; 
-        font-weight: 400 !important; 
-        font-size: 1.5rem !important;
-    }
-    div[data-testid="stMetricLabel"] {
-        font-weight: 300 !important;
-        font-size: 0.8rem !important;
-        color: #888 !important;
+    /* Temné pozadí s gradientem */
+    .stApp {
+        background: radial-gradient(circle at 10% 20%, rgb(0, 21, 41) 0%, rgb(0, 10, 20) 90.2%);
+        color: #e0e0e0;
     }
 
-    /* Jemnější multiselect */
-    span[data-baseweb="tag"] {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        font-weight: 300 !important;
+    /* Skleněné karty pro sekce */
+    .energy-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     }
 
-    /* Tlačítko - méně agresivní zelená */
-    .stButton>button {
-        background-color: #00cc6e;
-        color: #001529;
-        font-weight: 400;
-        border-radius: 8px;
-        border: none;
-        width: 100%;
+    /* Speciální okraje pro různé energie */
+    .el-border { border-top: 4px solid #FFD700; } /* Zlatá/Žlutá */
+    .gas-border { border-top: 4px solid #FF8C00; } /* Oranžová */
+    .water-border { border-top: 4px solid #00BFFF; } /* Blankytná */
+
+    /* Úprava nadpisů */
+    h1, h2, h3 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+        letter-spacing: -0.5px;
     }
-    
-    /* Archivní karty - velmi decentní */
-    .archive-card {
-        background-color: rgba(255, 255, 255, 0.02);
-        padding: 10px;
-        border-radius: 6px;
-        border-left: 2px solid #00aaff;
-        margin-bottom: 6px;
-        font-size: 0.85em;
+
+    /* Styl pro hodnoty (velká a čistá) */
+    .value-text {
+        font-size: 1.2rem;
+        color: #ffffff;
         font-weight: 300;
-        color: #bbb;
     }
+    .label-text {
+        font-size: 0.8rem;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Skrytí Streamlit menu pro profi vzhled */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-st.title("⚡ CZLC4 Energy Intelligence")
+st.title("⚡ Energy Intelligence Pro")
+st.markdown("<p style='color: #888;'>Facility Management AI Analysis Platform</p>", unsafe_allow_html=True)
 st.write("---")
 
-if 'vysledky' not in st.session_state:
-    st.session_state.vysledky = []
-
-# --- 1. ZMENŠENÉ STATISTIKY ---
-pocet = len(st.session_state.vysledky)
-c1, c2, c3, c4 = st.columns(4)
-with c1: st.metric("Zpracováno faktur", str(pocet))
-with c2: st.metric("Kategorie", "3")
-with c3: st.metric("Úspora času", f"{pocet * 5} m")
-with c4: st.metric("Stav", "Ready" if pocet == 0 else "Online")
-
-st.write("---")
-
-# --- 2. HLAVNÍ PLOCHA ---
-col_side, col_main = st.columns([1, 3])
-
-with col_side:
-    st.caption("Konfigurace")
-    uploaded_files = st.file_uploader("Vložte PDF", accept_multiple_files=True, type=['pdf'])
+# --- LOGIKA ROZDĚLENÍ (Předpokládáme data v session_state) ---
+if 'vysledky' in st.session_state and st.session_state.vysledky:
     
-    vyber = st.multiselect(
-        "Pole k vytažení:",
-        [
-           "ELEKTŘINA: Spotřeba (kWh)", 
-            "ELEKTŘINA: Cena sil. el. (fakturovaná)", 
-            "ELEKTŘINA: Cena distribuce (fakturovaná)",
-            "ELEKTŘINA: Cena celkem (fakturovaná)",
-            "FSX: Spotřeba (kWh)",
-            "FSX: Cena celkem (fakturovaná)",
-            "PLYN: Spotřeba (kWh)",
-            "PLYN: Cena celkem (fakturovaná)",
-            "VODA: Spotřeba (m3)",
-            "VODA: Cena celkem (fakturovaná)"
-        ],
-        default=["ELEKTŘINA: Spotřeba (kWh)", "PLYN: Spotřeba (kWh)", "VODA: Spotřeba (m3)"]
-    )
-    analyze_btn = st.button("🚀 SPUSTIT ANALÝZU")
+    # Příprava dat (podobně jako předtím, ale s lepším designem)
+    # ... (zde proběhne tvoje stávající filtrace do elektro, plyn, voda) ...
 
-with col_main:
-    if analyze_btn and uploaded_files:
-        st.session_state.vysledky = []
-        webhook_url = "https://n8n.dev.gcp.alza.cz/webhook/faktury-upload"
+    col1, col2, col3 = st.columns(3)
 
-        for file in uploaded_files:
-            with st.spinner(f"Zpracování..."):
-                try:
-                    files = {"data": (file.name, file.getvalue(), "application/pdf")}
-                    payload = {"p": str(vyber)} 
-                    response = requests.post(webhook_url, files=files, data=payload)
-                    if response.status_code == 200:
-                        data = response.json()
-                        if isinstance(data, list): data = data[0]
-                        data["Soubor"] = file.name
-                        st.session_state.vysledky.append(data)
-                except:
-                    st.error("Chyba spojení.")
-        st.rerun()
+    # Vykreslení "WOW" karet
+    with col1:
+        st.markdown("""
+        <div class="energy-card el-border">
+            <h3 style="color: #FFD700; margin-top:0;">⚡ ELEKTŘINA & FSX</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        # Tady místo st.table použijeme čistší výpis
+        for item in elektro:
+            st.markdown(f"""
+            <div style="margin-bottom: 10px;">
+                <div class="label-text">{item['Parametr']}</div>
+                <div class="value-text">{item['Hodnota']}</div>
+                <hr style="margin: 5px 0; border: 0.1px solid rgba(255,255,255,0.05);">
+            </div>
+            """, unsafe_allow_html=True)
 
-    # --- 3. ARCHIV ---
-    st.subheader("📁 Digitální archiv")
-    t1, t2, t3 = st.tabs(["Energie", "Cesty", "Ostatní"])
+    with col2:
+        st.markdown("""
+        <div class="energy-card gas-border">
+            <h3 style="color: #FF8C00; margin-top:0;">🔥 PLYN</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        for item in plyn:
+            st.markdown(f"""
+            <div style="margin-bottom: 10px;">
+                <div class="label-text">{item['Parametr']}</div>
+                <div class="value-text">{item['Hodnota']}</div>
+                <hr style="margin: 5px 0; border: 0.1px solid rgba(255,255,255,0.05);">
+            </div>
+            """, unsafe_allow_html=True)
 
-    with t1:
-        if st.session_state.vysledky:
-            st.dataframe(pd.DataFrame(st.session_state.vysledky), use_container_width=True)
-        else:
-            st.info("Žádná data k zobrazení.")
-
-    with t2:
-        st.markdown('<div class="archive-card">Účtenka - PHM Shell - 1.250 Kč</div>', unsafe_allow_html=True)
-        st.markdown('<div class="archive-card">Jízdenka - ČD Praha - 340 Kč</div>', unsafe_allow_html=True)
-
-    with t3:
-        st.markdown('<div class="archive-card">Kancelářské potřeby - 4.200 Kč</div>', unsafe_allow_html=True)
-# --- 4. ROZDĚLENÝ PŘEHLED (3 SLOPCE) ---
-    if st.session_state.vysledky:
-        st.write("---")
-        st.subheader("📊 Finální přehled podle energií")
-
-        # Rozdělení dat do kategorií
-        data_elektro = []
-        data_plyn = []
-        data_voda = []
-
-        for res in st.session_state.vysledky:
-            for klic, hodnota in res.items():
-                if hodnota and str(hodnota).lower() != "n/a" and klic not in ["Soubor", "Faktura", "Kategorie"]:
-                    polozka = {"Parametr": klic.split(":")[-1].strip(), "Hodnota": hodnota}
-                    
-                    if "ELEKTŘINA" in klic.upper() or "FSX" in klic.upper():
-                        data_elektro.append(polozka)
-                    elif "PLYN" in klic.upper():
-                        data_plyn.append(polozka)
-                    elif "VODA" in klic.upper():
-                        data_voda.append(polozka)
-
-        # Vytvoření 3 sloupců
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            st.markdown("### ⚡ Elektřina")
-            if data_elektro:
-                st.dataframe(pd.DataFrame(data_elektro), hide_index=True, use_container_width=True)
-            else:
-                st.caption("Žádná data")
-
-        with col2:
-            st.markdown("### 🔥 Plyn")
-            if data_plyn:
-                st.dataframe(pd.DataFrame(data_plyn), hide_index=True, use_container_width=True)
-            else:
-                st.caption("Žádná data")
-
-        with col3:
-            st.markdown("### 💧 Voda / Ostatní")
-            if data_voda:
-                st.dataframe(pd.DataFrame(data_voda), hide_index=True, use_container_width=True)
-            else:
-                st.caption("Žádná data")
+    with col3:
+        st.markdown("""
+        <div class="energy-card water-border">
+            <h3 style="color: #00BFFF; margin-top:0;">💧 VODA</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        for item in voda:
+            st.markdown(f"""
+            <div style="margin-bottom: 10px;">
+                <div class="label-text">{item['Parametr']}</div>
+                <div class="value-text">{item['Hodnota']}</div>
+                <hr style="margin: 5px 0; border: 0.1px solid rgba(255,255,255,0.05);">
+            </div>
+            """, unsafe_allow_html=True)
+else:
+    st.info("Nahrajte dokumenty a spusťte analýzu pro zobrazení dashboardu.")

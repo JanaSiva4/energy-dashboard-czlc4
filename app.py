@@ -125,5 +125,46 @@ with col_main:
     
     # --- POKUD JSOU VÝSLEDKY (Grafy s energy barvami) ---
     if analyze_btn and uploaded_files:
-        # Tady by byla ta AI analýza (z n8n)
-        pass
+       # --- POKUD JSOU VÝSLEDKY (Propojení s n8n) ---
+    if analyze_btn and uploaded_files:
+        st.subheader("🤖 Průběh AI analýzy")
+        vysledky = []
+        
+        # URL tvého n8n Webhooku (POZOR: dej sem tu svou Production URL nebo Test URL)
+        webhook_url = "https://n8n.dev.gcp.alza.cz/webhook-test/faktury-upload"
+
+        for file in uploaded_files:
+            with st.spinner(f"Analyzuji fakturu: {file.name}..."):
+                try:
+                    # Pošleme soubor a vybraná pole (p) do n8n
+                    files = {"data": (file.name, file.getvalue(), "application/pdf")}
+                    payload = {"p": vyber} 
+                    
+                    response = requests.post(webhook_url, files=files, data=payload)
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        data["Faktura"] = file.name  # Přidáme název souboru pro tabulku
+                        vysledky.append(data)
+                    else:
+                        st.error(f"Chyba u {file.name}: n8n vrátilo kód {response.status_code}")
+                except Exception as e:
+                    st.error(f"Nepodařilo se spojit s n8n: {e}")
+
+        # --- ZOBRAZENÍ VÝSLEDKŮ ---
+        if vysledky:
+            df = pd.DataFrame(vysledky)
+            
+            # 1. Zobrazení tabulky
+            st.success("✅ Analýza dokončena!")
+            st.dataframe(df, use_container_width=True)
+
+            # 2. Vykreslení reálného grafu (pokud máme data pro osu Y)
+            y_osa = "ELEKTŘINA: Cena celkem (fakturovaná)" # nebo první vybrané pole
+            if y_osa in df.columns:
+                fig = px.bar(df, x="Faktura", y=y_osa, 
+                             title=f"Srovnání: {y_osa}", 
+                             template="plotly_dark",
+                             color_discrete_sequence=['#00ff88'])
+                fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                st.plotly_chart(fig, use_container_width=True)

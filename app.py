@@ -43,7 +43,14 @@ st.markdown("""
         color: white !important;
     }
 
-    /* --- TLAČÍTKO SE ZÁŘÍ A HOVER EFEKTEM --- */
+    /* --- VYCENTROVÁNÍ KONTEJNERU TLAČÍTKA --- */
+    div.stButton {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    /* --- STYL TLAČÍTKA (ZÁŘE A HOVER) --- */
     div.stButton > button {
         background-color: transparent !important;
         border: 2px solid #00ff96 !important;
@@ -51,9 +58,16 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 255, 150, 0.3) !important;
         transition: all 0.4s ease !important;
         
-        /* TYTO DVA ŘÁDKY TO DÁJÍ NA STŘED */
-        display: block !important;
-        margin: 0 auto !important;
+        /* Šířka tlačítka - pokud chceš menší, změň na např. 200px */
+        width: auto !important; 
+        padding-left: 30px !important;
+        padding-right: 30px !important;
+    }
+
+    div.stButton > button:hover {
+        opacity: 0.3 !important; /* Bleskový efekt */
+        box-shadow: 0 0 30px rgba(0, 255, 150, 0.6) !important;
+    }
         
         width: 100%; /* Pokud chceš, aby bylo na celou šířku, nech 100%, pokud ne, dej třeba 200px */
     }

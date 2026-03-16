@@ -136,7 +136,10 @@ with col_side:
         ],
         default=["ELEKTŘINA: Spotřeba (kWh)", "PLYN: Spotřeba (kWh)", "VODA: Spotřeba (m3)"]
     )
-    analyze_btn = st.button("🚀 SPUSTIT ANALÝZU")
+    st.write(" ") # přidá malou mezeru
+    _, mid_btn, _ = st.columns([1, 5, 1]) # vytvoří 3 pod-sloupečky (kraje malé, střed velký)
+    with mid_btn:
+        analyze_btn = st.button("🚀 SPUSTIT ANALÝZU")
 
 with col_main:
     if analyze_btn and uploaded_files:

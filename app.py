@@ -162,7 +162,7 @@ with col_side:
     )
     
     st.write(" ") 
-    _, mid_btn, _ = st.columns([1.5, 4, 0.5]) 
+    _, mid_btn, _ = st.columns([1.0, 4, 0.5]) 
     with mid_btn:
         analyze_btn = st.button("🚀SPUSTIT ANALÝZU")
 

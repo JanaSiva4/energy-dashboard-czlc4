@@ -164,7 +164,7 @@ with col_side:
     st.write(" ") 
     _, mid_btn, _ = st.columns([1.5, 4, 0.5]) 
     with mid_btn:
-        analyze_btn = st.button("🚀 SPUSTIT ANALÝZU")
+        analyze_btn = st.button("🚀SPUSTIT ANALÝZU")
 
 with col_main:
     if analyze_btn and uploaded_files:

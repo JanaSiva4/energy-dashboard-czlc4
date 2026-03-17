@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 
 # --- 1. CONFIG & WOW DESIGN (CSS) ---
-st.set_page_config(page_title="Energy Intelligence Pro", layout="wide")
+st.set_page_config(page_title="Energie CZLC4", layout="wide")
 
 st.markdown("""
 <style>

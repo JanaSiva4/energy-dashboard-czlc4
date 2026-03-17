@@ -121,7 +121,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("⚡ Energy Intelligence Pro")
+st.title("⚡ Energie CZLC4")
 st.write("---")
 
 if 'vysledky' not in st.session_state:

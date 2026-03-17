@@ -131,7 +131,7 @@ if 'vysledky' not in st.session_state:
 pocet = len(st.session_state.vysledky)
 c1, c2, c3, c4 = st.columns(4)
 with c1: st.metric("Zpracováno", str(pocet))
-with c2: st.metric("Kategorie", "3")
+with c2: st.metric("Kategorie", "4")
 with c3: st.metric("Úspora času", f"{pocet * 5} min")
 with c4: st.metric("Stav", "Ready" if pocet == 0 else "Online")
 

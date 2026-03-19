@@ -71,19 +71,19 @@ st.markdown("""
     }
 
     .el-border { 
-        border-top: 1px solid #FFD700 !important;
+        border-top: 1px solid #FFD700 !important; /* Žlutooranžová / Zlatá */
         box-shadow: 0 -8px 20px rgba(255, 215, 0, 0.2) !important; 
     }
     .fsx-border { 
-        border-top: 1px solid #BB86FC !important;
+        border-top: 1px solid #BB86FC !important; /* Světle fialová pro FSX */
         box-shadow: 0 -8px 20px rgba(187, 134, 252, 0.2) !important; 
     }
     .gas-border { 
-        border-top: 1px solid #FF5722 !important;
+        border-top: 1px solid #FF5722 !important; /* Sytě oranžová pro Plyn */
         box-shadow: 0 -8px 20px rgba(255, 87, 34, 0.2) !important; 
     }
     .water-border { 
-        border-top: 1px solid #00BFFF !important;
+        border-top: 1px solid #00BFFF !important; /* Světle modrá pro Vodu */
         box-shadow: 0 -8px 20px rgba(0, 191, 255, 0.2) !important; 
     }
 
@@ -97,21 +97,21 @@ st.markdown("""
 
     /* MULTISELECT POLE - TEĎ MENŠÍ A NESVÍTÍ */
     div[data-baseweb="select"] > div {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        min-height: 30px !important;
+        background-color: rgba(255, 255, 255, 0.05) !important; /* Zrušena zelená */
+        border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Decentní šedobílá */
+        min-height: 30px !important; /* ZMENŠENÍ KOLONKY */
     }
 
     /* Štítky v multiselectu - MENŠÍ A NESVÍTÍ */
     span[data-baseweb="tag"] {
         background-color: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important; /* ZRUŠENA ZELENÁ ZÁŘE */
         color: white !important;
-        height: 26px !important;
+        height: 26px !important; /* MENŠÍ ŠTÍTKY */
         font-size: 0.9rem !important;
     }
 
-    /* DIGITÁLNÍ ARCHIV (TABULKA) */
+    /* DIGITÁLNÍ ARCHIV (TABULKA) (POZADÍ ZELENÝ) */
     [data-testid="stDataFrame"] {
         background-color: rgba(0, 255, 100, 0.05) !important;
         padding: 10px;
@@ -170,8 +170,7 @@ with col_main:
     if analyze_btn and uploaded_files:
         st.session_state.vysledky = []
         webhook_url = "https://n8n.dev.gcp.alza.cz/webhook/faktury-upload"
-
-for file in uploaded_files:
+        for file in uploaded_files:
             with st.spinner(f"Analyzuji {file.name}..."):
                 try:
                     files = {"data": (file.name, file.getvalue(), "application/pdf")}
@@ -192,11 +191,12 @@ for file in uploaded_files:
     else:
         st.info("Nahrajte faktury.")
 
-# --- 5. FINÁLNÍ PŘEHLED ---
+# --- 5. FINÁLNÍ PŘEHLED (ČISTÝ A JEDNODUCHÝ) ---
     if st.session_state.vysledky:
         st.write("---")
         st.subheader("📊 Finální přehled")
         
+        # Vytvoření 4 sloupců pro kategorie
         cols = st.columns(4)
         kats = [
             ("⚡ Elektřina", "ELEKTŘINA", "el-border", cols[0]),
@@ -207,16 +207,20 @@ for file in uploaded_files:
 
         for label, key, style, col in kats:
             with col:
+                # Horní barevná hlavička (zůstává tvůj design)
                 st.markdown(f'<div class="energy-card {style}"><h3>{label}</h3></div>', unsafe_allow_html=True)
                 
+                # Výpis dat v čistých řádcích
                 for res in st.session_state.vysledky:
                     data_souboru = {k: v for k, v in res.items() if key in k.upper() and v and str(v).lower() != "n/a"}
                     
                     if data_souboru:
+                        # Kontejner pro jednu sadu dat (jednu fakturu)
                         st.markdown('<div style="margin-bottom: 20px; padding: 5px;">', unsafe_allow_html=True)
                         
                         for klic, hodnota in data_souboru.items():
                             parametr = klic.split(":")[-1].strip()
+                            # ČISTÝ ŘÁDEK: Název vlevo, Hodnota vpravo
                             st.markdown(f"""
                                 <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 5px 0; font-family: sans-serif;">
                                     <span style="color: #888; font-size: 0.8rem; text-transform: uppercase;">{parametr}</span>

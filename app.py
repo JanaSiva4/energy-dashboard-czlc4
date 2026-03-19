@@ -174,7 +174,7 @@ with col_main:
         # --- OPRAVA: všechny soubory se pošlou najednou v jednom requestu ---
         with st.spinner("Analyzuji faktury..."):
             try:
-                files = [("data", (f.name, f.getvalue(), "application/pdf")) for f in uploaded_files]
+                files = [(f"file{i}", (f.name, f.getvalue(), "application/pdf")) for i, f in enumerate(uploaded_files)]
                 payload = {"p": str(vyber)}
                 response = requests.post(webhook_url, files=files, data=payload)
                 if response.status_code == 200:

@@ -170,17 +170,17 @@ with col_main:
     if analyze_btn and uploaded_files:
         st.session_state.vysledky = []
         webhook_url = "https://n8n.dev.gcp.alza.cz/webhook/faktury-upload"
-        for file in uploaded_files:
-            with st.spinner(f"Analyzuji {file.name}..."):
-                try:
-                    files = {"data": (file.name, file.getvalue(), "application/pdf")}
-                    payload = {"p": str(vyber)}
-                    response = requests.post(webhook_url, files=files, data=payload)
-                    if response.status_code == 200:
-                        data = response.json()
-                        if isinstance(data, list): data = data[0]
-                        data["Soubor"] = file.name
-                        st.session_state.vysledky.append(data)
+        with st.spinner("Analyzuji faktury..."):
+            try:
+                files = [("data", (f.name, f.getvalue(), "application/pdf")) for f in uploaded_files]
+                payload = {"p": str(vyber)}
+                response = requests.post(webhook_url, files=files, data=payload)
+                if response.status_code == 200:
+                    data = response.json()
+                    if isinstance(data, list): data = data[0]
+                    st.session_state.vysledky = [data]
+            except:
+                st.error("Chyba spojení.")
                 except:
                     st.error("Chyba spojení.")
         st.rerun()

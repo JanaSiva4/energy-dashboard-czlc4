@@ -170,6 +170,7 @@ with col_main:
     if analyze_btn and uploaded_files:
         st.session_state.vysledky = []
         webhook_url = "https://n8n.dev.gcp.alza.cz/webhook/faktury-upload"
+
 for file in uploaded_files:
             with st.spinner(f"Analyzuji {file.name}..."):
                 try:

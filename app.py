@@ -152,23 +152,12 @@ kategorie_list = [
     ("📦", "Objednávky", "Položky, ceny, dodávky"),
 ]
 
-st.markdown("""
-<style>
-button[data-testid="baseButton-secondary"] {
-    position: relative !important;
-    margin-top: -115px !important;
-    height: 115px !important;
-    opacity: 0 !important;
-    cursor: pointer !important;
-    z-index: 10 !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-</style>""", unsafe_allow_html=True)
+kat_names = [k[1] for k in kategorie_list]
+kat_icons = [k[0] for k in kategorie_list]
+kat_descs = [k[2] for k in kategorie_list]
 
 cols_kat = st.columns(4)
-for col, (icon, name, desc) in zip(cols_kat, kategorie_list):
+for i, (col, icon, name, desc) in enumerate(zip(cols_kat, kat_icons, kat_names, kat_descs)):
     with col:
         active = "active" if st.session_state.kategorie == name else ""
         st.markdown(f"""
@@ -177,9 +166,28 @@ for col, (icon, name, desc) in zip(cols_kat, kategorie_list):
             <div class="cat-name">{name}</div>
             <div class="cat-desc">{desc}</div>
         </div>""", unsafe_allow_html=True)
-        if st.button(name, key=f"btn_{name}", use_container_width=True):
-            st.session_state.kategorie = name
-            st.rerun()
+
+st.markdown("""
+<style>
+div[data-testid="stRadio"] > label { display: none !important; }
+div[data-testid="stRadio"] > div {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 14px !important;
+    margin-top: -135px !important;
+    margin-bottom: 10px !important;
+}
+div[data-testid="stRadio"] > div > label {
+    height: 130px !important;
+    opacity: 0 !important;
+    cursor: pointer !important;
+}
+</style>""", unsafe_allow_html=True)
+
+vybrana = st.radio("kat", kat_names, index=kat_names.index(st.session_state.kategorie), horizontal=True, label_visibility="collapsed")
+if vybrana != st.session_state.kategorie:
+    st.session_state.kategorie = vybrana
+    st.rerun()
 
 st.write("---")
 

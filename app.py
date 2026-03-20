@@ -154,14 +154,16 @@ kategorie_list = [
 
 st.markdown("""
 <style>
-div[data-testid="stButton"] > button {
+button[data-testid="baseButton-secondary"] {
     position: relative !important;
-    margin-top: -110px !important;
-    height: 110px !important;
+    margin-top: -115px !important;
+    height: 115px !important;
     opacity: 0 !important;
     cursor: pointer !important;
-    z-index: 999 !important;
-    width: 100% !important;
+    z-index: 10 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 </style>""", unsafe_allow_html=True)
 
@@ -175,7 +177,7 @@ for col, (icon, name, desc) in zip(cols_kat, kategorie_list):
             <div class="cat-name">{name}</div>
             <div class="cat-desc">{desc}</div>
         </div>""", unsafe_allow_html=True)
-        if st.button("_", key=f"btn_{name}", use_container_width=True):
+        if st.button(name, key=f"btn_{name}", use_container_width=True):
             st.session_state.kategorie = name
             st.rerun()
 

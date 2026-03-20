@@ -19,12 +19,12 @@ st.markdown("""
     }
     [data-testid="stHeader"] { background: rgba(0,0,0,0) !important; }
     div[data-testid="stMetric"] {
-        background: rgba(0, 0, 0, 0.25) !important;
+        background: rgba(0,0,0,0.25) !important;
         backdrop-filter: blur(15px);
         padding: 15px;
         border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.6) !important;
-        box-shadow: 0 0 15px rgba(0, 242, 255, 0.4) !important;
+        border: 1px solid rgba(255,255,255,0.6) !important;
+        box-shadow: 0 0 15px rgba(0,242,255,0.4) !important;
         height: 90px !important;
     }
     [data-testid="stMetricValue"] { font-size: 1.5rem !important; }
@@ -33,7 +33,7 @@ st.markdown("""
         background: linear-gradient(135deg, #0052cc 0%, #0a84ff 100%) !important;
         border: none !important;
         color: #ffffff !important;
-        box-shadow: 0 0 12px #0052cc, 0 0 25px rgba(0, 132, 255, 0.5) !important;
+        box-shadow: 0 0 12px #0052cc, 0 0 25px rgba(0,132,255,0.5) !important;
         transition: all 0.3s ease-in-out !important;
         font-weight: bold !important;
         text-transform: uppercase;
@@ -46,39 +46,39 @@ st.markdown("""
         transform: scale(1.02);
     }
     .energy-card {
-        background: rgba(10, 10, 20, 0.4) !important;
-        border-radius: 18px;
-        padding: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(10,10,20,0.4) !important;
+        border-radius: 12px;
+        padding: 6px 10px;
+        border: 1px solid rgba(255,255,255,0.1);
         backdrop-filter: blur(20px);
-        margin-bottom: 8px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5) !important;
+        margin-bottom: 6px;
     }
-    .el-border { border-top: 1px solid #FFD700 !important; box-shadow: 0 -8px 20px rgba(255, 215, 0, 0.2) !important; }
-    .fsx-border { border-top: 1px solid #0084ff !important; box-shadow: 0 -8px 20px rgba(0, 132, 255, 0.2) !important; }
-    .gas-border { border-top: 1px solid #FF5722 !important; box-shadow: 0 -8px 20px rgba(255, 87, 34, 0.2) !important; }
-    .water-border { border-top: 1px solid #00BFFF !important; box-shadow: 0 -8px 20px rgba(0, 191, 255, 0.2) !important; }
+    .energy-card h3 { font-size: 0.9rem !important; margin: 4px 0 !important; }
+    .el-border { border-top: 2px solid #FFD700 !important; }
+    .fsx-border { border-top: 2px solid #0084ff !important; }
+    .gas-border { border-top: 2px solid #FF5722 !important; }
+    .water-border { border-top: 2px solid #00BFFF !important; }
     [data-testid="stFileUploadDropzone"],
     section[data-testid="stFileUploadDropzone"],
     section[data-testid="stFileUploadDropzone"] > div {
-        background-color: rgba(0, 200, 100, 0.08) !important;
+        background-color: rgba(0,200,100,0.08) !important;
         border: 2px dashed #00c864 !important;
         border-radius: 10px !important;
     }
     div[data-baseweb="select"] > div {
-        background-color: rgba(0, 200, 100, 0.06) !important;
-        border: 1px solid rgba(0, 200, 100, 0.3) !important;
+        background-color: rgba(0,200,100,0.06) !important;
+        border: 1px solid rgba(0,200,100,0.3) !important;
     }
     span[data-baseweb="tag"] {
-        background-color: rgba(0, 200, 100, 0.15) !important;
-        border: 1px solid rgba(0, 200, 100, 0.4) !important;
+        background-color: rgba(0,200,100,0.15) !important;
+        border: 1px solid rgba(0,200,100,0.4) !important;
         color: #00e87a !important;
     }
     [data-testid="stDataFrame"] {
-        background-color: rgba(0, 82, 204, 0.05) !important;
+        background-color: rgba(0,82,204,0.05) !important;
         padding: 10px;
         border-radius: 10px;
-        border: 1px solid rgba(0, 132, 255, 0.3) !important;
+        border: 1px solid rgba(0,132,255,0.3) !important;
     }
     .cat-card {
         background: rgba(255,255,255,0.04);
@@ -88,12 +88,19 @@ st.markdown("""
         text-align: center;
         position: relative;
         transition: all 0.3s;
+        cursor: pointer;
         margin-bottom: 8px;
     }
+    .cat-card:hover {
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
     .cat-card.active {
-        background: rgba(0, 82, 204, 0.15);
+        background: rgba(0,82,204,0.15);
         border-color: #0084ff;
-        box-shadow: 0 0 20px rgba(0, 132, 255, 0.3);
+        box-shadow: 0 0 20px rgba(0,132,255,0.3);
     }
     .cat-name { font-weight: bold; color: #fff; font-size: 0.9rem; margin-top: 6px; }
     .cat-desc { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
@@ -114,8 +121,8 @@ st.markdown("""
     .preview-label { font-size: 0.75rem; color: #888; text-transform: uppercase; }
     .preview-value { font-size: 0.85rem; color: #ccc; font-style: italic; }
     div[data-testid="stDownloadButton"] > button {
-        background: rgba(0, 82, 204, 0.15) !important;
-        border: 1px solid rgba(0, 132, 255, 0.4) !important;
+        background: rgba(0,82,204,0.15) !important;
+        border: 1px solid rgba(0,132,255,0.4) !important;
         color: #0084ff !important;
         font-size: 0.8rem !important;
         border-radius: 8px !important;
@@ -137,25 +144,33 @@ if 'vysledky' not in st.session_state:
 if 'kategorie' not in st.session_state:
     st.session_state.kategorie = "Energie"
 
-# KATEGORIE
+# KATEGORIE — kliknutí přes st.columns s invisible buttons
 kategorie_list = [
     ("⚡", "Energie", "Spotřeba & náklady"),
     ("📄", "Faktury", "Dodavatel, částky, splatnost"),
     ("📋", "Smlouvy", "Strany, podmínky, datum"),
     ("📦", "Objednávky", "Položky, ceny, dodávky"),
 ]
+
 cols_kat = st.columns(4)
 for col, (icon, name, desc) in zip(cols_kat, kategorie_list):
     with col:
         active = "active" if st.session_state.kategorie == name else ""
-        st.markdown(f"""<div class="cat-card {active}">
+        st.markdown(f"""
+        <div class="cat-card {active}" onclick="void(0)">
             <div style="font-size:1.8rem">{icon}</div>
             <div class="cat-name">{name}</div>
             <div class="cat-desc">{desc}</div>
         </div>""", unsafe_allow_html=True)
+        # Neviditelné tlačítko přes kartu
+        st.markdown(f"""
+        <style>
+        div[data-testid="stButton"]:has(button[kind="secondary"]#btn_{name}) {{
+            position: relative; margin-top: -80px; opacity: 0; height: 80px;
+        }}
+        </style>""", unsafe_allow_html=True)
         if st.button(name, key=f"btn_{name}", use_container_width=True):
             st.session_state.kategorie = name
-            st.session_state.vysledky = []
             st.rerun()
 
 st.write("---")
@@ -171,7 +186,7 @@ st.write("---")
 
 col_side, col_main = st.columns([1, 3])
 
-# ── ENERGIE ──────────────────────────────────────────────────────
+# ── ENERGIE ───────────────────────────────────────────────────────
 if st.session_state.kategorie == "Energie":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
@@ -241,12 +256,12 @@ if st.session_state.kategorie == "Energie":
                     for res in st.session_state.vysledky:
                         data_souboru = {k: v for k, v in res.items() if k.startswith(key) and v and str(v).lower() != "n/a"}
                         if data_souboru:
-                            st.markdown('<div style="margin-bottom:20px;padding:5px;">', unsafe_allow_html=True)
+                            st.markdown('<div style="margin-bottom:10px;padding:4px;">', unsafe_allow_html=True)
                             for klic, hodnota in data_souboru.items():
                                 parametr = klic.replace(key, "").replace("_", " ").upper()
-                                st.markdown(f"""<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.1);padding:5px 0;">
-                                    <span style="color:#888;font-size:0.8rem;text-transform:uppercase;">{parametr}</span>
-                                    <span style="color:#fff;font-weight:bold;font-size:1rem;">{hodnota}</span>
+                                st.markdown(f"""<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.1);padding:4px 0;">
+                                    <span style="color:#888;font-size:0.75rem;text-transform:uppercase;">{parametr}</span>
+                                    <span style="color:#fff;font-weight:bold;font-size:0.85rem;">{hodnota}</span>
                                 </div>""", unsafe_allow_html=True)
                             st.markdown('</div>', unsafe_allow_html=True)
         else:
@@ -257,116 +272,63 @@ elif st.session_state.kategorie == "Faktury":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
         st.file_uploader("Vložte PDF faktur", accept_multiple_files=True, type=['pdf'])
-        st.write("")
-        st.markdown('<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;">🔒 Funkce bude dostupná po aktivaci Anthropic API</p>', unsafe_allow_html=True)
-
+        st.markdown('<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;margin-top:10px;">🔒 Dostupné po aktivaci API</p>', unsafe_allow_html=True)
     with col_main:
         st.subheader("📄 Faktury — ukázka výstupu")
-        st.markdown('<p style="color:rgba(255,255,255,0.4);font-size:0.85rem;">Takto budou vypadat extrahovaná data z faktur:</p>', unsafe_allow_html=True)
-        
-        ukazka = [
-            {"Pole": "Dodavatel", "Hodnota": "ABC s.r.o."},
-            {"Pole": "IČ dodavatele", "Hodnota": "12345678"},
-            {"Pole": "DIČ dodavatele", "Hodnota": "CZ12345678"},
-            {"Pole": "Číslo faktury", "Hodnota": "FAC-2026-001"},
-            {"Pole": "Datum vystavení", "Hodnota": "01.02.2026"},
-            {"Pole": "Datum splatnosti", "Hodnota": "15.02.2026"},
-            {"Pole": "Celkem bez DPH", "Hodnota": "10 000,00 Kč"},
-            {"Pole": "DPH 21%", "Hodnota": "2 100,00 Kč"},
-            {"Pole": "Celkem s DPH", "Hodnota": "12 100,00 Kč"},
-            {"Pole": "Číslo účtu", "Hodnota": "123456789/0800"},
-            {"Pole": "Variabilní symbol", "Hodnota": "20260001"},
-        ]
-        
+        st.markdown('<p style="color:rgba(255,255,255,0.4);font-size:0.85rem;">Takto budou vypadat extrahovaná data:</p>', unsafe_allow_html=True)
         cols_f = st.columns(2)
         with cols_f[0]:
-            st.markdown('<div class="energy-card fsx-border">', unsafe_allow_html=True)
-            st.markdown('<h4 style="color:#0084ff;">🏢 Dodavatel</h4>', unsafe_allow_html=True)
-            for item in ukazka[:4]:
-                st.markdown(f"""<div class="preview-row">
-                    <span class="preview-label">{item['Pole']}</span>
-                    <span class="preview-value">{item['Hodnota']}</span>
-                </div>""", unsafe_allow_html=True)
+            st.markdown('<div class="energy-card fsx-border"><h4 style="color:#0084ff;">🏢 Dodavatel</h4>', unsafe_allow_html=True)
+            for pole, val in [("Dodavatel","ABC s.r.o."),("IČ","12345678"),("DIČ","CZ12345678"),("Číslo faktury","FAC-2026-001")]:
+                st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
-        
         with cols_f[1]:
-            st.markdown('<div class="energy-card el-border">', unsafe_allow_html=True)
-            st.markdown('<h4 style="color:#FFD700;">💰 Platební údaje</h4>', unsafe_allow_html=True)
-            for item in ukazka[4:]:
-                st.markdown(f"""<div class="preview-row">
-                    <span class="preview-label">{item['Pole']}</span>
-                    <span class="preview-value">{item['Hodnota']}</span>
-                </div>""", unsafe_allow_html=True)
+            st.markdown('<div class="energy-card el-border"><h4 style="color:#FFD700;">💰 Platební údaje</h4>', unsafe_allow_html=True)
+            for pole, val in [("Datum splatnosti","15.02.2026"),("Celkem bez DPH","10 000 Kč"),("DPH 21%","2 100 Kč"),("Celkem s DPH","12 100 Kč"),("Číslo účtu","123456789/0800"),("Variabilní symbol","20260001")]:
+                st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
-        
-        st.info("⏳ Tato funkce bude aktivní po připojení Anthropic API. Data budou extrahována automaticky z nahraných PDF.")
+        st.info("⏳ Funkce bude aktivní po připojení Anthropic API.")
 
 # ── SMLOUVY ───────────────────────────────────────────────────────
 elif st.session_state.kategorie == "Smlouvy":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
         st.file_uploader("Vložte PDF smluv", accept_multiple_files=True, type=['pdf'])
-        st.write("")
-        st.markdown('<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;">🔒 Funkce bude dostupná po aktivaci Anthropic API</p>', unsafe_allow_html=True)
-
+        st.markdown('<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;margin-top:10px;">🔒 Dostupné po aktivaci API</p>', unsafe_allow_html=True)
     with col_main:
         st.subheader("📋 Smlouvy — ukázka výstupu")
-        st.markdown('<p style="color:rgba(255,255,255,0.4);font-size:0.85rem;">Takto budou vypadat extrahovaná data ze smluv:</p>', unsafe_allow_html=True)
-        
+        st.markdown('<p style="color:rgba(255,255,255,0.4);font-size:0.85rem;">Takto budou vypadat extrahovaná data:</p>', unsafe_allow_html=True)
         cols_s = st.columns(2)
         with cols_s[0]:
-            st.markdown('<div class="energy-card gas-border">', unsafe_allow_html=True)
-            st.markdown('<h4 style="color:#FF5722;">📝 Smluvní strany</h4>', unsafe_allow_html=True)
-            for pole, hodnota in [("Objednatel", "XYZ a.s."), ("Zhotovitel", "ABC s.r.o."), ("Datum podpisu", "01.01.2026"), ("Platnost do", "31.12.2026")]:
-                st.markdown(f"""<div class="preview-row">
-                    <span class="preview-label">{pole}</span>
-                    <span class="preview-value">{hodnota}</span>
-                </div>""", unsafe_allow_html=True)
+            st.markdown('<div class="energy-card gas-border"><h4 style="color:#FF5722;">📝 Smluvní strany</h4>', unsafe_allow_html=True)
+            for pole, val in [("Objednatel","XYZ a.s."),("Zhotovitel","ABC s.r.o."),("Datum podpisu","01.01.2026"),("Platnost do","31.12.2026")]:
+                st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
-        
         with cols_s[1]:
-            st.markdown('<div class="energy-card water-border">', unsafe_allow_html=True)
-            st.markdown('<h4 style="color:#00BFFF;">📌 Klíčové podmínky</h4>', unsafe_allow_html=True)
-            for pole, hodnota in [("Předmět smlouvy", "Dodávka služeb"), ("Hodnota smlouvy", "120 000 Kč/rok"), ("Výpovědní lhůta", "3 měsíce"), ("Automatická obnova", "Ano")]:
-                st.markdown(f"""<div class="preview-row">
-                    <span class="preview-label">{pole}</span>
-                    <span class="preview-value">{hodnota}</span>
-                </div>""", unsafe_allow_html=True)
+            st.markdown('<div class="energy-card water-border"><h4 style="color:#00BFFF;">📌 Klíčové podmínky</h4>', unsafe_allow_html=True)
+            for pole, val in [("Předmět","Dodávka služeb"),("Hodnota","120 000 Kč/rok"),("Výpovědní lhůta","3 měsíce"),("Obnova","Automatická")]:
+                st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
-        
-        st.info("⏳ Tato funkce bude aktivní po připojení Anthropic API. Data budou extrahována automaticky z nahraných PDF.")
+        st.info("⏳ Funkce bude aktivní po připojení Anthropic API.")
 
 # ── OBJEDNÁVKY ────────────────────────────────────────────────────
 elif st.session_state.kategorie == "Objednávky":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
         st.file_uploader("Vložte PDF objednávek", accept_multiple_files=True, type=['pdf'])
-        st.write("")
-        st.markdown('<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;">🔒 Funkce bude dostupná po aktivaci Anthropic API</p>', unsafe_allow_html=True)
-
+        st.markdown('<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;margin-top:10px;">🔒 Dostupné po aktivaci API</p>', unsafe_allow_html=True)
     with col_main:
         st.subheader("📦 Objednávky — ukázka výstupu")
-        st.markdown('<p style="color:rgba(255,255,255,0.4);font-size:0.85rem;">Takto budou vypadat extrahovaná data z objednávek:</p>', unsafe_allow_html=True)
-        
+        st.markdown('<p style="color:rgba(255,255,255,0.4);font-size:0.85rem;">Takto budou vypadat extrahovaná data:</p>', unsafe_allow_html=True)
         cols_o = st.columns(2)
         with cols_o[0]:
-            st.markdown('<div class="energy-card el-border">', unsafe_allow_html=True)
-            st.markdown('<h4 style="color:#FFD700;">🛒 Základní údaje</h4>', unsafe_allow_html=True)
-            for pole, hodnota in [("Číslo objednávky", "OBJ-2026-042"), ("Dodavatel", "ABC s.r.o."), ("Datum objednávky", "15.03.2026"), ("Požadované datum", "30.03.2026")]:
-                st.markdown(f"""<div class="preview-row">
-                    <span class="preview-label">{pole}</span>
-                    <span class="preview-value">{hodnota}</span>
-                </div>""", unsafe_allow_html=True)
+            st.markdown('<div class="energy-card el-border"><h4 style="color:#FFD700;">🛒 Základní údaje</h4>', unsafe_allow_html=True)
+            for pole, val in [("Číslo objednávky","OBJ-2026-042"),("Dodavatel","ABC s.r.o."),("Datum","15.03.2026"),("Dodání","30.03.2026")]:
+                st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
-        
         with cols_o[1]:
-            st.markdown('<div class="energy-card fsx-border">', unsafe_allow_html=True)
-            st.markdown('<h4 style="color:#0084ff;">💵 Položky & ceny</h4>', unsafe_allow_html=True)
-            for pole, hodnota in [("Položka 1", "Kancelářský materiál"), ("Množství", "50 ks"), ("Cena bez DPH", "5 000 Kč"), ("Cena s DPH", "6 050 Kč")]:
-                st.markdown(f"""<div class="preview-row">
-                    <span class="preview-label">{pole}</span>
-                    <span class="preview-value">{hodnota}</span>
-                </div>""", unsafe_allow_html=True)
+            st.markdown('<div class="energy-card fsx-border"><h4 style="color:#0084ff;">💵 Položky & ceny</h4>', unsafe_allow_html=True)
+            for pole, val in [("Položka","Kancelářský materiál"),("Množství","50 ks"),("Cena bez DPH","5 000 Kč"),("Cena s DPH","6 050 Kč")]:
+                st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
-        
-        st.info("⏳ Tato funkce bude aktivní po připojení Anthropic API. Data budou extrahována automaticky z nahraných PDF.")
+        st.info("⏳ Funkce bude aktivní po připojení Anthropic API.")

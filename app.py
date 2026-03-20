@@ -174,7 +174,7 @@ div[data-testid="stRadio"] > div {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
     gap: 14px !important;
-    margin-top: -135px !important;
+    margin-top: -125px !important;
     margin-bottom: 10px !important;
 }
 div[data-testid="stRadio"] > div > label {

@@ -19,6 +19,10 @@ st.markdown("""
         color: #f0f0f0;
     }
 
+    [data-testid="stHeader"] {
+        background: rgba(0,0,0,0) !important;
+    }
+
     div[data-testid="stMetric"] {
         background: rgba(0, 0, 0, 0.25) !important;
         backdrop-filter: blur(15px);

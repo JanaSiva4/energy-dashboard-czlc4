@@ -234,12 +234,12 @@ if st.session_state.kategorie == "Energie":
             with st.spinner(f"Analyzuji {len(uploaded_files)} faktur..."):
                 try:
                     def get_mime(name):
-                    if name.endswith('.pdf'): return "application/pdf"
-                    if name.endswith('.docx'): return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    if name.endswith('.xlsx'): return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    if name.endswith('.xls'): return "application/vnd.ms-excel"
-                    return "application/octet-stream"
-                files = [("data", (f.name, f.getvalue(), get_mime(f.name))) for f in uploaded_files]
+                        if name.endswith('.pdf'): return "application/pdf"
+                        if name.endswith('.docx'): return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        if name.endswith('.xlsx'): return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        if name.endswith('.xls'): return "application/vnd.ms-excel"
+                        return "application/octet-stream"
+                    files = [("data", (f.name, f.getvalue(), get_mime(f.name))) for f in uploaded_files]
                     payload = {"p": "2026-01"}
                     response = requests.post(webhook_url, files=files, data=payload)
                     if response.status_code == 200:

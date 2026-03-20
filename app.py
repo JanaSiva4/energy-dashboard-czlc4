@@ -67,7 +67,15 @@ st.markdown("""
     .gas-border { border-top: 1px solid #FF5722 !important; box-shadow: 0 -8px 20px rgba(255, 87, 34, 0.2) !important; }
     .water-border { border-top: 1px solid #00BFFF !important; box-shadow: 0 -8px 20px rgba(0, 191, 255, 0.2) !important; }
 
-    [data-testid="stFileUploadDropzone"] {
+    [data-testid="stFileUploadDropzone"],
+    section[data-testid="stFileUploadDropzone"],
+    section[data-testid="stFileUploadDropzone"] > div,
+    div[data-testid="stFileUploadDropzone"] > div {
+        background-color: rgba(0, 200, 100, 0.08) !important;
+        border: 2px dashed #00c864 !important;
+        border-radius: 10px !important;
+    }
+    [data-testid="stFileUploader"] > div > div {
         background-color: rgba(0, 200, 100, 0.08) !important;
         border: 2px dashed #00c864 !important;
         border-radius: 10px !important;

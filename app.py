@@ -18,7 +18,7 @@ st.markdown("""
 }
 
 .stApp {
-    background: #f0f2f8 !important;
+    background: #f0f4ff !important;
     color: #1a1a2e;
 }
 
@@ -38,7 +38,7 @@ st.markdown("""
     letter-spacing: -0.5px;
     color: #1a1a2e;
 }
-.app-title span { color: #6d28d9; }
+.app-title span { color: #0052cc; }
 
 .category-grid {
     display: grid;
@@ -59,8 +59,8 @@ st.markdown("""
 }
 .cat-card.active {
     background: #fff;
-    border-color: #6d28d9;
-    box-shadow: 0 4px 20px rgba(109, 40, 217, 0.15);
+    border-color: #0052cc;
+    box-shadow: 0 4px 20px rgba(0, 82, 204, 0.15);
 }
 .cat-card.coming-soon { opacity: 0.5; }
 .cat-icon { font-size: 2rem; margin-bottom: 10px; }
@@ -95,7 +95,7 @@ div[data-testid="stMetric"] {
     font-family: 'Syne', sans-serif !important;
     font-size: 1.8rem !important;
     font-weight: 800 !important;
-    color: #6d28d9 !important;
+    color: #0052cc !important;
 }
 [data-testid="stMetricLabel"] p {
     font-size: 0.7rem !important;
@@ -110,18 +110,24 @@ div[data-testid="stMetric"] {
     font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: #999;
+    color: #00875a;
     margin-bottom: 12px;
 }
 
 [data-testid="stFileUploadDropzone"] {
-    background: #fff !important;
-    border: 2px dashed #c4b5fd !important;
+    background: rgba(0, 82, 204, 0.03) !important;
+    border: 2px dashed #0052cc !important;
     border-radius: 12px !important;
+}
+[data-testid="stFileUploadDropzone"] p {
+    color: #555 !important;
+}
+[data-testid="stFileUploadDropzone"] small {
+    color: #888 !important;
 }
 
 div[data-testid="stButton"] > button {
-    background: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%) !important;
+    background: linear-gradient(135deg, #0052cc 0%, #0a84ff 100%) !important;
     border: none !important;
     color: #fff !important;
     font-family: 'Syne', sans-serif !important;
@@ -132,10 +138,10 @@ div[data-testid="stButton"] > button {
     border-radius: 12px !important;
     height: 48px !important;
     width: 100% !important;
-    box-shadow: 0 4px 15px rgba(109, 40, 217, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(0, 82, 204, 0.3) !important;
 }
 div[data-testid="stButton"] > button:hover {
-    box-shadow: 0 6px 20px rgba(109, 40, 217, 0.45) !important;
+    box-shadow: 0 6px 20px rgba(0, 82, 204, 0.45) !important;
     transform: translateY(-1px) !important;
 }
 
@@ -148,13 +154,13 @@ div[data-testid="stButton"] > button:hover {
 
 div[data-baseweb="select"] > div {
     background: #fff !important;
-    border: 1px solid #e5e7eb !important;
+    border: 1px solid #c8d8f0 !important;
     border-radius: 10px !important;
 }
 span[data-baseweb="tag"] {
-    background: #ede9fe !important;
-    border: 1px solid #c4b5fd !important;
-    color: #6d28d9 !important;
+    background: #e6f0ff !important;
+    border: 1px solid #4d94ff !important;
+    color: #0052cc !important;
     border-radius: 6px !important;
 }
 
@@ -193,9 +199,9 @@ span[data-baseweb="tag"] {
 .energy-value { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; color: #1a1a2e; }
 
 .el-accent { border-top: 3px solid #f59e0b; }
-.fsx-accent { border-top: 3px solid #8b5cf6; }
+.fsx-accent { border-top: 3px solid #0052cc; }
 .gas-accent { border-top: 3px solid #f97316; }
-.water-accent { border-top: 3px solid #0ea5e9; }
+.water-accent { border-top: 3px solid #00875a; }
 
 .section-title {
     font-family: 'Syne', sans-serif;
@@ -210,13 +216,13 @@ span[data-baseweb="tag"] {
 
 div[data-testid="stDownloadButton"] > button {
     background: #fff !important;
-    border: 1px solid #e5e7eb !important;
-    color: #666 !important;
+    border: 1px solid #c8d8f0 !important;
+    color: #0052cc !important;
     font-size: 0.75rem !important;
     border-radius: 10px !important;
     height: 36px !important;
     font-family: 'DM Sans', sans-serif !important;
-    font-weight: 400 !important;
+    font-weight: 500 !important;
     letter-spacing: 0 !important;
     text-transform: none !important;
     box-shadow: none !important;
@@ -277,7 +283,7 @@ with col_side:
     st.markdown('<div class="sidebar-title">Konfigurace</div>', unsafe_allow_html=True)
     uploaded_files = st.file_uploader("PDF faktury", accept_multiple_files=True, type=['pdf'], label_visibility="collapsed")
     if uploaded_files:
-        st.markdown(f'<div style="font-size:0.75rem;color:#888;margin:8px 0;">📎 {len(uploaded_files)} soubor(ů)</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:0.75rem;color:#00875a;margin:8px 0;font-weight:500;">✓ {len(uploaded_files)} soubor(ů) připraveno</div>', unsafe_allow_html=True)
     st.write("")
     vyber = st.multiselect("Pole", [
         "ELEKTŘINA: Spotřeba (kWh)", "ELEKTŘINA: Cena sil. el.",
@@ -355,7 +361,7 @@ with col_main:
                     </div>""", unsafe_allow_html=True)
     else:
         st.markdown("""
-        <div style="background:#fff;border:2px dashed #e5e7eb;border-radius:20px;
+        <div style="background:#fff;border:2px dashed #c8d8f0;border-radius:20px;
             padding:60px;text-align:center;margin-top:20px;box-shadow:0 2px 12px rgba(0,0,0,0.04);">
             <div style="font-size:2.5rem;margin-bottom:16px;">📂</div>
             <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#999;">

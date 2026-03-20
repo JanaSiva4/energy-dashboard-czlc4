@@ -152,6 +152,19 @@ kategorie_list = [
     ("📦", "Objednávky", "Položky, ceny, dodávky"),
 ]
 
+st.markdown("""
+<style>
+div[data-testid="stButton"] > button {
+    position: relative !important;
+    margin-top: -110px !important;
+    height: 110px !important;
+    opacity: 0 !important;
+    cursor: pointer !important;
+    z-index: 999 !important;
+    width: 100% !important;
+}
+</style>""", unsafe_allow_html=True)
+
 cols_kat = st.columns(4)
 for col, (icon, name, desc) in zip(cols_kat, kategorie_list):
     with col:
@@ -162,13 +175,9 @@ for col, (icon, name, desc) in zip(cols_kat, kategorie_list):
             <div class="cat-name">{name}</div>
             <div class="cat-desc">{desc}</div>
         </div>""", unsafe_allow_html=True)
-
-kat_names = [k[1] for k in kategorie_list]
-st.markdown('<style>div[data-testid="stRadio"] label { display:none; } div[data-testid="stRadio"] > div { display:flex; gap:0; margin-top:-10px; } div[data-testid="stRadio"] > div > label { flex:1; opacity:0; height:10px; cursor:pointer; } </style>', unsafe_allow_html=True)
-vybrana = st.radio("k", kat_names, index=kat_names.index(st.session_state.kategorie), horizontal=True, label_visibility="collapsed")
-if vybrana != st.session_state.kategorie:
-    st.session_state.kategorie = vybrana
-    st.rerun()
+        if st.button("_", key=f"btn_{name}", use_container_width=True):
+            st.session_state.kategorie = name
+            st.rerun()
 
 st.write("---")
 

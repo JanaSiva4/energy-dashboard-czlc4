@@ -157,21 +157,18 @@ for col, (icon, name, desc) in zip(cols_kat, kategorie_list):
     with col:
         active = "active" if st.session_state.kategorie == name else ""
         st.markdown(f"""
-        <div class="cat-card {active}" onclick="void(0)">
+        <div class="cat-card {active}">
             <div style="font-size:1.8rem">{icon}</div>
             <div class="cat-name">{name}</div>
             <div class="cat-desc">{desc}</div>
         </div>""", unsafe_allow_html=True)
-        # Neviditelné tlačítko přes kartu
-        st.markdown(f"""
-        <style>
-        div[data-testid="stButton"]:has(button[kind="secondary"]#btn_{name}) {{
-            position: relative; margin-top: -80px; opacity: 0; height: 80px;
-        }}
-        </style>""", unsafe_allow_html=True)
-        if st.button(name, key=f"btn_{name}", use_container_width=True):
-            st.session_state.kategorie = name
-            st.rerun()
+
+kat_names = [k[1] for k in kategorie_list]
+st.markdown('<style>div[data-testid="stRadio"] label { display:none; } div[data-testid="stRadio"] > div { display:flex; gap:0; margin-top:-10px; } div[data-testid="stRadio"] > div > label { flex:1; opacity:0; height:10px; cursor:pointer; } </style>', unsafe_allow_html=True)
+vybrana = st.radio("k", kat_names, index=kat_names.index(st.session_state.kategorie), horizontal=True, label_visibility="collapsed")
+if vybrana != st.session_state.kategorie:
+    st.session_state.kategorie = vybrana
+    st.rerun()
 
 st.write("---")
 

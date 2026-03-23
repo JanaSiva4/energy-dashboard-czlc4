@@ -293,9 +293,12 @@ if st.session_state.kategorie == "Energie":
 
         st.subheader("📁 Digitální archiv")
         if st.session_state.vysledky:
-            col_t, col_e, col_p = st.columns([3, 1, 1])
-            with col_e:
-                df_export = pd.DataFrame(st.session_state.vysledky)
+            col_t, col_btns = st.columns([2, 1])
+            with col_btns:
+                col_e2, col_p2 = st.columns(2)
+            # Excel data
+            df_export = pd.DataFrame(st.session_state.vysledky)
+            with col_e2:
                 buffer = io.BytesIO()
                 with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
                     df_export.to_excel(writer, index=False, sheet_name='Energie')
@@ -319,7 +322,7 @@ if st.session_state.kategorie == "Energie":
                 st.download_button("⬇ Export Excel", data=buffer.getvalue(),
                     file_name=f"DocScan_{periode}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            with col_p:
+            with col_p2:
                 # Generování PDF
                 pdf_buffer = io.BytesIO()
                 doc = SimpleDocTemplate(pdf_buffer, pagesize=A4,

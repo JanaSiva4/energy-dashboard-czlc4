@@ -5,6 +5,11 @@ import io
 from datetime import datetime
 from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.utils import get_column_letter
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.units import cm
 
 st.set_page_config(page_title="DocScan", layout="wide", page_icon="🔍")
 
@@ -36,17 +41,18 @@ st.markdown("""
         background: linear-gradient(135deg, #0052cc 0%, #0a84ff 100%) !important;
         border: none !important;
         color: #ffffff !important;
-        box-shadow: 0 0 12px #0052cc, 0 0 25px rgba(0,132,255,0.5) !important;
-        transition: all 0.3s ease-in-out !important;
-        font-weight: bold !important;
+        box-shadow: 0 0 8px rgba(0,82,204,0.4) !important;
+        transition: all 0.2s ease-in-out !important;
+        font-weight: 600 !important;
         text-transform: uppercase;
-        letter-spacing: 2.5px;
-        height: 50px !important;
+        letter-spacing: 1.5px;
+        height: 38px !important;
+        font-size: 0.75rem !important;
         border-radius: 8px !important;
     }
     div[data-testid="stButton"] > button:hover {
-        box-shadow: 0 0 20px #0052cc, 0 0 40px #00c8ff !important;
-        transform: scale(1.02);
+        box-shadow: 0 0 14px rgba(0,82,204,0.6) !important;
+        transform: scale(1.01);
     }
     .energy-card {
         background: rgba(10,10,20,0.4) !important;
@@ -288,9 +294,6 @@ if st.session_state.kategorie == "Energie":
         st.subheader("📁 Digitální archiv")
         if st.session_state.vysledky:
             col_t, col_e, col_p = st.columns([2, 1, 1])
-            with col_p:
-                if st.button("🖨 Tisk", use_container_width=True):
-                    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
             with col_e:
                 df_export = pd.DataFrame(st.session_state.vysledky)
                 buffer = io.BytesIO()
@@ -316,6 +319,60 @@ if st.session_state.kategorie == "Energie":
                 st.download_button("⬇ Export Excel", data=buffer.getvalue(),
                     file_name=f"DocScan_{periode}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            with col_p:
+                # Generování PDF
+                pdf_buffer = io.BytesIO()
+                doc = SimpleDocTemplate(pdf_buffer, pagesize=A4,
+                    rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
+                styles = getSampleStyleSheet()
+                elements = []
+                # Nadpis
+                title_style = ParagraphStyle('title', fontSize=18, fontName='Helvetica-Bold', textColor=colors.HexColor('#0052cc'), spaceAfter=6)
+                sub_style = ParagraphStyle('sub', fontSize=10, fontName='Helvetica', textColor=colors.HexColor('#666666'), spaceAfter=20)
+                elements.append(Paragraph("DocScan — Přehled energií", title_style))
+                res = st.session_state.vysledky[0]
+                elements.append(Paragraph(f"Období: {res.get('obdobi','—')}  |  Vygenerováno: {datetime.now().strftime('%d.%m.%Y %H:%M')}", sub_style))
+                # Data tabulka
+                tisk_data = [['Kategorie', 'Parametr', 'Hodnota']]
+                kats_pdf = [
+                    ('Elektřina', 'el_spotreba_kwh', 'Spotřeba (kWh)'),
+                    ('Elektřina', 'el_cena_sil_el_bez_dph', 'Cena sil. el. bez DPH'),
+                    ('Elektřina', 'el_cena_distribuce_bez_dph', 'Cena distribuce bez DPH'),
+                    ('Elektřina', 'el_cena_celkem_zaklad_kc', 'Cena celkem (Kč)'),
+                    ('FSX', 'fsx_spotreba_kwh', 'Spotřeba (kWh)'),
+                    ('FSX', 'fsx_cena_bez_dph', 'Cena bez DPH (Kč)'),
+                    ('Plyn', 'plyn_spotreba_kwh', 'Spotřeba (kWh)'),
+                    ('Plyn', 'plyn_cena_celkem_zaklad_kc', 'Cena celkem (Kč)'),
+                    ('Voda', 'voda_spotreba_m3', 'Spotřeba (m³)'),
+                    ('Voda', 'voda_cena_bez_dph', 'Cena bez DPH (Kč)'),
+                ]
+                for kat, klic, label in kats_pdf:
+                    val = res.get(klic, 'n/a')
+                    tisk_data.append([kat, label, str(val)])
+                t = Table(tisk_data, colWidths=[4*cm, 8*cm, 5*cm])
+                t.setStyle(TableStyle([
+                    ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#0052cc')),
+                    ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+                    ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0,0), (-1,-1), 9),
+                    ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#f0f4ff'), colors.white]),
+                    ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cccccc')),
+                    ('ALIGN', (2,0), (2,-1), 'RIGHT'),
+                    ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+                    ('TOPPADDING', (0,0), (-1,-1), 6),
+                    ('LEFTPADDING', (0,0), (-1,-1), 8),
+                ]))
+                elements.append(t)
+                # Celkem
+                elements.append(Spacer(1, 0.5*cm))
+                celkem_style = ParagraphStyle('celkem', fontSize=11, fontName='Helvetica-Bold', textColor=colors.HexColor('#0052cc'))
+                celkem_val = sum([float(str(res.get(k,0)).replace(',','.').replace(' ','')) for k in ['el_cena_celkem_zaklad_kc','fsx_cena_bez_dph','plyn_cena_celkem_zaklad_kc','voda_cena_bez_dph'] if res.get(k) and str(res.get(k)).lower() != 'n/a'] or [0])
+                elements.append(Paragraph(f"Celkem nákladů: {celkem_val:,.2f} Kč".replace(',', ' '), celkem_style))
+                doc.build(elements)
+                pdf_buffer.seek(0)
+                st.download_button("📄 Stáhnout PDF", data=pdf_buffer.getvalue(),
+                    file_name=f"DocScan_{periode}.pdf",
+                    mime="application/pdf")
             st.dataframe(pd.DataFrame(st.session_state.vysledky), use_container_width=True)
             st.write("---")
             st.subheader("📊 Finální přehled")

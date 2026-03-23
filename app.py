@@ -221,6 +221,10 @@ col_side, col_main = st.columns([1, 3])
 if st.session_state.kategorie == "Energie":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
+        
+        obdobi_input = st.text_input("Období (např. 2026-01)", value=st.session_state.get('obdobi_input', '2026-01'))
+        st.session_state.obdobi_input = obdobi_input
+        
         uploaded_files = st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'])
         if uploaded_files:
             st.markdown(f'<p style="color:#00c864;font-size:0.8rem;">✓ {len(uploaded_files)} soubor(ů) připraveno</p>', unsafe_allow_html=True)
@@ -241,6 +245,11 @@ if st.session_state.kategorie == "Energie":
         _, mid_btn, _ = st.columns([1.5, 4, 1.5])
         with mid_btn:
             analyze_btn = st.button("🚀 SPUSTIT ANALÝZU")
+        if st.session_state.vysledky:
+            if st.button("🗑 Vymazat výsledky", use_container_width=True):
+                st.session_state.vysledky = []
+                st.session_state.pocet_souboru = 0
+                st.rerun()
 
     with col_main:
         if analyze_btn and uploaded_files:
@@ -256,7 +265,7 @@ if st.session_state.kategorie == "Energie":
                         if name.endswith('.xls'): return "application/vnd.ms-excel"
                         return "application/octet-stream"
                     files = [("data", (f.name, f.getvalue(), get_mime(f.name))) for f in uploaded_files]
-                    payload = {"p": "2026-01"}
+                    payload = {"p": st.session_state.get("obdobi_input", "2026-01")}
                     response = requests.post(webhook_url, files=files, data=payload)
                     if response.status_code == 200:
                         data = response.json()
@@ -297,9 +306,18 @@ if st.session_state.kategorie == "Energie":
                             st.markdown('<div style="margin-bottom:10px;padding:4px;">', unsafe_allow_html=True)
                             for klic, hodnota in data_souboru.items():
                                 parametr = klic.replace(key, "").replace("_", " ").upper()
+                                # Formátování čísel
+                                try:
+                                    num = float(str(hodnota).replace(',', '.').replace(' ', ''))
+                                    if 'spotreba' in klic or 'm3' in klic:
+                                        hodnota_fmt = f"{num:,.0f}".replace(',', ' ')
+                                    else:
+                                        hodnota_fmt = f"{num:,.2f} Kč".replace(',', ' ')
+                                except:
+                                    hodnota_fmt = str(hodnota)
                                 st.markdown(f"""<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.1);padding:4px 0;">
                                     <span style="color:#888;font-size:0.75rem;text-transform:uppercase;">{parametr}</span>
-                                    <span style="color:#fff;font-weight:bold;font-size:0.85rem;">{hodnota}</span>
+                                    <span style="color:#fff;font-weight:bold;font-size:0.85rem;">{hodnota_fmt}</span>
                                 </div>""", unsafe_allow_html=True)
                             st.markdown('</div>', unsafe_allow_html=True)
         else:

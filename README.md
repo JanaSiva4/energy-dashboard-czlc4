@@ -1,39 +1,55 @@
-# ⚡ Energy Dashboard — CZLC4
+# 🔍 DocScan — Vytěžování dat z dokumentů
 
-Moje aplikace na sledování energií v budově CZLC4 (objekt WEST I – Alza).
+Webová aplikace pro automatické vytěžování dat z dokumentů pomocí AI.
 
 ## Co to dělá
 
-Nahraju PDF faktury → n8n je pošle do AI → AI vytáhne čísla → zobrazí se v dashboardu.
+Nahraješ dokumenty → AI vytáhne klíčová data → zobrazí se v dashboardu.
 
-Sledované hodnoty:
-- **Elektřina** — spotřeba kWh, cena silové el., distribuce, celkem
-- **Plyn** — spotřeba kWh, cena celkem
-- **Voda** — spotřeba m³, cena
-- **FSX** — spotřeba kWh, cena
+Aktuálně funkční modul vytěžuje data z faktur za energie pro objekt CZLC4 (WEST I – Alza).
 
-## Jak to spustit
+## Funkční moduly
+
+- ⚡ **Energie** — spotřeba a ceny elektřiny, FSX, plynu a vody
+- 📄 **Faktury** — připraveno, aktivace po získání Anthropic API
+- 📋 **Smlouvy** — připraveno, aktivace po získání Anthropic API
+- 📦 **Objednávky** — připraveno, aktivace po získání Anthropic API
+
+## Podporované formáty
+
+PDF, Word (.docx), Excel (.xlsx, .xls)
+
+## Jak spustit lokálně
 
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
+## Aplikace
+
+🌐 [docscan-alza.streamlit.app](https://docscan-alza.streamlit.app)
+
 ## Soubory
 
-- `app.py` — Streamlit dashboard
-- `index.html` — úvodní stránka
-- `requirements.txt` — závislosti
-- `n8n/workflow.json` — export n8n workflow (záloha!)
+- `app.py` — Streamlit aplikace (DocScan UI + logika)
+- `requirements.txt` — Python závislosti
+- `n8n/workflow.json` — záloha n8n workflow
+
+## Technologie
+
+- [Streamlit](https://streamlit.io/) — frontend
+- [n8n](https://n8n.io/) — automatizace
+- [Google Vertex AI](https://cloud.google.com/vertex-ai) — AI vytěžování dat
 
 ## n8n workflow
 
-Webhook přijme PDF → extrahuje text → Google Vertex AI vytáhne data → vrátí JSON do Streamlitu.
-
-Webhook path: `faktury-upload`  
-AI model: Google Vertex AI (credentials: *Vertex AI n8n Service Account*)
+Webhook přijme dokumenty → Code node rozdělí soubory → extrakce textu → Google Vertex AI vytáhne data → vrátí JSON do Streamlitu.
 
 ## Poznámky
 
-- Ignoruje řádky jiných firem (Ecologistics, WEST II, Dominant LibTaur)
-- Vrací `n/a` pokud hodnotu nenajde — nevymýšlí si
+- Ignoruje data jiných nájemců (Ecologistics, Dominant LibTaur)
+- Vrací `n/a` pokud hodnotu nenajde
+- Word a Excel: upload funguje, n8n vytěžování bude rozšířeno
+
+*Projekt: CZLC4 | Jana Sivačenko | 2026*

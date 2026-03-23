@@ -293,7 +293,7 @@ if st.session_state.kategorie == "Energie":
 
         st.subheader("📁 Digitální archiv")
         if st.session_state.vysledky:
-            col_t, col_e, col_p = st.columns([2, 1, 1])
+            col_t, col_e, col_p = st.columns([3, 1, 1])
             with col_e:
                 df_export = pd.DataFrame(st.session_state.vysledky)
                 buffer = io.BytesIO()

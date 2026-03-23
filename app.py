@@ -192,11 +192,26 @@ for col, (icon, name, desc) in zip(cols_kat, kategorie_list):
 st.write("---")
 
 pocet = len(st.session_state.vysledky)
+# Výpočet statistik
+pocet_souboru = len(st.session_state.get('posledni_soubory', []))
+obdobi = st.session_state.vysledky[0].get('obdobi', '—') if st.session_state.vysledky else '—'
+
+celkem_nakladu = 0
+if st.session_state.vysledky:
+    res = st.session_state.vysledky[0]
+    for klic in ['el_cena_celkem_zaklad_kc', 'fsx_cena_bez_dph', 'plyn_cena_celkem_zaklad_kc', 'voda_cena_bez_dph']:
+        try:
+            hodnota = res.get(klic, 0)
+            if hodnota and str(hodnota).lower() != 'n/a':
+                celkem_nakladu += float(str(hodnota).replace(',', '.').replace(' ', ''))
+        except:
+            pass
+
 c1, c2, c3, c4 = st.columns(4)
-with c1: st.metric("Zpracováno", str(pocet))
-with c2: st.metric("Kategorie", "4")
-with c3: st.metric("Úspora času", f"{pocet * 5} min")
-with c4: st.metric("Stav", "Připraven" if pocet == 0 else "Online")
+with c1: st.metric("Nahráno souborů", str(pocet_souboru) if pocet_souboru > 0 else "—")
+with c2: st.metric("Období", obdobi)
+with c3: st.metric("Ušetřeno času", "~10 min" if st.session_state.vysledky else "—")
+with c4: st.metric("Celkem nákladů", f"{celkem_nakladu:,.0f} Kč".replace(",", " ") if celkem_nakladu > 0 else "—")
 
 st.write("---")
 

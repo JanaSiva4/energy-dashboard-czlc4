@@ -123,7 +123,7 @@ st.markdown("""
     div[data-testid="stDownloadButton"] > button {
         background: rgba(0,82,204,0.15) !important;
         border: 1px solid rgba(0,132,255,0.4) !important;
-        color: #0084ff !important;
+        color: #00875a !important;
         font-size: 0.8rem !important;
         border-radius: 8px !important;
         height: 36px !important;
@@ -246,9 +246,10 @@ if st.session_state.kategorie == "Energie":
         with mid_btn:
             analyze_btn = st.button("🚀 SPUSTIT ANALÝZU")
         if st.session_state.vysledky:
-            if st.button("🗑 Vymazat výsledky", use_container_width=True):
+            if st.button("🗑 Nová analýza", use_container_width=True):
                 st.session_state.vysledky = []
                 st.session_state.pocet_souboru = 0
+                st.markdown('<script>window.location.reload();</script>', unsafe_allow_html=True)
                 st.rerun()
 
     with col_main:

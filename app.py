@@ -193,7 +193,7 @@ st.write("---")
 
 pocet = len(st.session_state.vysledky)
 # Výpočet statistik
-pocet_souboru = len(st.session_state.get('posledni_soubory', []))
+pocet_souboru = st.session_state.get('pocet_souboru', 0)
 obdobi = st.session_state.vysledky[0].get('obdobi', '—') if st.session_state.vysledky else '—'
 
 celkem_nakladu = 0
@@ -245,6 +245,7 @@ if st.session_state.kategorie == "Energie":
     with col_main:
         if analyze_btn and uploaded_files:
             st.session_state.vysledky = []
+            st.session_state.pocet_souboru = len(uploaded_files)
             webhook_url = "https://n8n.dev.gcp.alza.cz/webhook/faktury-upload"
             with st.spinner(f"Analyzuji {len(uploaded_files)} faktur..."):
                 try:

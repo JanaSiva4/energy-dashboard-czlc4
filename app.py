@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import requests
 import io
+from datetime import datetime
+from openpyxl.styles import PatternFill, Font, Alignment
+from openpyxl.utils import get_column_letter
 
 st.set_page_config(page_title="DocScan", layout="wide", page_icon="🔍")
 
@@ -143,6 +146,8 @@ if 'vysledky' not in st.session_state:
     st.session_state.vysledky = []
 if 'kategorie' not in st.session_state:
     st.session_state.kategorie = "Energie"
+if 'datum_analyzy' not in st.session_state:
+    st.session_state.datum_analyzy = None
 
 # KATEGORIE — kliknutí přes st.columns s invisible buttons
 kategorie_list = [
@@ -211,6 +216,8 @@ c1, c2, c3, c4 = st.columns(4)
 with c1: st.metric("Nahráno souborů", str(pocet_souboru) if pocet_souboru > 0 else "—")
 with c2: st.metric("Období", obdobi)
 with c3: st.metric("Ušetřeno času", "~10 min" if st.session_state.vysledky else "—")
+if st.session_state.get('datum_analyzy'):
+    st.markdown(f'<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;text-align:right;margin-top:-10px;">Poslední analýza: {st.session_state.datum_analyzy}</p>', unsafe_allow_html=True)
 with c4: st.metric("Celkem nákladů", f"{celkem_nakladu:,.0f} Kč".replace(",", " ") if celkem_nakladu > 0 else "—")
 
 st.write("---")
@@ -222,10 +229,10 @@ if st.session_state.kategorie == "Energie":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
         
-        obdobi_input = st.text_input("Období (např. 2026-01)", value=st.session_state.get('obdobi_input', '2026-01'))
+        obdobi_input = st.text_input("Období (např. 2026-01)", value=st.session_state.get('obdobi_input', '2026-01'), help="Zadejte ve formátu RRRR-MM, např. 2026-01 pro leden 2026")
         st.session_state.obdobi_input = obdobi_input
         
-        uploaded_files = st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'])
+        uploaded_files = st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'], help="Nahrajte všechny faktury najednou — PDF, Word nebo Excel. AI vytáhne data ze všech souborů.")
         if uploaded_files:
             st.markdown(f'<p style="color:#00c864;font-size:0.8rem;">✓ {len(uploaded_files)} soubor(ů) připraveno</p>', unsafe_allow_html=True)
         vyber = st.multiselect("Pole k vytažení:", [
@@ -256,6 +263,7 @@ if st.session_state.kategorie == "Energie":
         if analyze_btn and uploaded_files:
             st.session_state.vysledky = []
             st.session_state.pocet_souboru = len(uploaded_files)
+            st.session_state.datum_analyzy = datetime.now().strftime('%d.%m.%Y %H:%M')
             webhook_url = "https://n8n.dev.gcp.alza.cz/webhook/faktury-upload"
             with st.spinner(f"Analyzuji {len(uploaded_files)} faktur..."):
                 try:
@@ -279,14 +287,34 @@ if st.session_state.kategorie == "Energie":
 
         st.subheader("📁 Digitální archiv")
         if st.session_state.vysledky:
-            col_t, col_e = st.columns([3, 1])
+            col_t, col_e, col_p = st.columns([2, 1, 1])
+            with col_p:
+                if st.button("🖨 Tisk", use_container_width=True):
+                    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
             with col_e:
                 df_export = pd.DataFrame(st.session_state.vysledky)
                 buffer = io.BytesIO()
                 with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
                     df_export.to_excel(writer, index=False, sheet_name='Energie')
+                    wb = writer.book
+                    ws = writer.sheets['Energie']
+                    # Hlavička - modrá
+                    header_fill = PatternFill(start_color="0052CC", end_color="0052CC", fill_type="solid")
+                    header_font = Font(color="FFFFFF", bold=True)
+                    for col in range(1, len(df_export.columns) + 1):
+                        cell = ws.cell(row=1, column=col)
+                        cell.fill = header_fill
+                        cell.font = header_font
+                        cell.alignment = Alignment(horizontal='center')
+                        ws.column_dimensions[get_column_letter(col)].width = 25
+                    # Střídající se barvy řádků
+                    for row in range(2, len(df_export) + 2):
+                        fill = PatternFill(start_color="EBF3FF", end_color="EBF3FF", fill_type="solid") if row % 2 == 0 else PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
+                        for col in range(1, len(df_export.columns) + 1):
+                            ws.cell(row=row, column=col).fill = fill
+                periode = st.session_state.get('obdobi_input', 'export')
                 st.download_button("⬇ Export Excel", data=buffer.getvalue(),
-                    file_name="energie_czlc4.xlsx",
+                    file_name=f"DocScan_{periode}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             st.dataframe(pd.DataFrame(st.session_state.vysledky), use_container_width=True)
             st.write("---")
@@ -321,6 +349,18 @@ if st.session_state.kategorie == "Energie":
                                     <span style="color:#fff;font-weight:bold;font-size:0.85rem;">{hodnota_fmt}</span>
                                 </div>""", unsafe_allow_html=True)
                             st.markdown('</div>', unsafe_allow_html=True)
+            # Sdílení výsledků
+            if st.session_state.vysledky:
+                st.write("")
+                res = st.session_state.vysledky[0]
+                text_export = f"DocScan — Výsledky analýzy\nObdobí: {res.get('obdobi','—')}\n\n"
+                text_export += f"ELEKTŘINA\n  Spotřeba: {res.get('el_spotreba_kwh','n/a')} kWh\n  Cena celkem: {res.get('el_cena_celkem_zaklad_kc','n/a')} Kč\n\n"
+                text_export += f"FSX\n  Spotřeba: {res.get('fsx_spotreba_kwh','n/a')} kWh\n  Cena: {res.get('fsx_cena_bez_dph','n/a')} Kč\n\n"
+                text_export += f"PLYN\n  Spotřeba: {res.get('plyn_spotreba_kwh','n/a')} kWh\n  Cena celkem: {res.get('plyn_cena_celkem_zaklad_kc','n/a')} Kč\n\n"
+                text_export += f"VODA\n  Spotřeba: {res.get('voda_spotreba_m3','n/a')} m³\n  Cena: {res.get('voda_cena_bez_dph','n/a')} Kč"
+                st.download_button("📋 Stáhnout jako TXT", data=text_export.encode('utf-8'),
+                    file_name=f"DocScan_{res.get('obdobi','export')}.txt",
+                    mime="text/plain", use_container_width=False)
         else:
             st.info("Nahrajte faktury a spusťte analýzu.")
 

@@ -7,6 +7,7 @@ Webová aplikace pro automatické vytěžování dat z dokumentů pomocí AI.
 Nahraješ dokumenty → AI vytáhne klíčová data → zobrazí se v dashboardu.
 
 Aktuálně funkční modul vytěžuje data z faktur za energie pro objekt CZLC4 (WEST I – Alza).
+* budu rozšířovat možnosti
 
 ## Funkční moduly
 

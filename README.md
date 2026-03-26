@@ -35,12 +35,12 @@ streamlit run app.py
 
 - `app.py` — Streamlit aplikace (DocScan UI ( design, karty, tlačístka atd ) + logika) - Hlaví Python soubor - celá aplikace je zde.
 - `requirements.txt` — Python závislosti ( knihovna )
--stremlit - framework který vytváří celou webovou aplikaci, tlačítka, karty, upload souborů, graf
--pandas -  zpracování dat ve formě tabulek, používá se pro zobrazení výsledků v "Digitálním archivu" a export do Excelu
--plotly -  knihovna pro grafy a vizualizace, zatím nevyužitá ale připravená pro budoucí grafy vývoje spotřeby
--requests - odesílání HTTP requestů, konkrétně posílá PDF soubory na n8n webhook
--openyxl - čtení a zápis Excel souborů (.xlsx), stará se o hezké formátování exportu — modré hlavičky, střídající se barvy řádků
--reportlab -  generování PDF souborů, vytváří "Stáhnout PDF" tlačítko s tabulkou výsledků energií  
+- stremlit - framework který vytváří celou webovou aplikaci, tlačítka, karty, upload souborů, graf
+- pandas -  zpracování dat ve formě tabulek, používá se pro zobrazení výsledků v "Digitálním archivu" a export do Excelu
+- plotly -  knihovna pro grafy a vizualizace, zatím nevyužitá ale připravená pro budoucí grafy vývoje spotřeby
+- requests - odesílání HTTP requestů, konkrétně posílá PDF soubory na n8n webhook
+- openyxl - čtení a zápis Excel souborů (.xlsx), stará se o hezké formátování exportu — modré hlavičky, střídající se barvy řádků
+- reportlab -  generování PDF souborů, vytváří "Stáhnout PDF" tlačítko s tabulkou výsledků energií  
 - `n8n/workflow.json` — záloha n8n workflow
 - README.mg  — dokumentace projektu, popis co aplikace dělá, jak ji spustit, jaké technologie používa atd. ( úvodní strana )
 

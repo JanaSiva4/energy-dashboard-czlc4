@@ -32,9 +32,10 @@ streamlit run app.py
 
 ## Soubory
 
-- `app.py` — Streamlit aplikace (DocScan UI + logika)
-- `requirements.txt` — Python závislosti
+- `app.py` — Streamlit aplikace (DocScan UI ( design, karty, tlačístka atd ) + logika) - Hlaví Python soubor - celá aplikace je zde.
+- `requirements.txt` — Python závislosti ( knihovna ) 
 - `n8n/workflow.json` — záloha n8n workflow
+- README.mg  — dokumentace projektu, popis co aplikace dělá, jak ji spustit, jaké technologie používa atd. ( úvodní strana )
 
 ## Technologie
 
@@ -50,6 +51,6 @@ Webhook přijme dokumenty → Code node rozdělí soubory → extrakce textu →
 
 - Ignoruje data jiných nájemců (Ecologistics, Dominant LibTaur)
 - Vrací `n/a` pokud hodnotu nenajde
-- Word a Excel: upload funguje, n8n vytěžování bude rozšířeno
+- Word a Excel: upload funguje, n8n vytěžování bude rozšířeno stejně tak i aplikace
 
 *Projekt: CZLC4 | Jana Sivačenko | 2026*

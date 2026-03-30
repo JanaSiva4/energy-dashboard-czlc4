@@ -3,6 +3,9 @@ import pandas as pd
 import requests
 import io
 import re
+import base64
+import json
+import qrcode
 from datetime import datetime
 from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.utils import get_column_letter
@@ -646,6 +649,9 @@ elif st.session_state.kategorie == "OOPP & MČDP":
 
         # ── Výdej MČDP ──
         if rezim == "Výdej MČDP":
+            # ← změň na svoji GitHub Pages URL po zapnutí Pages
+            PODPIS_URL = "https://sivacenkojana.github.io/docscan/podpis_2fa.html"
+
             st.subheader("🧴 Výdej MČDP — kvartální")
             zamestnanec = st.text_input("Zaměstnanec (jméno a příjmení)")
             email_zam   = st.text_input("Email zaměstnance", placeholder="jan.novak@firma.cz")
@@ -657,8 +663,55 @@ elif st.session_state.kategorie == "OOPP & MČDP":
             mydlo  = c2.checkbox("1× Tekuté mýdlo", value=True)
             ariel  = c1.checkbox("1× Ariel tablety 60 ks", value=True)
             krem   = c2.checkbox("1× Krém Indulona", value=True)
-            podpis = st.checkbox("Zaměstnanec podepsal ✓")
             vedouci = st.text_input("Zadal / vedoucí")
+
+            # QR kód pro 2FA podpis
+            if zamestnanec and email_zam:
+                polozky_list = []
+                if rucnik: polozky_list.append("Ručník Siguro")
+                if mydlo:  polozky_list.append("Tekuté mýdlo")
+                if ariel:  polozky_list.append("Ariel 60 ks")
+                if krem:   polozky_list.append("Krém Indulona")
+
+                qr_data = {
+                    "jmeno": zamestnanec, "email": email_zam,
+                    "sklad": sklad_oopp, "kvartal": kvartal_sel,
+                    "polozky": ", ".join(polozky_list),
+                }
+                qr_payload = base64.b64encode(
+                    json.dumps(qr_data, ensure_ascii=False).encode()
+                ).decode()
+                qr_url = f"{PODPIS_URL}?d={qr_payload}"
+
+                qr = qrcode.QRCode(version=1, box_size=6, border=2)
+                qr.add_data(qr_url)
+                qr.make(fit=True)
+                qr_img = qr.make_image(fill_color="#1a3a6b", back_color="white")
+                buf_qr = io.BytesIO()
+                qr_img.save(buf_qr, format="PNG")
+
+                st.write("---")
+                col_qr, col_info = st.columns([1, 2])
+                with col_qr:
+                    st.image(buf_qr.getvalue(), width=180, caption="Zaměstnanec naskenuje pro podpis")
+                with col_info:
+                    st.markdown(f'''
+                    <div class="energy-card oopp-border" style="padding:12px;">
+                      <p style="color:#00c864;font-size:0.75rem;font-weight:bold;
+                                text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
+                        Čeká na 2FA podpis
+                      </p>
+                      <p style="color:#fff;font-size:0.9rem;"><b>{zamestnanec}</b></p>
+                      <p style="color:#aaa;font-size:0.8rem;">{email_zam}</p>
+                      <p style="color:#aaa;font-size:0.8rem;margin-top:4px;">
+                        {kvartal_sel} · {sklad_oopp}
+                      </p>
+                      <p style="color:#aaa;font-size:0.75rem;margin-top:4px;">
+                        {", ".join(polozky_list)}
+                      </p>
+                    </div>
+                    ''', unsafe_allow_html=True)
+                st.write("---")
 
             col_btn1, col_btn2 = st.columns(2)
             with col_btn1:
@@ -670,7 +723,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                             "zamestnanec": zamestnanec, "email": email_zam,
                             "kvartal": kvartal_sel, "rucnik": rucnik,
                             "mydlo": mydlo, "ariel": ariel, "krem": krem,
-                            "podpis": podpis, "zadal": vedouci,
+                            "podpis": True, "zadal": vedouci,
                         }
                         if odeslat_mcdp_do_sheets(data, sklad_oopp):
                             st.balloons()

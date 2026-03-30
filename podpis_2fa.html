@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocScan — Potvrzení převzetí MČDP</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #f0f4f8; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.card { background: white; border-radius: 16px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+.header { background: #1a3a6b; color: white; border-radius: 10px; padding: 16px; margin-bottom: 20px; text-align: center; }
+.header h2 { font-size: 17px; margin-bottom: 4px; }
+.header p { font-size: 12px; opacity: 0.8; }
+.info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: #888; }
+.info-val { font-weight: bold; color: #1a3a6b; }
+.section { margin: 20px 0; }
+.section-title { font-size: 13px; font-weight: bold; color: #444; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.otp-box { background: #FFF9C4; border: 1px solid #F9A825; border-radius: 10px; padding: 16px; }
+.otp-box p { font-size: 13px; color: #666; margin-bottom: 10px; }
+.otp-input-row { display: flex; gap: 8px; }
+.otp-input-row input { flex: 1; border: 2px solid #ddd; border-radius: 8px; padding: 10px; font-size: 20px; text-align: center; letter-spacing: 6px; font-weight: bold; }
+.otp-input-row input:focus { outline: none; border-color: #1a3a6b; }
+.btn { border: none; border-radius: 8px; padding: 11px 20px; font-size: 14px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
+.btn:hover { opacity: 0.85; }
+.btn-send { background: #F9A825; color: white; white-space: nowrap; }
+.btn-verify { background: #1a3a6b; color: white; width: 100%; margin-top: 10px; }
+.btn-submit { background: #2e7d32; color: white; width: 100%; padding: 14px; font-size: 15px; margin-top: 12px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.countdown { font-size: 12px; color: #e53935; text-align: center; margin-top: 6px; font-weight: bold; }
+.sig-area { border: 2px dashed #ccc; border-radius: 10px; overflow: hidden; pointer-events: none; opacity: 0.4; transition: all 0.3s; }
+.sig-area.active { pointer-events: all; opacity: 1; border-color: #1a3a6b; border-style: solid; }
+canvas { display: block; width: 100%; height: 180px; touch-action: none; }
+.sig-clear { font-size: 12px; color: #999; text-align: right; cursor: pointer; margin-top: 4px; text-decoration: underline; }
+.sig-locked { font-size: 12px; color: #e53935; text-align: center; padding: 10px; }
+.success { display: none; background: #E8F5E9; border: 1px solid #4CAF50; border-radius: 10px; padding: 20px; text-align: center; margin-top: 16px; }
+.success h3 { color: #2e7d32; margin-bottom: 8px; }
+.success p { font-size: 13px; color: #555; }
+.verified-badge { display: none; background: #E8F5E9; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #2e7d32; font-weight: bold; text-align: center; margin-top: 8px; }
+.error-msg { color: #e53935; font-size: 12px; text-align: center; margin-top: 6px; display: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <h2>Potvrzení převzetí MČDP</h2>
+    <p>Mycí a čisticí prostředky · Facility Management · Chrástany</p>
+  </div>
+
+  <div id="info-sekce">
+    <div class="info-row"><span class="info-label">Zaměstnanec</span><span class="info-val" id="d-jmeno">—</span></div>
+    <div class="info-row"><span class="info-label">Sklad</span><span class="info-val" id="d-sklad">—</span></div>
+    <div class="info-row"><span class="info-label">Kvartál</span><span class="info-val" id="d-kvartal">—</span></div>
+    <div class="info-row"><span class="info-label">Položky</span><span class="info-val" id="d-polozky">—</span></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">1. Dvoufaktorové ověření</div>
+    <div class="otp-box">
+      <p>Na váš email bude zasláno 6místný ověřovací kód (platnost 5 minut).</p>
+      <div style="font-size:13px;color:#555;margin-bottom:10px;">
+        Email: <strong id="d-email">—</strong>
+      </div>
+      <div class="otp-input-row">
+        <input type="text" id="otp-input" maxlength="6" placeholder="— — — — — —" disabled>
+        <button class="btn btn-send" id="btn-send" onclick="odeslatKod()">Odeslat kód</button>
+      </div>
+      <div class="countdown" id="countdown" style="display:none;"></div>
+      <div class="error-msg" id="error-msg">Nesprávný kód. Zkuste znovu.</div>
+      <button class="btn btn-verify" id="btn-verify" onclick="overitKod()" disabled>Ověřit kód</button>
+      <div class="verified-badge" id="verified-badge">✓ Totožnost ověřena</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">2. Podpis zaměstnance</div>
+    <div class="sig-area" id="sig-area">
+      <canvas id="sig-canvas"></canvas>
+    </div>
+    <div class="sig-locked" id="sig-locked">🔒 Podpis bude dostupný po ověření kódu</div>
+    <div class="sig-clear" id="sig-clear" style="display:none;" onclick="vymazatPodpis()">Vymazat podpis</div>
+    <button class="btn btn-submit" id="btn-submit" onclick="odeslat()" disabled>✓ Potvrzuji převzetí</button>
+  </div>
+
+  <div class="success" id="success">
+    <h3>✓ Převzetí potvrzeno!</h3>
+    <p id="success-text"></p>
+    <p style="margin-top:8px;font-size:12px;color:#888;" id="success-timestamp"></p>
+  </div>
+</div>
+
+<script>
+emailjs.init("CNjNJOVmHIpmeSTxN");
+
+var TEMPLATE_ID = "template_y84dzoc";
+var SERVICE_ID  = "service_ib9xad5";
+
+var params = {};
+var generovanyKod = "";
+var kodExpiry = null;
+var countdownInterval = null;
+var overeno = false;
+var signaturePad;
+
+// Načíst parametry z URL
+window.onload = function() {
+  var urlParams = new URLSearchParams(window.location.search);
+  try {
+    var raw = urlParams.get("d");
+    if (raw) params = JSON.parse(atob(raw));
+  } catch(e) {}
+
+  document.getElementById("d-jmeno").textContent   = params.jmeno   || "—";
+  document.getElementById("d-sklad").textContent   = params.sklad   || "—";
+  document.getElementById("d-kvartal").textContent = params.kvartal || "—";
+  document.getElementById("d-polozky").textContent = params.polozky || "—";
+  document.getElementById("d-email").textContent   = params.email   || "—";
+
+  if (params.email) {
+    document.getElementById("btn-send").disabled = false;
+  }
+
+  // SignaturePad
+  var canvas = document.getElementById("sig-canvas");
+  canvas.width  = canvas.offsetWidth  || 400;
+  canvas.height = 180;
+  signaturePad = new SignaturePad(canvas, { backgroundColor: "rgb(255,255,255)" });
+};
+
+function odeslatKod() {
+  var email = params.email;
+  if (!email) return;
+
+  // Generuj 6místný kód
+  generovanyKod = Math.floor(100000 + Math.random() * 900000).toString();
+  kodExpiry = Date.now() + 5 * 60 * 1000;
+
+  var templateParams = {
+    email:    email,
+    passcode: generovanyKod,
+  };
+
+  document.getElementById("btn-send").disabled = true;
+  document.getElementById("btn-send").textContent = "Odesílám...";
+
+  emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams).then(function() {
+    document.getElementById("btn-send").textContent = "Odesláno ✓";
+    document.getElementById("otp-input").disabled = false;
+    document.getElementById("btn-verify").disabled = false;
+    spustitOdpocet();
+  }, function(err) {
+    document.getElementById("btn-send").textContent = "Chyba — zkusit znovu";
+    document.getElementById("btn-send").disabled = false;
+    console.error("EmailJS error:", err);
+  });
+}
+
+function spustitOdpocet() {
+  var el = document.getElementById("countdown");
+  el.style.display = "block";
+  clearInterval(countdownInterval);
+  countdownInterval = setInterval(function() {
+    var zbyvaSec = Math.round((kodExpiry - Date.now()) / 1000);
+    if (zbyvaSec <= 0) {
+      clearInterval(countdownInterval);
+      el.textContent = "Kód vypršel — odešlete nový.";
+      generovanyKod = "";
+      document.getElementById("btn-send").disabled = false;
+      document.getElementById("btn-send").textContent = "Odeslat znovu";
+      document.getElementById("otp-input").value = "";
+      document.getElementById("btn-verify").disabled = true;
+    } else {
+      var min = Math.floor(zbyvaSec / 60);
+      var sec = zbyvaSec % 60;
+      el.textContent = "Platnost kódu: " + min + ":" + (sec < 10 ? "0" : "") + sec;
+    }
+  }, 1000);
+}
+
+function overitKod() {
+  var zadany = document.getElementById("otp-input").value.trim();
+  var errEl  = document.getElementById("error-msg");
+
+  if (!generovanyKod || Date.now() > kodExpiry) {
+    errEl.textContent = "Kód vypršel. Odešlete nový.";
+    errEl.style.display = "block";
+    return;
+  }
+
+  if (zadany === generovanyKod) {
+    overeno = true;
+    clearInterval(countdownInterval);
+    document.getElementById("countdown").style.display = "none";
+    document.getElementById("verified-badge").style.display = "block";
+    document.getElementById("btn-verify").disabled = true;
+    document.getElementById("otp-input").disabled = true;
+    document.getElementById("btn-send").disabled = true;
+    errEl.style.display = "none";
+
+    // Odemknout podpis
+    document.getElementById("sig-area").classList.add("active");
+    document.getElementById("sig-locked").style.display = "none";
+    document.getElementById("sig-clear").style.display = "block";
+    document.getElementById("btn-submit").disabled = false;
+  } else {
+    errEl.textContent = "Nesprávný kód. Zkuste znovu.";
+    errEl.style.display = "block";
+    document.getElementById("otp-input").value = "";
+  }
+}
+
+function vymazatPodpis() {
+  signaturePad.clear();
+}
+
+function odeslat() {
+  if (!overeno) return;
+  if (signaturePad.isEmpty()) {
+    alert("Prosím podepište se před odesláním.");
+    return;
+  }
+
+  var podpisData = signaturePad.toDataURL("image/png");
+  var timestamp  = new Date().toLocaleString("cs-CZ");
+
+  // Odeslat data zpět do Streamlit přes postMessage
+  window.parent.postMessage({
+    typ:       "podpis_potvrzen",
+    jmeno:     params.jmeno,
+    email:     params.email,
+    kvartal:   params.kvartal,
+    sklad:     params.sklad,
+    podpis:    podpisData,
+    timestamp: timestamp,
+  }, "*");
+
+  // Zobrazit potvrzení
+  document.getElementById("btn-submit").style.display = "none";
+  document.getElementById("sig-area").style.display = "none";
+  document.getElementById("sig-clear").style.display = "none";
+  var suc = document.getElementById("success");
+  suc.style.display = "block";
+  document.getElementById("success-text").textContent =
+    params.jmeno + " potvrdil/a převzetí MČDP · " + params.kvartal;
+  document.getElementById("success-timestamp").textContent =
+    "Ověřeno: " + params.email + " · " + timestamp;
+}
+
+// Přizpůsobit canvas při změně velikosti
+window.addEventListener("resize", function() {
+  var canvas = document.getElementById("sig-canvas");
+  var data   = signaturePad.toData();
+  canvas.width  = canvas.offsetWidth;
+  canvas.height = 180;
+  signaturePad.fromData(data);
+});
+</script>
+</body>
+</html>

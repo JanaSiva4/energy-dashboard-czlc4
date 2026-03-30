@@ -4,3 +4,4 @@ plotly
 requests
 openpyxl
 reportlab
+qrcode[pil]

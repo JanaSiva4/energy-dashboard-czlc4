@@ -10,9 +10,9 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.units import cm
- 
+
 st.set_page_config(page_title="DocScan", layout="wide", page_icon="🔍")
- 
+
 st.markdown("""
 <style>
     [data-testid="stMainViewContainer"] .block-container {
@@ -144,17 +144,17 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
- 
+
 st.title("🔍 DocScan")
 st.write("---")
- 
+
 if 'vysledky' not in st.session_state:
     st.session_state.vysledky = []
 if 'kategorie' not in st.session_state:
     st.session_state.kategorie = "Energie"
 if 'datum_analyzy' not in st.session_state:
     st.session_state.datum_analyzy = None
- 
+
 # KATEGORIE — kliknutí přes st.columns s invisible buttons
 kategorie_list = [
     ("⚡", "Energie", "Spotřeba & náklady"),
@@ -162,7 +162,7 @@ kategorie_list = [
     ("📋", "Smlouvy", "Strany, podmínky, datum"),
     ("📦", "Objednávky", "Položky, ceny, dodávky"),
 ]
- 
+
 st.markdown("""
 <style>
 div[data-testid="stButton"].cat-btn > button {
@@ -185,28 +185,28 @@ div[data-testid="stButton"].cat-btn > button:hover {
     transform: none !important;
 }
 </style>""", unsafe_allow_html=True)
- 
+
 cols_kat = st.columns(4)
 for col, (icon, name, desc) in zip(cols_kat, kategorie_list):
     with col:
         active = "active" if st.session_state.kategorie == name else ""
         st.markdown(f"""
-<div class="cat-card {active}">
-<div style="font-size:1.8rem">{icon}</div>
-<div class="cat-name">{name}</div>
-<div class="cat-desc">{desc}</div>
-</div>""", unsafe_allow_html=True)
+        <div class="cat-card {active}">
+            <div style="font-size:1.8rem">{icon}</div>
+            <div class="cat-name">{name}</div>
+            <div class="cat-desc">{desc}</div>
+        </div>""", unsafe_allow_html=True)
         if st.button(name, key=f"btn_{name}", use_container_width=True):
             st.session_state.kategorie = name
             st.rerun()
- 
+
 st.write("---")
- 
+
 pocet = len(st.session_state.vysledky)
 # Výpočet statistik
 pocet_souboru = st.session_state.get('pocet_souboru', 0)
 obdobi = st.session_state.vysledky[0].get('obdobi', '—') if st.session_state.vysledky else '—'
- 
+
 celkem_nakladu = 0
 if st.session_state.vysledky:
     res = st.session_state.vysledky[0]
@@ -217,7 +217,7 @@ if st.session_state.vysledky:
                 celkem_nakladu += float(str(hodnota).replace(',', '.').replace(' ', ''))
         except:
             pass
- 
+
 c1, c2, c3, c4 = st.columns(4)
 with c1: st.metric("Nahráno souborů", str(pocet_souboru) if pocet_souboru > 0 else "—")
 with c2: st.metric("Období", obdobi)
@@ -225,17 +225,19 @@ with c3: st.metric("Ušetřeno času", "~10 min" if st.session_state.vysledky el
 if st.session_state.get('datum_analyzy'):
     st.markdown(f'<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;text-align:right;margin-top:-10px;">Poslední analýza: {st.session_state.datum_analyzy}</p>', unsafe_allow_html=True)
 with c4: st.metric("Celkem nákladů", f"{celkem_nakladu:,.0f} Kč".replace(",", " ") if celkem_nakladu > 0 else "—")
- 
+
 st.write("---")
- 
+
 col_side, col_main = st.columns([1, 3])
- 
+
 # ── ENERGIE ───────────────────────────────────────────────────────
 if st.session_state.kategorie == "Energie":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
+        
         obdobi_input = st.text_input("Období (např. 2026-01)", value=st.session_state.get('obdobi_input', '2026-01'), help="Zadejte ve formátu RRRR-MM, např. 2026-01 pro leden 2026")
         st.session_state.obdobi_input = obdobi_input
+        
         uploaded_files = st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'], help="Nahrajte všechny faktury najednou — PDF, Word nebo Excel. AI vytáhne data ze všech souborů.")
         if uploaded_files:
             st.markdown(f'<p style="color:#00c864;font-size:0.8rem;">✓ {len(uploaded_files)} soubor(ů) připraveno</p>', unsafe_allow_html=True)
@@ -262,7 +264,7 @@ if st.session_state.kategorie == "Energie":
                 st.session_state.pocet_souboru = 0
                 st.markdown('<script>window.location.reload();</script>', unsafe_allow_html=True)
                 st.rerun()
- 
+
     with col_main:
         if analyze_btn and uploaded_files:
             st.session_state.vysledky = []
@@ -288,7 +290,7 @@ if st.session_state.kategorie == "Energie":
                 except Exception as e:
                     st.error(f"Chyba spojení: {e}")
             st.rerun()
- 
+
         st.subheader("📁 Digitální archiv")
         if st.session_state.vysledky:
             col_t, col_btns = st.columns([2, 1])
@@ -403,9 +405,9 @@ if st.session_state.kategorie == "Energie":
                                 except:
                                     hodnota_fmt = str(hodnota)
                                 st.markdown(f"""<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.1);padding:4px 0;">
-<span style="color:#888;font-size:0.75rem;text-transform:uppercase;">{parametr}</span>
-<span style="color:#fff;font-weight:bold;font-size:0.85rem;">{hodnota_fmt}</span>
-</div>""", unsafe_allow_html=True)
+                                    <span style="color:#888;font-size:0.75rem;text-transform:uppercase;">{parametr}</span>
+                                    <span style="color:#fff;font-weight:bold;font-size:0.85rem;">{hodnota_fmt}</span>
+                                </div>""", unsafe_allow_html=True)
                             st.markdown('</div>', unsafe_allow_html=True)
             # Sdílení výsledků
             if st.session_state.vysledky:
@@ -421,7 +423,7 @@ if st.session_state.kategorie == "Energie":
                     mime="text/plain", use_container_width=False)
         else:
             st.info("Nahrajte faktury a spusťte analýzu.")
- 
+
 # ── FAKTURY ───────────────────────────────────────────────────────
 elif st.session_state.kategorie == "Faktury":
     with col_side:
@@ -443,7 +445,7 @@ elif st.session_state.kategorie == "Faktury":
                 st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         st.info("⏳ Funkce bude aktivní po připojení Anthropic API.")
- 
+
 # ── SMLOUVY ───────────────────────────────────────────────────────
 elif st.session_state.kategorie == "Smlouvy":
     with col_side:
@@ -465,7 +467,7 @@ elif st.session_state.kategorie == "Smlouvy":
                 st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         st.info("⏳ Funkce bude aktivní po připojení Anthropic API.")
- 
+
 # ── OBJEDNÁVKY ────────────────────────────────────────────────────
 elif st.session_state.kategorie == "Objednávky":
     with col_side:

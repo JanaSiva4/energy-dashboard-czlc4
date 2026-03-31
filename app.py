@@ -651,7 +651,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
         # ── Výdej MČDP ──
         if rezim == "Výdej MČDP":
             # ← změň na svoji GitHub Pages URL po zapnutí Pages
-            PODPIS_URL = "https://sivacenkojana.github.io/docscan/podpis_2fa.html"
+            PODPIS_URL = "https://janasiva4.github.io/DocScan-Alza/podpis_2fa.html"
 
             st.subheader("🧴 Výdej MČDP — kvartální")
 

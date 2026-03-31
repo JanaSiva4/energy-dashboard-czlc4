@@ -773,30 +773,126 @@ elif st.session_state.kategorie == "OOPP & MČDP":
 
         # ── Evidence OOPP ──
         elif rezim == "Evidence OOPP":
-            st.subheader("🦺 Evidence OOPP")
-            zamestnanec2 = st.text_input("Zaměstnanec")
-            email_zam2   = st.text_input("Email zaměstnance", placeholder="jan.novak@firma.cz", key="email2")
-            pomucka = st.selectbox("Pomůcka / OOPP", [
-                "Rukavice pracovní", "Ochranné brýle", "Helma / přilba",
-                "Reflexní vesta", "Bezpečnostní obuv", "Jiné"
-            ])
-            c1, c2, c3 = st.columns(3)
-            velikost = c1.text_input("Velikost / č.")
-            expirace = c2.text_input("Expirace (MM/RRRR)", placeholder="12/2026")
-            podpis2  = c3.checkbox("Podpis ✓", value=True)
-            vedouci2 = st.text_input("Zadal", key="vedouci2")
+            PODPIS_URL = "https://janasiva4.github.io/DocScan-Alza/podpis_2fa.html"
 
-            if st.button("✅ ULOŽIT DO EVIDENCE", use_container_width=False):
-                if not zamestnanec2:
-                    st.warning("Zadej jméno zaměstnance.")
-                else:
-                    data2 = {
-                        "zamestnanec": zamestnanec2, "email": email_zam2,
-                        "pomucka": pomucka, "velikost": velikost,
-                        "expirace": expirace, "podpis": podpis2, "zadal": vedouci2,
-                    }
-                    if odeslat_oopp_do_sheets(data2, sklad_oopp):
-                        st.success(f"✅ Uloženo — {zamestnanec2} · {pomucka}")
+            st.subheader("🦺 Evidence OOPP — výdej pomůcek")
+
+            if 'oopp_reset' not in st.session_state:
+                st.session_state.oopp_reset = 0
+
+            zamestnanec2 = st.text_input("Zaměstnanec (jméno a příjmení)",
+                key=f"zam2_{st.session_state.oopp_reset}", autocomplete="off")
+            email_zam2   = st.text_input("Email zaměstnance",
+                placeholder="jan.novak@firma.cz",
+                key=f"email2_{st.session_state.oopp_reset}", autocomplete="off")
+            stredisko2   = st.text_input("Středisko",
+                placeholder="např. Sklad A — příjem",
+                key=f"stredisko2_{st.session_state.oopp_reset}", autocomplete="off")
+            user2        = st.text_input("Uživatel / osobní číslo",
+                placeholder="např. 12345",
+                key=f"user2_{st.session_state.oopp_reset}", autocomplete="off")
+            vedouci2     = st.text_input("Zadal / vedoucí",
+                key=f"vedouci2_{st.session_state.oopp_reset}", autocomplete="off")
+
+            st.write("**Vydávané pomůcky:**")
+
+            rok = datetime.now().year
+            # (pomůcka, klíč, expirace_mesice)
+            pomucky_def = [
+                ("Oděv pracovní (montérky)", "odev", None),
+                ("Rukavice bezpečnostní", "rukavice", None),
+                ("Kabát proti chladu", "kabat", 24),
+                ("Tričko", "tricko", 12),
+                ("Mikina", "mikina", 6),
+                ("Čepice / kšiltovka", "cepice", 24),
+                ("Ochranné brýle", "bryle", None),
+                ("Kraťasy", "kratasy", 12),
+                ("Thermo", "thermo", 12),
+                ("Bezpečnostní obuv", "obuv", 12),
+            ]
+
+            o1, o2 = st.columns(2)
+            vydane = {}
+            for i, (nazev, klic, exp_mes) in enumerate(pomucky_def):
+                col = o1 if i % 2 == 0 else o2
+                exp_info = f" ({exp_mes//12}r)" if exp_mes and exp_mes >= 12 else f" ({exp_mes}m)" if exp_mes else " (dle potřeby)"
+                vydane[klic] = col.checkbox(f"{nazev}{exp_info}", key=f"oopp_{klic}_{st.session_state.oopp_reset}")
+
+            # Automatická expirace
+            def exp_datum(mesice):
+                if not mesice: return None
+                from datetime import date
+                d = date.today()
+                mes = d.month + mesice
+                rok_exp = d.year + (mes - 1) // 12
+                mes_exp = (mes - 1) % 12 + 1
+                return f"{mes_exp:02d}/{rok_exp}"
+
+            # QR kód
+            if zamestnanec2 and email_zam2:
+                vydane_nazvy = [nazev for nazev, klic, _ in pomucky_def if vydane.get(klic)]
+                oopp_qr_data = {
+                    "jmeno": zamestnanec2, "email": email_zam2,
+                    "stredisko": stredisko2, "user": user2,
+                    "sklad": sklad_oopp, "kvartal": f"OOPP {datetime.now().strftime('%m/%Y')}",
+                    "polozky": ", ".join(vydane_nazvy) if vydane_nazvy else "—",
+                }
+                qr_json2 = json.dumps(oopp_qr_data, ensure_ascii=False)
+                qr_payload2 = base64.b64encode(qr_json2.encode('utf-8')).decode('ascii')
+                qr_url2 = f"{PODPIS_URL}?d={qr_payload2}"
+
+                qr2 = qrcode.QRCode(version=1, box_size=6, border=2)
+                qr2.add_data(qr_url2)
+                qr2.make(fit=True)
+                qr_img2 = qr2.make_image(fill_color="#0D4F1C", back_color="white")
+                buf_qr2 = io.BytesIO()
+                qr_img2.save(buf_qr2, format="PNG")
+
+                st.write("---")
+                col_qr2, col_info2 = st.columns([1, 2])
+                with col_qr2:
+                    st.image(buf_qr2.getvalue(), width=180, caption="Zaměstnanec naskenuje pro podpis")
+                with col_info2:
+                    st.markdown(f'''
+                    <div class="energy-card oopp-border" style="padding:12px;">
+                      <p style="color:#00c864;font-size:0.75rem;font-weight:bold;
+                                text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
+                        Čeká na 2FA podpis
+                      </p>
+                      <p style="color:#fff;font-size:0.9rem;"><b>{zamestnanec2}</b></p>
+                      <p style="color:#aaa;font-size:0.8rem;">{email_zam2}</p>
+                      <p style="color:#aaa;font-size:0.75rem;margin-top:4px;">
+                        {", ".join(vydane_nazvy) if vydane_nazvy else "—"}
+                      </p>
+                    </div>
+                    ''', unsafe_allow_html=True)
+                st.write("---")
+
+                if st.button("✅ ULOŽIT DO EVIDENCE", use_container_width=False):
+                    ulozeno = 0
+                    for nazev, klic, exp_mes in pomucky_def:
+                        if vydane.get(klic):
+                            exp = exp_datum(exp_mes)
+                            data_oopp = {
+                                "zamestnanec": zamestnanec2,
+                                "email": email_zam2,
+                                "stredisko": stredisko2,
+                                "user": user2,
+                                "pomucka": nazev,
+                                "velikost": "",
+                                "expirace": exp or "",
+                                "podpis": True,
+                                "zadal": vedouci2,
+                            }
+                            if odeslat_oopp_do_sheets(data_oopp, sklad_oopp):
+                                ulozeno += 1
+                    if ulozeno > 0:
+                        st.balloons()
+                        st.success(f"✅ Uloženo {ulozeno} pomůcek — {zamestnanec2}")
+                        st.session_state.oopp_reset += 1
+                        st.rerun()
+            else:
+                st.info("Vyplň jméno a email zaměstnance pro zobrazení QR kódu.")
 
         # ── Tisk protokolu ──
         elif rezim == "Tisk protokolu":

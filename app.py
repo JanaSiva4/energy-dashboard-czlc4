@@ -83,6 +83,7 @@ def odeslat_mcdp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
             yn(data.get("mydlo")),
             yn(data.get("ariel")),
             yn(data.get("krem")),
+            yn(data.get("solvina")),
             yn(data.get("rucnik") and data.get("mydlo") and data.get("ariel") and data.get("krem")),
             "NE",
             data.get("zadal", ""),
@@ -152,7 +153,7 @@ def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci)
 
     # Hlavička
     ht = Table([[Paragraph("PŘEDÁVACÍ PROTOKOL — MČDP", title_s)],
-                [Paragraph(f"Mycí a čisticí prostředky · Sklad {sklad} Chrástany · Facility", sub_s)]],
+                [Paragraph(f"Mycí a čisticí prostředky · Sklad {sklad} · Chrástany · Facility", sub_s)]],
                colWidths=[17*cm])
     ht.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),navy),
         ('TOPPADDING',(0,0),(-1,-1),8),('BOTTOMPADDING',(0,0),(-1,-1),8),
@@ -182,6 +183,7 @@ def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci)
         ['1× Tekuté mýdlo',           '☑' if vydane_polozky.get('mydlo')  else '☐', '500 ml', ''],
         ['1× Ariel tablety 60 ks',    '☑' if vydane_polozky.get('ariel')  else '☐', '60 ks / balení', ''],
         ['1× Krém Indulona original', '☑' if vydane_polozky.get('krem')   else '☐', 'nebo měsíčkový', ''],
+        ['1× Abrazivní pasta Solvina', '☑' if vydane_polozky.get('solvina') else '☐', '450 g', ''],
     ]
     pt = Table(polozky_data, colWidths=[6.5*cm, 2*cm, 4.5*cm, 4*cm])
     pt.setStyle(TableStyle([
@@ -650,7 +652,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
         # ── Výdej MČDP ──
         if rezim == "Výdej MČDP":
             # ← změň na svoji GitHub Pages URL po zapnutí Pages
-            PODPIS_URL = "https://janasiva4.github.io/DocScan-Alza/podpis_2fa.html"
+            PODPIS_URL = "https://sivacenkojana.github.io/docscan/podpis_2fa.html"
 
             st.subheader("🧴 Výdej MČDP — kvartální")
             zamestnanec = st.text_input("Zaměstnanec (jméno a příjmení)")
@@ -661,19 +663,21 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                                                     "Q1 / 2026", "Q2 / 2026", "Q3 / 2026", "Q4 / 2026"])
             st.write("**Vydávané položky:**")
             c1, c2 = st.columns(2)
-            rucnik = c1.checkbox("1× Ručník Siguro 50×100cm", value=True)
-            mydlo  = c2.checkbox("1× Tekuté mýdlo", value=True)
-            ariel  = c1.checkbox("1× Ariel tablety 60 ks", value=True)
-            krem   = c2.checkbox("1× Krém Indulona", value=True)
+            rucnik  = c1.checkbox("1× Ručník Siguro 50×100cm", value=True)
+            mydlo   = c2.checkbox("1× Tekuté mýdlo", value=True)
+            ariel   = c1.checkbox("1× Ariel tablety 60 ks", value=True)
+            krem    = c2.checkbox("1× Krém Indulona", value=True)
+            solvina = c1.checkbox("1× Abrazivní pasta Solvina", value=True)
             vedouci = st.text_input("Zadal / vedoucí")
 
             # QR kód pro 2FA podpis
             if zamestnanec and email_zam:
                 polozky_list = []
-                if rucnik: polozky_list.append("Ručník Siguro")
-                if mydlo:  polozky_list.append("Tekuté mýdlo")
-                if ariel:  polozky_list.append("Ariel 60 ks")
-                if krem:   polozky_list.append("Krém Indulona")
+                if rucnik:  polozky_list.append("Ručník Siguro")
+                if mydlo:   polozky_list.append("Tekuté mýdlo")
+                if ariel:   polozky_list.append("Ariel 60 ks")
+                if krem:    polozky_list.append("Krém Indulona")
+                if solvina: polozky_list.append("Solvina")
 
                 qr_data = {
                     "jmeno": zamestnanec, "email": email_zam,
@@ -725,7 +729,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                             "zamestnanec": zamestnanec, "email": email_zam,
                             "kvartal": kvartal_sel, "rucnik": rucnik,
                             "mydlo": mydlo, "ariel": ariel, "krem": krem,
-                            "podpis": True, "zadal": vedouci,
+                            "solvina": solvina, "podpis": True, "zadal": vedouci,
                         }
                         if odeslat_mcdp_do_sheets(data, sklad_oopp):
                             st.balloons()
@@ -736,7 +740,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                     pdf_bytes = generovat_pdf_protokol(
                         zamestnanec=zamestnanec, sklad=sklad_oopp,
                         kvartal=kvartal_sel,
-                        vydane_polozky={"rucnik": rucnik, "mydlo": mydlo, "ariel": ariel, "krem": krem},
+                        vydane_polozky={"rucnik": rucnik, "mydlo": mydlo, "ariel": ariel, "krem": krem, "solvina": solvina},
                         vedouci=vedouci
                     )
                     jmeno_souboru = zamestnanec.replace(" ", "_")

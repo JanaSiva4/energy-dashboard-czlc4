@@ -1,55 +1,99 @@
-# 🔍 DocScan — Vytěžování dat z dokumentů
+# DocScan — Facility · Chrástany
 
-Webová aplikace pro automatické vytěžování dat z dokumentů pomocí AI.
+Streamlit aplikace pro digitalizaci Facility procesů na skladu Chrástany (CZLC4).
 
-## Co to dělá
+---
 
-Nahraješ dokumenty → AI vytáhne klíčová data → zobrazí se v dashboardu.
+## Moduly
 
-Aktuálně funkční modul vytěžuje data z faktur za energie pro objekt CZLC4 (WEST I – Alza).
+### ⚡ Energie
+- Nahrání faktur za elektřinu, FSX, plyn a vodu (PDF / Excel)
+- Automatická extrakce dat přes n8n webhook
+- Odesílání do Google Sheets (záložky CZLC4, LCÚ, LCZ, SKLC3)
+- Export do Excel, PDF a TXT
 
-## Funkční moduly
+### 🦺 OOPP & MČDP
+Evidence osobních ochranných pracovních prostředků a mycích/čisticích prostředků.
 
-- ⚡ **Energie** — spotřeba a ceny elektřiny, FSX, plynu a vody
-- 📄 **Faktury** — připraveno, aktivace po získání Anthropic API
-- 📋 **Smlouvy** — připraveno, aktivace po získání Anthropic API
-- 📦 **Objednávky** — připraveno, aktivace po získání Anthropic API
+**Výdej MČDP (1× za kvartál)**
+- Formulář výdeje: ručník Siguro, tekuté mýdlo, Ariel 60 ks, krém Indulona, abrazivní pasta Solvina
+- QR kód pro 2FA podpis zaměstnance
+- Odesílání záznamu do Google Sheets (záložka `MCDP_CZLC4`)
 
-## Podporované formáty
+**2FA podpis zaměstnance** (`podpis_2fa.html`)
+- Zaměstnanec naskenuje QR kód telefonem
+- Dostane 6místný kód na email (platnost 5 minut) přes EmailJS
+- Po ověření kódu podepíše prstem na telefonu
+- Podpis se uloží do záložky `Podpisy_MCDP` v Google Sheets
 
-PDF, Word (.docx), Excel (.xlsx, .xls)
+**Evidence OOPP**
+- Záznam vydaných pomůcek s expirací
+- Automatický výpočet stavu (v pořádku / brzy expiruje / expirováno)
+- Odesílání do záložky `OOPP_CZLC4`
 
-## Jak spustit lokálně
+**Tisk protokolu**
+- Generátor PDF předávacího protokolu
+- Obsahuje právní text dle NV 390/2021 Sb.
+- Připraveno k tisku a fyzickému podpisu
 
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
+### 📄 Faktury / 📋 Smlouvy
+Připraveno pro budoucí napojení na Anthropic API.
 
-## Aplikace
-
-🌐 [docscan-alza.streamlit.app](https://docscan-alza.streamlit.app)
-
-## Soubory
-
-- `app.py` — Streamlit aplikace (DocScan UI + logika)
-- `requirements.txt` — Python závislosti
-- `n8n/workflow.json` — záloha n8n workflow
+---
 
 ## Technologie
 
-- [Streamlit](https://streamlit.io/) — frontend
-- [n8n](https://n8n.io/) — automatizace
-- [Google Vertex AI](https://cloud.google.com/vertex-ai) — AI vytěžování dat
+- **Frontend:** Streamlit (Python)
+- **Podpisová stránka:** HTML + SignaturePad.js + EmailJS
+- **Databáze:** Google Sheets (Google Apps Script webhook)
+- **Email 2FA:** EmailJS (Gmail)
+- **PDF generátor:** ReportLab
+- **QR kód:** qrcode[pil]
+- **Hosting appky:** Streamlit Cloud
+- **Hosting podpisové stránky:** GitHub Pages
 
-## n8n workflow
+---
 
-Webhook přijme dokumenty → Code node rozdělí soubory → extrakce textu → Google Vertex AI vytáhne data → vrátí JSON do Streamlitu.
+## Struktura repozitáře
 
-## Poznámky
+```
+DocScan-Alza/
+├── app.py                  # Hlavní Streamlit aplikace
+├── podpis_2fa.html         # Podpisová stránka (GitHub Pages)
+├── requirements.txt        # Python závislosti
+└── README.md
+```
 
-- Ignoruje data jiných nájemců (Ecologistics, Dominant LibTaur)
-- Vrací `n/a` pokud hodnotu nenajde
-- Word a Excel: upload funguje, n8n vytěžování bude rozšířeno
+---
 
-*Projekt: CZLC4 | Jana Sivačenko | 2026*
+## Google Sheets záložky
+
+| Záložka | Obsah |
+|---|---|
+| `CZLC4` | Spotřeba energií |
+| `MCDP_CZLC4` | Výdej MČDP — kvartální záznamy |
+| `OOPP_CZLC4` | Evidence OOPP s expirací |
+| `Podpisy_MCDP` | Audit log 2FA podpisů |
+| `Přehled_OOPP` | Živý dashboard |
+
+---
+
+## Nastavení (EmailJS)
+
+Pro funkci 2FA podpisu jsou potřeba tyto hodnoty v `podpis_2fa.html`:
+
+```js
+emailjs.init("PUBLIC_KEY");
+var SERVICE_ID  = "service_...";
+var TEMPLATE_ID = "template_...";
+```
+
+---
+
+## Automatické alerty
+
+Google Apps Script (`Projekt_Energie LC`) spouští každé pondělí v 8:00 funkci `weeklyAlertOOPP` — odesílá email vedoucímu s přehledem expirujících OOPP a nesplněných MČDP kontrol.
+
+---
+
+*Facility · Sklad Chrástany · 2025–2026*

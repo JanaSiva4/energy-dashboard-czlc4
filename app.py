@@ -650,11 +650,13 @@ elif st.session_state.kategorie == "OOPP & MČDP":
         # ── Výdej MČDP ──
         if rezim == "Výdej MČDP":
             # ← změň na svoji GitHub Pages URL po zapnutí Pages
-            PODPIS_URL = "https://janasiva4.github.io/DocScan-Alza/podpis_2fa.html"
+            PODPIS_URL = "https://sivacenkojana.github.io/docscan/podpis_2fa.html"
 
             st.subheader("🧴 Výdej MČDP — kvartální")
             zamestnanec = st.text_input("Zaměstnanec (jméno a příjmení)")
             email_zam   = st.text_input("Email zaměstnance", placeholder="jan.novak@firma.cz")
+            stredisko   = st.text_input("Středisko", placeholder="např. Sklad A — příjem")
+            user        = st.text_input("Uživatel / osobní číslo", placeholder="např. 12345")
             kvartal_sel = st.selectbox("Kvartál", ["Q1 / 2025", "Q2 / 2025", "Q3 / 2025", "Q4 / 2025",
                                                     "Q1 / 2026", "Q2 / 2026", "Q3 / 2026", "Q4 / 2026"])
             st.write("**Vydávané položky:**")
@@ -675,12 +677,12 @@ elif st.session_state.kategorie == "OOPP & MČDP":
 
                 qr_data = {
                     "jmeno": zamestnanec, "email": email_zam,
+                    "stredisko": stredisko, "user": user,
                     "sklad": sklad_oopp, "kvartal": kvartal_sel,
                     "polozky": ", ".join(polozky_list),
                 }
-                qr_payload = base64.b64encode(
-                    json.dumps(qr_data, ensure_ascii=False).encode()
-                ).decode()
+                qr_json = json.dumps(qr_data, ensure_ascii=False)
+                qr_payload = base64.b64encode(qr_json.encode('utf-8')).decode('ascii')
                 qr_url = f"{PODPIS_URL}?d={qr_payload}"
 
                 qr = qrcode.QRCode(version=1, box_size=6, border=2)

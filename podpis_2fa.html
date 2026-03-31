@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DocScan — Potvrzení převzetí MČDP</title>
+<title>Osobní karta zaměstnance — výdej OOPP</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <style>
@@ -46,12 +46,14 @@ canvas { display: block; width: 100%; height: 180px; touch-action: none; }
 <body>
 <div class="card">
   <div class="header">
-    <h2>Potvrzení převzetí MČDP</h2>
-    <p>Mycí a čisticí prostředky · Facility Management · Chrástany</p>
+    <h2>Osobní karta zaměstnance</h2>
+    <p>Výdej pracovních ochranných prostředků — oděvy · Facility Management · Chrástany</p>
   </div>
 
   <div id="info-sekce">
     <div class="info-row"><span class="info-label">Zaměstnanec</span><span class="info-val" id="d-jmeno">—</span></div>
+    <div class="info-row"><span class="info-label">Středisko</span><span class="info-val" id="d-stredisko">—</span></div>
+    <div class="info-row"><span class="info-label">Uživatel</span><span class="info-val" id="d-user">—</span></div>
     <div class="info-row"><span class="info-label">Sklad</span><span class="info-val" id="d-sklad">—</span></div>
     <div class="info-row"><span class="info-label">Kvartál</span><span class="info-val" id="d-kvartal">—</span></div>
     <div class="info-row"><span class="info-label">Položky</span><span class="info-val" id="d-polozky">—</span></div>
@@ -96,7 +98,7 @@ canvas { display: block; width: 100%; height: 180px; touch-action: none; }
 emailjs.init("CNjNJOVmHIpmeSTxN");
 
 var TEMPLATE_ID = "template_y84dzoc";
-var SERVICE_ID  = "service_ib9xad5";
+var SERVICE_ID  = "service_fawyvpe";
 
 var params = {};
 var generovanyKod = "";
@@ -110,10 +112,12 @@ window.onload = function() {
   var urlParams = new URLSearchParams(window.location.search);
   try {
     var raw = urlParams.get("d");
-    if (raw) params = JSON.parse(atob(raw));
+    if (raw) params = JSON.parse(decodeURIComponent(escape(atob(raw))));
   } catch(e) {}
 
   document.getElementById("d-jmeno").textContent   = params.jmeno   || "—";
+  document.getElementById("d-stredisko").textContent = params.stredisko || "—";
+  document.getElementById("d-user").textContent    = params.user    || "—";
   document.getElementById("d-sklad").textContent   = params.sklad   || "—";
   document.getElementById("d-kvartal").textContent = params.kvartal || "—";
   document.getElementById("d-polozky").textContent = params.polozky || "—";

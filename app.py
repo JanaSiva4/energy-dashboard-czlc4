@@ -659,8 +659,13 @@ elif st.session_state.kategorie == "OOPP & MČDP":
             email_zam   = st.text_input("Email zaměstnance", placeholder="jan.novak@firma.cz")
             stredisko   = st.text_input("Středisko", placeholder="např. Sklad A — příjem")
             user        = st.text_input("Uživatel / osobní číslo", placeholder="např. 12345")
-            kvartal_sel = st.selectbox("Kvartál", ["Q1 / 2025", "Q2 / 2025", "Q3 / 2025", "Q4 / 2025",
-                                                    "Q1 / 2026", "Q2 / 2026", "Q3 / 2026", "Q4 / 2026"])
+            rok_akt = datetime.now().year
+            kvartal_sel = st.selectbox("Kvartál", [
+                f"Q1 / {rok_akt}", f"Q2 / {rok_akt}",
+                f"Q3 / {rok_akt}", f"Q4 / {rok_akt}",
+                f"Q1 / {rok_akt+1}", f"Q2 / {rok_akt+1}",
+                f"Q3 / {rok_akt+1}", f"Q4 / {rok_akt+1}",
+            ])
             st.write("**Vydávané položky:**")
             c1, c2 = st.columns(2)
             rucnik  = c1.checkbox("1× Ručník Siguro 50×100cm", value=True)
@@ -783,8 +788,13 @@ elif st.session_state.kategorie == "OOPP & MČDP":
             st.markdown('<p style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Vyplň údaje — dostaneš PDF připravené k tisku a podpisu zaměstnance.</p>', unsafe_allow_html=True)
 
             zam_tisk = st.text_input("Zaměstnanec")
-            kv_tisk  = st.selectbox("Kvartál", ["Q1 / 2025", "Q2 / 2025", "Q3 / 2025", "Q4 / 2025",
-                                                  "Q1 / 2026", "Q2 / 2026", "Q3 / 2026", "Q4 / 2026"], key="kv_tisk")
+            rok_akt2 = datetime.now().year
+            kv_tisk  = st.selectbox("Kvartál", [
+                f"Q1 / {rok_akt2}", f"Q2 / {rok_akt2}",
+                f"Q3 / {rok_akt2}", f"Q4 / {rok_akt2}",
+                f"Q1 / {rok_akt2+1}", f"Q2 / {rok_akt2+1}",
+                f"Q3 / {rok_akt2+1}", f"Q4 / {rok_akt2+1}",
+            ], key="kv_tisk")
             ved_tisk = st.text_input("Vedoucí", key="ved_tisk")
             st.write("**Položky pro protokol:**")
             t1, t2 = st.columns(2)

@@ -241,6 +241,27 @@ function odeslat() {
     timestamp: timestamp,
   }, "*");
 
+  // Odeslat přímo do Google Sheets
+  var SHEETS_URL = "https://script.google.com/macros/s/AKfycbzfRP2cvMrwjbsCgQPzfbQsVABB68OYdpTPajGRT4hbhBbVWoGPJIJJTfMy6PbbhfTwCQ/exec";
+  fetch(SHEETS_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "append",
+      sheet: "Podpisy_MCDP",
+      row: [
+        "MCDP-" + (params.sklad || "CZLC4") + "-" + Date.now(),
+        params.jmeno || "",
+        params.email || "",
+        params.sklad || "",
+        params.kvartal || "",
+        timestamp,
+        "POTVRZENO",
+        params.polozky || "",
+      ]
+    })
+  }).catch(function(e) { console.log("Sheets error:", e); });
+
   // Zobrazit potvrzení
   document.getElementById("btn-submit").style.display = "none";
   document.getElementById("sig-area").style.display = "none";

@@ -655,10 +655,25 @@ elif st.session_state.kategorie == "OOPP & MČDP":
             PODPIS_URL = "https://sivacenkojana.github.io/docscan/podpis_2fa.html"
 
             st.subheader("🧴 Výdej MČDP — kvartální")
-            zamestnanec = st.text_input("Zaměstnanec (jméno a příjmení)")
-            email_zam   = st.text_input("Email zaměstnance", placeholder="jan.novak@firma.cz")
-            stredisko   = st.text_input("Středisko", placeholder="např. Sklad A — příjem")
-            user        = st.text_input("Uživatel / osobní číslo", placeholder="např. 12345")
+
+            if 'mcdp_reset' not in st.session_state:
+                st.session_state.mcdp_reset = 0
+
+            zamestnanec = st.text_input("Zaměstnanec (jméno a příjmení)",
+                key=f"zam_{st.session_state.mcdp_reset}",
+                autocomplete="off")
+            email_zam   = st.text_input("Email zaměstnance",
+                placeholder="jan.novak@firma.cz",
+                key=f"email_{st.session_state.mcdp_reset}",
+                autocomplete="off")
+            stredisko   = st.text_input("Středisko",
+                placeholder="např. Sklad A — příjem",
+                key=f"stredisko_{st.session_state.mcdp_reset}",
+                autocomplete="off")
+            user        = st.text_input("Uživatel / osobní číslo",
+                placeholder="např. 12345",
+                key=f"user_{st.session_state.mcdp_reset}",
+                autocomplete="off")
             rok_akt = datetime.now().year
             kvartal_sel = st.selectbox("Kvartál", [
                 f"Q1 / {rok_akt}", f"Q2 / {rok_akt}",
@@ -739,6 +754,8 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         if odeslat_mcdp_do_sheets(data, sklad_oopp):
                             st.balloons()
                             st.success(f"✅ Záznam uložen — {zamestnanec} · {kvartal_sel}")
+                            st.session_state.mcdp_reset += 1
+                            st.rerun()
 
             with col_btn2:
                 if zamestnanec:

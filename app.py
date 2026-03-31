@@ -792,12 +792,13 @@ elif st.session_state.kategorie == "OOPP & MČDP":
             cb2 = t2.checkbox("Tekuté mýdlo",  value=True, key="p2")
             cb3 = t1.checkbox("Ariel 60 ks",   value=True, key="p3")
             cb4 = t2.checkbox("Krém Indulona",  value=True, key="p4")
+            cb5 = t1.checkbox("Solvina",        value=True, key="p5")
 
             if zam_tisk:
                 pdf_tisk = generovat_pdf_protokol(
                     zamestnanec=zam_tisk, sklad=sklad_oopp,
                     kvartal=kv_tisk,
-                    vydane_polozky={"rucnik": cb1, "mydlo": cb2, "ariel": cb3, "krem": cb4},
+                    vydane_polozky={"rucnik": cb1, "mydlo": cb2, "ariel": cb3, "krem": cb4, "solvina": cb5},
                     vedouci=ved_tisk
                 )
                 st.download_button("📄 Stáhnout PDF protokol k tisku",

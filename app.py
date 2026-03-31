@@ -152,7 +152,7 @@ def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci)
 
     # Hlavička
     ht = Table([[Paragraph("PŘEDÁVACÍ PROTOKOL — MČDP", title_s)],
-                [Paragraph(f"Mycí a čisticí prostředky · Sklad {sklad} Chrástany · Facility Management", sub_s)]],
+                [Paragraph(f"Mycí a čisticí prostředky · Sklad {sklad} Chrástany · Facility", sub_s)]],
                colWidths=[17*cm])
     ht.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),navy),
         ('TOPPADDING',(0,0),(-1,-1),8),('BOTTOMPADDING',(0,0),(-1,-1),8),

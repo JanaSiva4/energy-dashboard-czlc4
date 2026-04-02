@@ -25,47 +25,39 @@ GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx29FpdOIPj7eO9BJio
 GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
 
-PROMPT = """Jsi expert na extrakci dat z energetických vyúčtování pro logistické centrum WEST I – Alza (CZLC4). 
-Tvým úkolem je vytvořit JSON z poskytnutých dokumentů výhradně pro subjekt "WEST I - Alza".
+PROMPT = """Jsi expert na analýzu energetických faktur pro logistické centrum WEST I – Alza (CZLC4).
 
-STRUKTURA HLEDÁNÍ (Dle typu dokumentu):
+Z poskytnutých dokumentů vytáhni POUZE tyto hodnoty pro subjekt "WEST I - Alza":
 
-1. ELEKTŘINA (Dokument: "PŘEFAKTURACE SPOTŘEBY EL. ENERGIE" - tabulka pro HALU B):
-   - "el_spotreba_kwh": Najdi řádek "WEST I - Alza". Extrahuj hodnotu ze sloupce "Spotřeba vlastní (kWh)".
-   - "el_cena_sil_el_bez_dph": Z faktury Innogy (Zákaznické číslo 9520317466), část "Platba za dodávku elektřiny", hodnota "celkem bez DPH".
-   - "el_cena_distribuce_bez_dph": Z faktury Innogy, část "Poplatky za regulované služby", hodnota "Celkem platba za regulované služby".
-   - "el_cena_celkem_zaklad_kc": Z faktury Innogy, tabulka "Souhrn za daňový doklad", řádek "Ke zdanění za energie", sloupec "základ (Kč)".
+1. "el_spotreba_kwh" - Spotřeba elektřiny vlastní [kWh] z přefakturace MD
+2. "el_cena_sil_el_bez_dph" - Cena silové elektřiny bez DPH [Kč] z faktury Innogy
+3. "el_cena_distribuce_bez_dph" - Cena distribuce bez DPH [Kč] z faktury Innogy  
+4. "el_cena_celkem_zaklad_kc" - Elektřina celkem základ [Kč] z faktury Innogy
+5. "fsx_spotreba_kwh" - Spotřeba FSX celkem [kWh]
+   → Tabulka má sloupce: "Spotřeba vlastní (kWh)" | "Podíl z celk. plochy" | "Podíl ze společné spotřeby (kWh)" | "Spotřeba celkem (kWh)" | "Cena bez DPH (CZK)"
+   → HLEDEJ řádek "WEST I - Alza"
+   → Vezmi sloupec "Spotřeba celkem (kWh)" — NE "Spotřeba vlastní"
+   → IGNORUJ řádky: Ecologistics, WEST II, Celkem
+6. "fsx_cena_bez_dph" - Cena FSX bez DPH [Kč]
+   → STEJNÝ řádek "WEST I - Alza"
+   → Vezmi sloupec "Cena bez DPH (CZK)" — sloupec HNED ZA "Spotřeba celkem (kWh)"
+   → IGNORUJ řádky: Ecologistics, WEST II, Celkem
+7. "plyn_spotreba_kwh" - Spotřeba plynu [kWh]
+8. "plyn_cena_celkem_zaklad_kc" - Plyn celkem základ [Kč]
+9. "voda_spotreba_m3" - Spotřeba vody celkem [m3]
+   → Tabulka má sloupce: "Spotřeba vlastní (m3)" | "Podíl z celk. Plochy" | "Podíl ze společné spotřeby (m3)" | "Spotřeba celkem (m3)" | "Cena bez DPH (CZK)"
+   → HLEDEJ řádek "WEST I - Alza"
+   → Vezmi ČTVRTÝ číselný sloupec = "Spotřeba celkem (m3)" — NE první sloupec "Spotřeba vlastní"
+   → IGNORUJ řádky: Ecologistics, WEST II, Celkem
+10. "voda_cena_bez_dph" - Cena vody bez DPH [Kč]
+    → STEJNÝ řádek "WEST I - Alza"
+    → Vezmi sloupec "Cena bez DPH (CZK)" — sloupec HNED ZA "Spotřeba celkem (m3)"
+    → IGNORUJ řádky: Ecologistics, WEST II, Celkem
 
-2. FSX / TOTEM (Dokument: "PŘEFAKTURACE SPOTŘEBY EL. ENERGIE" - tabulka "WEST I - Alza totem"):
-   - "fsx_spotreba_kwh": Najdi specifickou tabulku nadepsanou "WEST I - Alza totem". Z řádku "WEST I - Alza" vezmi hodnotu ze sloupce "Spotřeba celkem (kWh)".
-   - "fsx_cena_bez_dph": Ze stejné tabulky "WEST I - Alza totem" a stejného řádku vezmi hodnotu ze sloupce "Cena bez DPH (CZK)".
-
-3. PLYN (Dokument: "PŘEFAKTURACE SPOTŘEBY PLYNU"):
-   - "plyn_spotreba_kwh": Najdi v textu nad hlavní tabulkou řádek "Spotřeba celkem" v jednotkách [kWh]. Neber hodnotu v m3.
-   - "plyn_cena_celkem_zaklad_kc": Z faktury Innogy za PLYN (Zákaznické číslo 9520317466), řádek "Ke zdanění za energie", sloupec "základ (Kč)".
-
-4. VODA (Dokument: "PŘEFAKTURACE SPOTŘEBY VODY"):
-   - "voda_spotreba_m3": Najdi tabulku přefakturace, řádek "WEST I - Alza". Extrahuj hodnotu ze sloupce "Spotřeba celkem (m3)" (to je součet vlastní a společné spotřeby).
-   - "voda_cena_bez_dph": Ze stejného řádku "WEST I - Alza" vezmi hodnotu ze sloupce "Cena bez DPH (CZK)".
-
-TECHNICKÁ PRAVIDLA:
-- Pokud hodnota v dokumentu není, vrať null.
-- Čísla vracej jako float/int. Odstraň mezery a nahraď desetinnou čárku tečkou (např. "1 234,50" -> 1234.5).
-- Vrať POUZE čistý JSON bez markdownu (```json) a bez vysvětlivek.
-
-JSON FORMÁT:
-{
-  "el_spotreba_kwh": null,
-  "el_cena_sil_el_bez_dph": null,
-  "el_cena_distribuce_bez_dph": null,
-  "el_cena_celkem_zaklad_kc": null,
-  "fsx_spotreba_kwh": null,
-  "fsx_cena_bez_dph": null,
-  "plyn_spotreba_kwh": null,
-  "plyn_cena_celkem_zaklad_kc": null,
-  "voda_spotreba_m3": null,
-  "voda_cena_bez_dph": null
-}
+PRAVIDLA:
+- Pokud hodnotu nenajdeš, vrať "n/a"
+- NIKDY nevymýšlej čísla
+- Vrať POUZE JSON bez markdown, bez komentářů
 
 Vrať přesně v tomto formátu:
 {"obdobi":"RRRR-MM","el_spotreba_kwh":0,"el_cena_sil_el_bez_dph":0,"el_cena_distribuce_bez_dph":0,"el_cena_celkem_zaklad_kc":0,"fsx_spotreba_kwh":0,"fsx_cena_bez_dph":0,"plyn_spotreba_kwh":0,"plyn_cena_celkem_zaklad_kc":0,"voda_spotreba_m3":0,"voda_cena_bez_dph":0}"""

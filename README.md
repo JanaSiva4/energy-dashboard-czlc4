@@ -1,99 +1,148 @@
-# DocScan — Facility · Chrástany
+# 🔍 DocScan
+**AI extrakce dat z dokumentů | Verze 2.0 | Duben 2026**
 
-Streamlit aplikace pro digitalizaci Facility procesů na skladu Chrástany (CZLC4).
-
----
-
-## Moduly
-
-### ⚡ Energie
-- Nahrání faktur za elektřinu, FSX, plyn a vodu (PDF / Excel)
-- Automatická extrakce dat přes n8n webhook
-- Odesílání do Google Sheets (záložky CZLC4, LCÚ, LCZ, SKLC3)
-- Export do Excel, PDF a TXT
-
-### 🦺 OOPP & MČDP
-Evidence osobních ochranných pracovních prostředků a mycích/čisticích prostředků.
-
-**Výdej MČDP (1× za kvartál)**
-- Formulář výdeje: ručník Siguro, tekuté mýdlo, Ariel 60 ks, krém Indulona, abrazivní pasta Solvina
-- QR kód pro 2FA podpis zaměstnance
-- Odesílání záznamu do Google Sheets (záložka `MCDP_CZLC4`)
-
-**2FA podpis zaměstnance** (`podpis_2fa.html`)
-- Zaměstnanec naskenuje QR kód telefonem
-- Dostane 6místný kód na email (platnost 5 minut) přes EmailJS
-- Po ověření kódu podepíše prstem na telefonu
-- Podpis se uloží do záložky `Podpisy_MCDP` v Google Sheets
-
-**Evidence OOPP**
-- Záznam vydaných pomůcek s expirací
-- Automatický výpočet stavu (v pořádku / brzy expiruje / expirováno)
-- Odesílání do záložky `OOPP_CZLC4`
-
-**Tisk protokolu**
-- Generátor PDF předávacího protokolu
-- Obsahuje právní text dle NV 390/2021 Sb.
-- Připraveno k tisku a fyzickému podpisu
-
-### 📄 Faktury / 📋 Smlouvy
-Připraveno pro budoucí napojení na Anthropic API.
+[![Streamlit App](https://img.shields.io/badge/Streamlit-docscan--alza.streamlit.app-FF4B4B?logo=streamlit)](https://docscan-alza.streamlit.app)
+[![GitHub](https://img.shields.io/badge/GitHub-JanaSiva4%2FDocScan-181717?logo=github)](https://github.com/JanaSiva4/DocScan)
 
 ---
 
-## Technologie
+## 📋 O projektu
 
-- **Frontend:** Streamlit (Python)
-- **Podpisová stránka:** HTML + SignaturePad.js + EmailJS
-- **Databáze:** Google Sheets (Google Apps Script webhook)
-- **Email 2FA:** EmailJS (Gmail)
-- **PDF generátor:** ReportLab
-- **QR kód:** qrcode[pil]
-- **Hosting appky:** Streamlit Cloud
-- **Hosting podpisové stránky:** GitHub Pages
+DocScan je webová aplikace pro automatickou extrakci dat z PDF, Excel a Word dokumentů pomocí AI. Uživatel nahraje faktury a aplikace automaticky vytáhne klíčové hodnoty — bez ručního opisování.
+
+Aktuálně funkční modul zpracovává faktury za energie pro objekt **WEST I – Alza (CZLC4)**. AI extrahuje 10 hodnot (elektřina, FSX, plyn, voda) z libovolného počtu faktur najednou.
 
 ---
 
-## Struktura repozitáře
+## ✅ Funkce
+
+### ⚡ Energie (funkční)
+- Nahrání PDF, Excel nebo Word faktur najednou
+- AI extrakce 10 hodnot: spotřeba a ceny elektřiny, FSX, plynu a vody
+- Přehledný dashboard s kartami pro každou kategorii
+- Export výsledků do Excel a PDF
+- Uložení do Google Sheets — historie po měsících
+
+### 🦺 OOPP & MČDP (funkční)
+- Výdej MČDP — formulář + QR kód pro 2FA podpis zaměstnance
+- Evidence OOPP — výdej pomůcek s automatickým výpočtem expirace
+- Tisk protokolu — PDF dle NV 390/2021 Sb.
+- Ukládání do Google Sheets (záložky MCDP_CZLC4, OOPP_CZLC4)
+- Týdenní email alert pro expirované pomůcky
+
+### 📈 Energie Dashboard (funkční)
+- GitHub Pages — [janasiva4.github.io/energie-dashboard](https://janasiva4.github.io/energie-dashboard)
+- Grafy spotřeby a nákladů po měsících
+- SJL kalkulačka — koeficient 0,069 kWh/SJL (průměr 2025–2026)
+- Alert OTE > 2 500 Kč/MWh
+- Predikce nákladů 2027
+
+### 📄 Faktury & 📋 Smlouvy (připraveno k aktivaci)
+
+---
+
+## 🛠 Technický stack
+
+| Komponenta | Popis |
+|-----------|-------|
+| Hosting | Streamlit Community Cloud |
+| Frontend | Python + Streamlit |
+| Verzování | GitHub (JanaSiva4/DocScan) |
+| AI model | Google Gemini 2.5 Flash |
+| PDF extrakce | pypdf |
+| Excel extrakce | openpyxl |
+| Export dat | Excel (.xlsx) + PDF (reportlab) |
+| Google Sheets | Apps Script webhook |
+| Energie Dashboard | GitHub Pages + Chart.js |
+| OOPP podpis | QR kód + 2FA + EmailJS |
+
+---
+
+## 🔄 Tok dat
 
 ```
-DocScan-Alza/
-├── app.py                  # Hlavní Streamlit aplikace
-├── podpis_2fa.html         # Podpisová stránka (GitHub Pages)
-├── requirements.txt        # Python závislosti
-└── README.md
-```
-
----
-
-## Google Sheets záložky
-
-| Záložka | Obsah |
-|---|---|
-| `CZLC4` | Spotřeba energií |
-| `MCDP_CZLC4` | Výdej MČDP — kvartální záznamy |
-| `OOPP_CZLC4` | Evidence OOPP s expirací |
-| `Podpisy_MCDP` | Audit log 2FA podpisů |
-| `Přehled_OOPP` | Živý dashboard |
-
----
-
-## Nastavení (EmailJS)
-
-Pro funkci 2FA podpisu jsou potřeba tyto hodnoty v `podpis_2fa.html`:
-
-```js
-emailjs.init("PUBLIC_KEY");
-var SERVICE_ID  = "service_...";
-var TEMPLATE_ID = "template_...";
+Uživatel nahraje PDF/Excel/Word
+        ↓
+pypdf / openpyxl extrahuje text
+        ↓
+Google Gemini 2.5 Flash analyzuje (max 150 000 znaků)
+        ↓
+JSON výsledky → Dashboard + Export Excel/PDF
+        ↓
+Uživatel klikne "Odeslat do tabulky"
+        ↓
+Google Sheets (Apps Script webhook)
 ```
 
 ---
 
-## Automatické alerty
+## 📁 Struktura repozitáře
 
-Google Apps Script (`Projekt_Energie LC`) spouští každé pondělí v 8:00 funkci `weeklyAlertOOPP` — odesílá email vedoucímu s přehledem expirujících OOPP a nesplněných MČDP kontrol.
+```
+DocScan/
+├── app.py                    # Hlavní Streamlit aplikace
+├── requirements.txt          # Python závislosti
+├── README.md                 # Tato dokumentace
+└── n8n/
+    └── Energie CZLC4.json    # Záloha původního n8n workflow
+```
 
 ---
 
-*Facility · Sklad Chrástany · 2025–2026*
+## ⚙️ Instalace a spuštění
+
+### Závislosti
+```
+streamlit
+pandas
+plotly
+requests
+openpyxl
+reportlab
+qrcode[pil]
+pypdf
+```
+
+### Streamlit Secrets
+```toml
+GEMINI_API_KEY = "váš_api_klíč"
+```
+
+### Lokální spuštění
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+---
+
+## 🔑 API a integrace
+
+| Služba | Účel | Stav |
+|--------|------|------|
+| Google Gemini 2.5 Flash | AI extrakce dat | ✅ Aktivní |
+| Google Sheets Apps Script | Ukládání dat | ✅ Aktivní |
+| ENTSO-E API | Live ceny OTE | ⏳ Čeká na token |
+| EmailJS | 2FA podpis OOPP | ✅ Aktivní |
+
+---
+
+## ⚠️ Známá omezení
+
+- FSX a voda — Gemini občas bere špatný sloupec (probíhá ladění promptu)
+- OTE cena — zatím fallback 1 650 Kč/MWh, čeká na ENTSO-E token
+- Aplikace nemá přihlášení — přístup má kdokoli s odkazem
+
+---
+
+## 🗺 Plánovaný rozvoj
+
+- ENTSO-E API — live ceny elektřiny z trhu OTE
+- Dopracovat prompt pro FSX a vodu
+- Moduly Faktury a Smlouvy — aktivace Gemini prompty
+- Google OAuth — omezení přístupu na firemní účty
+- Automatické měsíční reporty emailem
+
+---
+
+*DocScan · Jana Sivačenko · Facility CZLC4 · Duben 2026*

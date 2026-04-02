@@ -34,7 +34,6 @@ Z poskytnutých dokumentů vytáhni POUZE tyto hodnoty pro subjekt "WEST I - Alz
 3. "el_cena_distribuce_bez_dph" - Cena distribuce bez DPH [Kč] z faktury Innogy  
 4. "el_cena_celkem_bez_dph" - Elektřina cena bez DPH [CZK] z přefakturace MD
 5. "fsx_spotreba_kwh" - Spotřeba FSX celkem [kWh]
-   → Tabulka má sloupce: "Spotřeba vlastní (kWh)" | "Podíl z celk. plochy" | "Podíl ze společné spotřeby (kWh)" | "Spotřeba celkem (kWh)" | "Cena bez DPH (CZK)"
    → HLEDEJ řádek "WEST I - Alza"
    → Vezmi sloupec "Spotřeba celkem (kWh)" — NE "Spotřeba vlastní"
    → IGNORUJ řádky: Ecologistics, WEST II, Celkem

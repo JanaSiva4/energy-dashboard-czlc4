@@ -159,6 +159,7 @@ def analyzuj_gemini(uploaded_files, obdobi):
             return None
     except json.JSONDecodeError as e:
         st.error(f"Chyba parsování JSON: {e}")
+        st.code(text[:500])  # zobraz prvních 500 znaků co přišlo
         return None
     except Exception as e:
         st.error(f"Chyba spojení: {e}")

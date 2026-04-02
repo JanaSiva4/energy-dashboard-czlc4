@@ -1,0 +1,467 @@
+{
+  "name": "Energie CZLC4",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "faktury-upload",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -352,
+        -368
+      ],
+      "id": "b4c5e2ff-eb62-4fa5-a7c2-e7cfac2617a7",
+      "name": "Webhook",
+      "webhookId": "cc4dbd80-1b0f-4915-be2f-7fbd8a1f5263"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Jsi přesný extraktor dat z faktur za energie. Pracuješ výhradně pro objekt WEST I – Alza (Hala B / MDB).\n\n════════════════════════════════════════\nABSOLUTNÍ PRAVIDLA\n════════════════════════════════════════\n1. NIKDY si nevymýšlej čísla. Pokud hodnotu v textu nenajdeš → vrať \"n/a\".\n2. IGNORUJ veškerá data týkající se: Ecologistics, WEST II (VÝJIMKA u FSX – viz níže).\n3. Čísla opisuj přesně jak jsou v dokumentu – neupravuj, nezaokrouhluj.\n4. Vrať POUZE JSON objekt – žádný text před ani za ním, žádné ```json značky.\n\n════════════════════════════════════════\nCO HLEDAT A KDE PŘESNĚ\n════════════════════════════════════════\n\n── ELEKTŘINA ──────────────────────────\n\n1. \"el_spotreba_kwh\"\n   SOUBOR: přefakturace elektřiny (název obsahuje \"MD\" nebo \"WEST_I_MD\")\n   KOTVA: Najdi řádek, kde je v prvním sloupci text \"WEST I-Alza\". \"Spotřeba celkem (kWh)\"\n   POZOR: NENÍ to řádek Celkem.\n \n2. \"el_cena_sil_el_bez_dph\"\n   SOUBOR: faktura za elektřinu od innogy (název obsahuje \"INV01\" nebo \"Doklad\", typ ELEKTŘINA)\n   MÍSTO: sekce \"Platba za dodávku OPM\" → řádek \"Celkem platba za dodávku OPM\" → sloupec \"celkem bez DPH (Kč)\"\n\n3. \"el_cena_distribuce_bez_dph\"\n   SOUBOR: stejná faktura innogy za elektřinu\n   MÍSTO: sekce \"Poplatky za regulované služby\" → řádek \"Celkem platba za regulované služby\" → sloupec \"celkem bez DPH (Kč)\"\n\n4. \"el_cena_celkem_zaklad_kc\"\n   SOUBOR: stejná faktura innogy za elektřinu\n   MÍSTO: tabulka \"Přefakturace: NÁJEMCE\" → řádek \"WEST I - Alza\" → 5 sloupec \"Cena bez DPH (CZK)\" \n\n── FSX (SPOLEČNÉ PROSTORY) ────────────\n5. \"fsx_spotreba_kwh\"\n   SOUBOR: FSX soubor (název obsahuje \"FSX\" nebo \"WEST_II_FSX\")\n   MÍSTO: tabulka \"Přefakturace: NÁJEMCE\"\n   → najdi řádek kde první sloupec obsahuje \"WEST I - Alza\"\n   → IGNORUJ řádek \"WEST II - Ecologistics\" — to není Alza\n   → vezmi sloupec \"Spotřeba celkem (kWh)\" — NE \"Spotřeba vlastní\"\n\n6. \"fsx_cena_bez_dph\"\n   SOUBOR: stejný FSX soubor\n   → najdi řádek kde první sloupec obsahuje \"WEST I - Alza\"\n   → IGNORUJ řádek \"WEST II - Ecologistics\" — to není Alza\n   → vezmi sloupec \"Cena bez DPH (CZK)\"\n   → Foodtruck pokud existuje přičti, jinak jen Alza\n\n── PLYN ───────────────────────────────\n\n7. \"plyn_spotreba_kwh\"\n   SOUBOR: faktura za plyn od innogy (název obsahuje \"INV01\" nebo \"Doklad\", typ ZEMNÍ PLYN)\n   MÍSTO – DVA KROKY:\n   Krok 1: sekce \"Daň ze zemního plynu\" → sloupec \"neosvobozeno\" → toto číslo je v MWh, NEPOUŽÍVEJ ho přímo\n   Krok 2: sekce \"Přehled spotřeby jednotlivých OPM\" → sloupec \"množství\" → jednotka \"kWh\" ← TOTO použij\n\n8. \"plyn_cena_celkem_zaklad_kc\"\n   SOUBOR: stejná faktura za plyn\n   MÍSTO: tabulka \"Vyúčtování plateb\" → řádek \"Ke zdanění za energie\" → sloupec \"základ (Kč)\"\n\n── VODA ───────────────────────────────\n\n9. \"voda_spotreba_m3\"\n   - ZDROJ: Soubor s názvem \"Voda...pdf\" (např. Voda 01_2026 CH.pdf).\n   - MÍSTO: Tabulka \"Přefakturace: NÁJEMCE\".\n   - KOTVA: Najdi řádek, kde je v prvním sloupci text \"WEST I-Alza\".\n   - HODNOTA: Z tohoto specifického řádku vezmi hodnotu ze sloupce \"Spotřeba celkem (m3)\". (V lednu 2026 je to 758) .\n\n10. \"voda_cena_bez_dph\"\n    - STRIKTNÍ PRAVIDLO: Musíš vzít částku ze stejného řádku jako \"WEST I-Alza\".\n    - SLOUPEC: \"Cena bez DPH (CZK)\".\n    - VYLOUČENÍ: NIKDY neber částku z řádku \"Celkem:\". I když je tato částka v dokumentu výraznější, pro Alzu je chybná.\n    - KONTROLA: Tato částka musí být výsledkem násobení (spotřeba Alzy * jednotková cena). \n    - Příklad pro ověření: V lednu 2026 je správná částka 52 974,67 Kč, zatímco chybná celková částka je 53 938,28 Kč. Vždy vyber tu, která náleží přímo k řádku Alza.\n════════════════════════════════════════\nVÝSTUPNÍ FORMÁT\n════════════════════════════════════════\n\nVrať POUZE tento JSON, nic jiného:\n\n{\n  \"obdobi\": \"{{ $node[\"Webhook\"].json.body.p }}\",\n  \"el_spotreba_kwh\": <číslo nebo \"n/a\">,\n  \"el_cena_sil_el_bez_dph\": <číslo nebo \"n/a\">,\n  \"el_cena_distribuce_bez_dph\": <číslo nebo \"n/a\">,\n  \"el_cena_celkem_zaklad_kc\": <číslo nebo \"n/a\">,\n  \"fsx_spotreba_kwh\": <číslo nebo \"n/a\">,\n  \"fsx_cena_bez_dph\": <číslo nebo \"n/a\">,\n  \"plyn_spotreba_kwh\": <číslo nebo \"n/a\">,\n  \"plyn_cena_celkem_zaklad_kc\": <číslo nebo \"n/a\">,\n  \"voda_spotreba_m3\": <číslo nebo \"n/a\">,\n  \"voda_cena_bez_dph\": <číslo nebo \"n/a\">\n}\n\n════════════════════════════════════════\nTEXT K ANALÝZE:\n{{ $node[\"Všechny data do jednoho\"].json[\"vse\"].map(item => item.text).join(\"\\n\\n---\\n\\n\") }}",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        384,
+        -368
+      ],
+      "id": "cb579848-1383-4f16-8256-346f8702b8f9",
+      "name": "Basic LLM Chain",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "l-plat-ai-n8n",
+          "mode": "list",
+          "cachedResultName": "prj-gcp-l-plat-ai-n8n"
+        },
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        384,
+        -192
+      ],
+      "id": "be581ab4-d865-47fd-b4d4-8fe3cd453dbd",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "uRdNINSTehB5dSEB",
+          "name": "Vertex AI n8n Service Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1040,
+        -368
+      ],
+      "id": "33c4aa89-9c8b-4958-bb89-758296135c3b",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = items[0].json.text;\n// Odstraní případné markdown značky, pokud je AI přidala\nconst cleanJson = text.replace(/```json/g, \"\").replace(/```/g, \"\").trim();\nreturn JSON.parse(cleanJson);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        -368
+      ],
+      "id": "312df666-1f36-4058-b6e1-173a812755b4",
+      "name": "učesat data"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        688,
+        -368
+      ],
+      "id": "8af73ce5-d200-4e25-ba3a-35678f7524c5",
+      "name": "Zbavit se dupl."
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "vse",
+        "include": "specifiedFields",
+        "fieldsToInclude": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -368
+      ],
+      "id": "25e358d7-4d8c-4b8e-be28-3c6fd2ba6722",
+      "name": "Všechny data do jednoho"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        16,
+        -368
+      ],
+      "id": "e22064b2-3ce1-4ef0-b234-f2beac28c591",
+      "name": "Poslat data z FA"
+    },
+    {
+      "parameters": {
+        "content": "Přijíma všechny soubory ze \nStreamlit",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -400,
+        -496
+      ],
+      "typeVersion": 1,
+      "id": "90520c1a-b924-4ed0-bf05-ca51030d3964",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = [];\nconst binaryKeys = Object.keys(items[0].binary);\n\nfor (const key of binaryKeys) {\n  result.push({\n    json: {\n      fileName: items[0].binary[key].fileName\n    },\n    binary: {\n      data: items[0].binary[key]\n    }\n  });\n}\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        -368
+      ],
+      "id": "e548e4dc-cb6a-474a-aa91-8af84f87eb76",
+      "name": "Rozdělit soubory"
+    },
+    {
+      "parameters": {
+        "content": "Rozdělí binary fiels na jednotliví položky, každý soubor dostane \"data\"",
+        "height": 112,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -192,
+        -496
+      ],
+      "typeVersion": 1,
+      "id": "2f4dcc45-db9e-48c3-8d9e-5e8dc489249c",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Vytáhne tex z každého PDF, výstup je textový obsah",
+        "height": 96,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        -480
+      ],
+      "typeVersion": 1,
+      "id": "0fb7d023-d662-47dc-8cea-1a9f079df764",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "To mi zajistí, že výstup je vždy jeden ne více.",
+        "height": 96,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        656,
+        -496
+      ],
+      "typeVersion": 1,
+      "id": "15f49284-da9d-4155-81da-2952eeae84a1",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Pošle výledný JSON do aplikace",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1024,
+        -480
+      ],
+      "typeVersion": 1,
+      "id": "9872b06f-5a9e-45e1-b40d-417f6fba701f",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.dev.gcp.alza.cz",
+            "user-agent": "python-requests/2.33.0",
+            "accept": "*/*",
+            "content-length": "2378035",
+            "content-type": "multipart/form-data; boundary=2f6339e1e0bba834febd13f1f1916495",
+            "x-forwarded-proto": "https",
+            "via": "1.1 google, 1.1 google",
+            "x-forwarded-for": "34.127.33.101,35.214.221.133,169.254.169.126,34.34.247.23,35.214.221.133",
+            "x-cloud-trace-context": "5126e491cef0d113abc332fdb70c179e/4904033288082163577;o=1",
+            "traceparent": "00-5126e491cef0d113abc332fdb70c179e-440ea04af6d40779-01",
+            "forwarded": "for=\"127.0.0.1\";proto=https,for=\"127.0.0.1\";proto=https",
+            "x-forwarded-host": "n8n.dev.gcp.alza.cz",
+            "x-forwarded-by-proxy": "true",
+            "authorization": "",
+            "x-goog-authenticated-user-id": "accounts.google.com:116490844639513199076",
+            "x-goog-authenticated-user-email": "accounts.google.com:cloudrun@d-plat-ai-n8n.iam.gserviceaccount.com",
+            "x-goog-iap-jwt-assertion": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjhFWDY0QSJ9.eyJhdWQiOiIvcHJvamVjdHMvMTAwODY5ODIyMjU4L2V1cm9wZS13ZXN0NC9iYWNrZW5kU2VydmljZXMvMjI1MDY2OTIwOTU2Nzc1MzU3MyIsImF6cCI6Ii9wcm9qZWN0cy8xMDA4Njk4MjIyNTgvZXVyb3BlLXdlc3Q0L2JhY2tlbmRTZXJ2aWNlcy8yMjUwNjY5MjA5NTY3NzUzNTczIiwiZW1haWwiOiJjbG91ZHJ1bkBkLXBsYXQtYWktbjhuLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiZXhwIjoxNzc0NTA5ODQyLCJpYXQiOjE3NzQ1MDkyNDIsImlkZW50aXR5X3NvdXJjZSI6IkdPT0dMRSIsImlzcyI6Imh0dHBzOi8vY2xvdWQuZ29vZ2xlLmNvbS9pYXAiLCJzdWIiOiJhY2NvdW50cy5nb29nbGUuY29tOjExNjQ5MDg0NDYzOTUxMzE5OTA3NiJ9.lBTHSPihgdoxirzwvWq1KFd9RYnto_IUI4yRP__df1JiOYsSudOpU-1NreFAs3Uc6Cj-xpk9T2AocD7dGJFuHg",
+            "x-serverless-authorization": "bearer eyJhbGciOiJSUzI1NiIsImtpZCI6ImM0MWYxNDFhYTE5ZGYwYWM5N2RhYTU1ZTYwMDc2NmM0YzUzNjRjNDIiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiIvcHJvamVjdHMvMTAwODY5ODIyMjU4L2xvY2F0aW9ucy9ldXJvcGUtd2VzdDQvc2VydmljZXMvY3ItZ2MxLWQtcGxhdC1haS1uOG4tbjhuZGVwbG95bWVudCIsImF6cCI6IjExNTM0Mjg0NzIzMTA3NDAwODU1NiIsImVtYWlsIjoic2VydmljZS0xMDA4Njk4MjIyNThAZ2NwLXNhLWlhcC5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJleHAiOjE3NzQ1MTI3NzIsImlhdCI6MTc3NDUwOTE3MiwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwic3ViIjoiMTE1MzQyODQ3MjMxMDc0MDA4NTU2In0.SIGNATURE_REMOVED_BY_GOOGLE",
+            "accept-encoding": "gzip, deflate, zstd"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "p": "2026-01"
+          },
+          "webhookUrl": "https://n8n.dev.gcp.alza.cz/webhook/faktury-upload",
+          "executionMode": "production"
+        },
+        "binary": {
+          "data0": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "01_2026_WI_Doklad_INV01_144000000150786958.pdf",
+            "id": "filesystem-v2:workflows/duZxVUGgCR6dIywV-uFTm/executions/temp/binary_data/5704a39d-0df0-4064-9402-6677db40d241",
+            "fileSize": "173 kB",
+            "bytes": 172645
+          },
+          "data1": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "01_2026_WI_Doklad_INV01_144000000150788501.pdf",
+            "id": "filesystem-v2:workflows/duZxVUGgCR6dIywV-uFTm/executions/temp/binary_data/3414e688-2b91-4e08-a3c3-292bca029f58",
+            "fileSize": "160 kB",
+            "bytes": 159715
+          },
+          "data2": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "01_2026_WII_ InvoiceImages (4).pdf",
+            "id": "filesystem-v2:workflows/duZxVUGgCR6dIywV-uFTm/executions/temp/binary_data/8d92049e-608a-426f-9295-9a9193082373",
+            "fileSize": "395 kB",
+            "bytes": 394903
+          },
+          "data3": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "EE 01_2026 CH WEST I_MD.pdf",
+            "id": "filesystem-v2:workflows/duZxVUGgCR6dIywV-uFTm/executions/temp/binary_data/4a9b0865-b998-4cf6-9156-5ec97c1371da",
+            "fileSize": "155 kB",
+            "bytes": 155053
+          },
+          "data4": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "EE 01_2026 CH WEST II_FSX.pdf",
+            "id": "filesystem-v2:workflows/duZxVUGgCR6dIywV-uFTm/executions/temp/binary_data/229e411b-cc34-4e15-8dc5-99a8b2a3a563",
+            "fileSize": "167 kB",
+            "bytes": 167120
+          },
+          "data5": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "Plyn 01_2026 CH WEST I_MDB.pdf",
+            "id": "filesystem-v2:workflows/duZxVUGgCR6dIywV-uFTm/executions/temp/binary_data/6f038870-732d-4a67-b9c7-ea05f32968fe",
+            "fileSize": "267 kB",
+            "bytes": 267399
+          },
+          "data6": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "Tabuľka odpočty Chráštany 01_2026 Elektrika.pdf",
+            "id": "filesystem-v2:workflows/duZxVUGgCR6dIywV-uFTm/executions/temp/binary_data/2349aae8-a93e-4a3b-bc87-c2dfeedfa5f9",
+            "fileSize": "294 kB",
+            "bytes": 293513
+          },
+          "data7": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "Tabuľka odpočty Chráštany 01_2026 Plyn.pdf",
+            "id": "filesystem-v2:workflows/duZxVUGgCR6dIywV-uFTm/executions/temp/binary_data/2a889bd5-f852-418c-9638-1cfda8f28afc",
+            "fileSize": "265 kB",
+            "bytes": 265362
+          },
+          "data8": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "Tabuľka odpočty Chráštany 01_2026 Voda.pdf",
+            "id": "filesystem-v2:workflows/duZxVUGgCR6dIywV-uFTm/executions/temp/binary_data/64c422e8-1184-40f6-bdfd-6459f101aa5f",
+            "fileSize": "327 kB",
+            "bytes": 327409
+          },
+          "data9": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "Voda 01_2026 CH.pdf",
+            "id": "filesystem-v2:workflows/duZxVUGgCR6dIywV-uFTm/executions/temp/binary_data/380f3be1-9262-4760-a68b-b4ddea127a47",
+            "fileSize": "173 kB",
+            "bytes": 173125
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Rozdělit soubory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Zbavit se dupl.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "učesat data": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zbavit se dupl.": {
+      "main": [
+        [
+          {
+            "node": "učesat data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Všechny data do jednoho": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Poslat data z FA": {
+      "main": [
+        [
+          {
+            "node": "Všechny data do jednoho",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rozdělit soubory": {
+      "main": [
+        [
+          {
+            "node": "Poslat data z FA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6bf378cb-592f-4aff-b3e8-41b331eb556c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a61af14b6c89004198a32a2b8d3701fa761da21d79df302640248339274e7af1"
+  },
+  "id": "duZxVUGgCR6dIywV-uFTm",
+  "tags": []
+}

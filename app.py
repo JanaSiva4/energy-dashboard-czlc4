@@ -33,11 +33,11 @@ Z poskytnutých dokumentů vytáhni POUZE tyto hodnoty pro subjekt "WEST I - Alz
 2. "el_cena_sil_el_bez_dph" - Cena silové elektřiny bez DPH [Kč] z faktury Innogy
 3. "el_cena_distribuce_bez_dph" - Cena distribuce bez DPH [Kč] z faktury Innogy  
 4. "el_cena_celkem_bez_dph" - Elektřina cena bez DPH [CZK] z přefakturace MD
-5.  "fsx_spotreba_kwh" - Spotřeba celkem [kWh] zpřefakturace FSX
+5.  "fsx_spotreba_kwh" - Spotřeba celkem [kWh] z přefakturace FSX
    → Dokument přefakturace el. energie — tabulka společné prostory (FSX)
    → Stejná struktura jako elektřina: řádek "WEST I - Alza", sloupec "Spotřeba celkem (kWh)"
    → IGNORUJ řádky: Ecologistics, WEST II, Celkem
-6. "fsx_cena_bez_dph" - Cena bez DPH [Kč] z přefakturace FSX
+6. "fsx_cena_bez_dph" - Cena bez DPH [CZK] z přefakturace FSX
    → STEJNÝ řádek "WEST I - Alza", sloupec "Cena bez DPH (CZK)" — hned vedle spotřeby celkem
    → IGNORUJ řádky: Ecologistics, WEST II, Celkem
 7. "plyn_spotreba_kwh" - Spotřeba plynu [kWh]

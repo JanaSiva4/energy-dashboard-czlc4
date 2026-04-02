@@ -6,6 +6,11 @@ import re
 import json
 import base64
 from datetime import datetime
+try:
+    import pypdf
+    PYPDF_OK = True
+except:
+    PYPDF_OK = False
 from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.utils import get_column_letter
 from reportlab.lib.pagesizes import A4
@@ -91,36 +96,45 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
         st.error(f"Chyba Google Sheets: {e}")
         return False
 
+# --- EXTRAKCE TEXTU Z PDF ---
+def extrahuj_text(uploaded_file):
+    text = ""
+    try:
+        if uploaded_file.name.endswith('.pdf') and PYPDF_OK:
+            reader = pypdf.PdfReader(io.BytesIO(uploaded_file.getvalue()))
+            for page in reader.pages:
+                text += page.extract_text() + "\n"
+        else:
+            # Pro non-PDF zkusíme jako text
+            try:
+                text = uploaded_file.getvalue().decode('utf-8', errors='ignore')
+            except:
+                text = ""
+    except Exception as e:
+        text = ""
+    return text
+
 # --- GEMINI ANALÝZA ---
 def analyzuj_gemini(uploaded_files, obdobi):
     if not GEMINI_API_KEY:
         st.error("Chybí GEMINI_API_KEY v Streamlit Secrets!")
         return None
 
-    parts = [{"text": PROMPT + f"\n\nObdobí: {obdobi}"}]
-
+    # Extrahuj text ze všech souborů
+    vsechny_texty = ""
     for f in uploaded_files:
-        data = f.getvalue()
-        b64 = base64.b64encode(data).decode('utf-8')
+        text = extrahuj_text(f)
+        if text:
+            vsechny_texty += f"\n\n=== SOUBOR: {f.name} ===\n{text}"
 
-        if f.name.endswith('.pdf'):
-            mime = "application/pdf"
-        elif f.name.endswith('.docx'):
-            mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        elif f.name.endswith('.xlsx'):
-            mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        else:
-            mime = "application/octet-stream"
+    if not vsechny_texty:
+        st.error("Nepodařilo se extrahovat text z dokumentů.")
+        return None
 
-        parts.append({
-            "inline_data": {
-                "mime_type": mime,
-                "data": b64
-            }
-        })
+    prompt_final = PROMPT + f"\n\nObdobí: {obdobi}\n\nTEXTY DOKUMENTŮ:\n{vsechny_texty[:50000]}"
 
     payload = {
-        "contents": [{"parts": parts}],
+        "contents": [{"parts": [{"text": prompt_final}]}],
         "generationConfig": {
             "temperature": 0,
             "maxOutputTokens": 1000
@@ -128,13 +142,11 @@ def analyzuj_gemini(uploaded_files, obdobi):
     }
 
     try:
-        response = requests.post(GEMINI_URL, json=payload, timeout=120)
+        response = requests.post(GEMINI_URL, json=payload, timeout=60)
         if response.status_code == 200:
             result = response.json()
-            st.write("DEBUG:", result)  # dočasný debug
             text = result['candidates'][0]['content']['parts'][0]['text']
             text = text.replace('```json', '').replace('```', '').strip()
-            st.write("TEXT:", text)  # dočasný debug
             return json.loads(text)
         else:
             st.error(f"Gemini chyba: {response.status_code} — {response.text[:200]}")
@@ -359,7 +371,9 @@ if st.session_state.kategorie == "Energie":
                 if result:
                     st.session_state.vysledky = [result]
                     st.success("✅ Analýza dokončena!")
-            st.rerun()
+                    st.rerun()
+                else:
+                    st.error("Analýza selhala — zkontroluj logy výše.")
 
         st.subheader("📁 Digitální archiv")
         if st.session_state.vysledky:

@@ -17,7 +17,7 @@ from reportlab.lib.units import cm
 # --- KONFIGURACE ---
 GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx29FpdOIPj7eO9BJioDiuf_3RTNsA0xLJuHvBq8Dye9TL0gnBvFaBRftWxge6Flg9FTw/exec"
 GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key={GEMINI_API_KEY}"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
 
 PROMPT = """Jsi expert na analýzu energetických faktur pro logistické centrum WEST I – Alza (CZLC4).
 

@@ -40,16 +40,17 @@ Z poskytnutých dokumentů vytáhni POUZE tyto hodnoty pro subjekt "WEST I - Alz
    → IGNORUJ řádky: Ecologistics, WEST II, Celkem
 7. "plyn_spotreba_kwh" - Spotřeba plynu [kWh]
 8. "plyn_cena_celkem_zaklad_kc" - Plyn celkem základ [Kč]
-9. "voda_spotreba_m3" - Spotřeba vody CELKEM [m3]
-   → HLEDEJ řádek který obsahuje "WEST I" nebo "Alza" nebo "CZLC4"
-   → Vezmi sloupec "Spotřeba celkem (m3)" nebo "Celková spotřeba" — NE "Spotřeba vlastní"
-   → NIKDY neber řádek: Ecologistics, WEST II, Celkem, Total
-   → Pokud vidíš více řádků, vezmi TEN který má "WEST I - Alza"
-   → Referenční hodnota je typicky mezi 500-900 m3 za měsíc
+9. "voda_spotreba_m3" - Spotřeba vody celkem [m3]
+   → Tabulka má sloupce: "Spotřeba vlastní (m3)" | "Podíl z celk. Plochy" | "Podíl ze společné spotřeby (m3)" | "Spotřeba celkem (m3)" | "Cena bez DPH (CZK)"
+   → HLEDEJ řádek "WEST I - Alza"
+   → Vezmi ČTVRTÝ číselný sloupec = "Spotřeba celkem (m3)" — NE první sloupec "Spotřeba vlastní"
+   → Příklad: řádek "WEST I - Alza | 704 | 77,58% | 71 | 775 | 55920" → správná hodnota je 775
+   → IGNORUJ řádky: Ecologistics, WEST II, Celkem
 10. "voda_cena_bez_dph" - Cena vody bez DPH [Kč]
-    → STEJNÝ řádek jako voda_spotreba_m3 — tedy řádek "WEST I - Alza"
-    → Sloupec "Cena bez DPH (CZK)" nebo "Cena bez DPH"
-    → NIKDY neber řádek Celkem nebo Ecologistics
+    → STEJNÝ řádek "WEST I - Alza"
+    → Vezmi sloupec "Cena bez DPH (CZK)" — páté číslo v řádku
+    → Příklad: řádek "WEST I - Alza | 704 | 77,58% | 71 | 775 | 55920,10" → správná hodnota je 55920.10
+    → IGNORUJ řádky: Ecologistics, WEST II, Celkem
 
 PRAVIDLA:
 - Pokud hodnotu nenajdeš, vrať "n/a"

@@ -3,9 +3,8 @@ import pandas as pd
 import requests
 import io
 import re
-import base64
 import json
-import qrcode
+import base64
 from datetime import datetime
 from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.utils import get_column_letter
@@ -15,9 +14,42 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.units import cm
 
-# --- KONFIGURACE GOOGLE SHEETS ---
-GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfRP2cvMrwjbsCgQPzfbQsVABB68OYdpTPajGRT4hbhBbVWoGPJIJJTfMy6PbbhfTwCQ/exec"
+# --- KONFIGURACE ---
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx29FpdOIPj7eO9BJioDiuf_3RTNsA0xLJuHvBq8Dye9TL0gnBvFaBRftWxge6Flg9FTw/exec"
+GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
 
+PROMPT = """Jsi expert na analýzu energetických faktur pro logistické centrum WEST I – Alza (CZLC4).
+
+Z poskytnutých dokumentů vytáhni POUZE tyto hodnoty pro subjekt "WEST I - Alza":
+
+1. "el_spotreba_kwh" - Spotřeba elektřiny vlastní [kWh] z přefakturace MD
+2. "el_cena_sil_el_bez_dph" - Cena silové elektřiny bez DPH [Kč] z faktury Innogy
+3. "el_cena_distribuce_bez_dph" - Cena distribuce bez DPH [Kč] z faktury Innogy  
+4. "el_cena_celkem_zaklad_kc" - Elektřina celkem základ [Kč] z faktury Innogy
+5. "fsx_spotreba_kwh" - Spotřeba FSX celkem [kWh] - sloupec "Spotřeba celkem (kWh)" NE "Spotřeba vlastní"
+   → IGNORUJ řádky: Ecologistics, WEST II, Celkem
+   → Pokud existuje Foodtruck, přičti jeho hodnotu
+6. "fsx_cena_bez_dph" - Cena FSX bez DPH [Kč]
+   → IGNORUJ řádky: Ecologistics, WEST II, Celkem
+7. "plyn_spotreba_kwh" - Spotřeba plynu [kWh]
+8. "plyn_cena_celkem_zaklad_kc" - Plyn celkem základ [Kč]
+9. "voda_spotreba_m3" - Spotřeba vody vlastní [m3]
+   → řádek "WEST I - Alza", sloupec "Spotřeba vlastní (m3)"
+   → IGNORUJ: Ecologistics, WEST II, Celkem
+10. "voda_cena_bez_dph" - Cena vody bez DPH [Kč]
+    → STEJNÝ řádek jako spotřeba, sloupec "Cena bez DPH (CZK)"
+    → IGNORUJ: Celkem, Ecologistics
+
+PRAVIDLA:
+- Pokud hodnotu nenajdeš, vrať "n/a"
+- NIKDY nevymýšlej čísla
+- Vrať POUZE JSON bez markdown, bez komentářů
+
+Vrať přesně v tomto formátu:
+{"obdobi":"RRRR-MM","el_spotreba_kwh":0,"el_cena_sil_el_bez_dph":0,"el_cena_distribuce_bez_dph":0,"el_cena_celkem_zaklad_kc":0,"fsx_spotreba_kwh":0,"fsx_cena_bez_dph":0,"plyn_spotreba_kwh":0,"plyn_cena_celkem_zaklad_kc":0,"voda_spotreba_m3":0,"voda_cena_bez_dph":0}"""
+
+# --- GOOGLE SHEETS ---
 def odeslat_do_google_sheets(res, sklad="CZLC4"):
     try:
         obdobi_raw = str(res.get('obdobi', datetime.now().strftime('%Y-%m')))
@@ -34,28 +66,21 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
             except:
                 return 0.0
 
-        def find_val(data, *terms):
-            for k, v in data.items():
-                k_upper = str(k).upper()
-                if any(t.upper() in k_upper for t in terms):
-                    return v
-            return 0.0
-
         data_row = [
             rok, mesic,
-            to_f(find_val(res, 'SPOTREBA', 'KWH')),
-            to_f(find_val(res, 'JEDNOTKOVA')),
-            to_f(find_val(res, 'SIL')),
-            to_f(find_val(res, 'DIST')),
-            to_f(find_val(res, 'ZAKLAD KC', 'CELKEM')),
+            to_f(res.get('el_spotreba_kwh', 0)),
+            to_f(res.get('el_cena_sil_el_bez_dph', 0)) / to_f(res.get('el_spotreba_kwh', 1)) if to_f(res.get('el_spotreba_kwh', 0)) else 0,
+            to_f(res.get('el_cena_sil_el_bez_dph', 0)),
+            to_f(res.get('el_cena_distribuce_bez_dph', 0)),
+            to_f(res.get('el_cena_celkem_zaklad_kc', 0)),
             to_f(res.get('fsx_spotreba_kwh', 0)),
-            to_f(res.get('fsx_jednotkova_cena', 0)),
+            0,
             to_f(res.get('fsx_cena_bez_dph', 0)),
             to_f(res.get('plyn_spotreba_kwh', 0)),
-            to_f(res.get('plyn_jednotkova_cena_kc', 0)),
+            0,
             to_f(res.get('plyn_cena_celkem_zaklad_kc', 0)),
             to_f(res.get('voda_spotreba_m3', 0)),
-            to_f(res.get('voda_jednotkova_cena_kc', 0)),
+            0,
             to_f(res.get('voda_cena_bez_dph', 0))
         ]
 
@@ -63,184 +88,58 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
         requests.post(GOOGLE_SCRIPT_URL, json=payload)
         return True
     except Exception as e:
-        st.error(f"Chyba: {e}")
+        st.error(f"Chyba Google Sheets: {e}")
         return False
 
+# --- GEMINI ANALÝZA ---
+def analyzuj_gemini(uploaded_files, obdobi):
+    if not GEMINI_API_KEY:
+        st.error("Chybí GEMINI_API_KEY v Streamlit Secrets!")
+        return None
 
-def odeslat_mcdp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
-    def yn(val):
-        return "ANO" if val else "NE"
-    try:
-        row = [
-            f"MCDP-{sklad}-{datetime.now().strftime('%Y%m%d%H%M')}",
-            data.get("datum_vydeje", datetime.now().strftime("%d.%m.%Y")),
-            data.get("kvartal", ""),
-            datetime.now().year,
-            sklad,
-            data.get("zamestnanec", ""),
-            data.get("email", ""),
-            yn(data.get("rucnik")),
-            yn(data.get("mydlo")),
-            yn(data.get("ariel")),
-            yn(data.get("krem")),
-            yn(data.get("solvina")),
-            yn(data.get("rucnik") and data.get("mydlo") and data.get("ariel") and data.get("krem") and data.get("solvina")),
-            data.get("zadal", ""),
-            datetime.now().strftime("%d.%m.%Y %H:%M"),
-        ]
-        payload = {"action": "append", "sheet": f"MCDP_{sklad}", "row": row}
-        r = requests.post(GOOGLE_SCRIPT_URL, json=payload, timeout=10)
-        return r.status_code == 200
-    except Exception as e:
-        st.error(f"Chyba odesílání MČDP: {e}")
-        return False
+    parts = [{"text": PROMPT + f"\n\nObdobí: {obdobi}"}]
 
+    for f in uploaded_files:
+        data = f.getvalue()
+        b64 = base64.b64encode(data).decode('utf-8')
 
-def odeslat_oopp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
-    def stav_exp(exp_str):
-        if not exp_str: return "—"
-        try:
-            p = exp_str.split("/")
-            exp = datetime(int(p[1]), int(p[0]), 1)
-            dnes = datetime.now()
-            if exp < dnes: return "expirováno"
-            if (exp - dnes).days <= 60: return "brzy expiruje"
-            return "v pořádku"
-        except: return "—"
+        if f.name.endswith('.pdf'):
+            mime = "application/pdf"
+        elif f.name.endswith('.docx'):
+            mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        elif f.name.endswith('.xlsx'):
+            mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        else:
+            mime = "application/octet-stream"
+
+        parts.append({
+            "inline_data": {
+                "mime_type": mime,
+                "data": b64
+            }
+        })
+
+    payload = {
+        "contents": [{"parts": parts}],
+        "generationConfig": {
+            "temperature": 0,
+            "maxOutputTokens": 1000
+        }
+    }
 
     try:
-        exp = data.get("expirace", "")
-        row = [
-            f"OOPP-{sklad}-{datetime.now().strftime('%Y%m%d%H%M%S')}",
-            datetime.now().strftime("%d.%m.%Y"),
-            sklad,
-            data.get("zamestnanec", ""),
-            data.get("email", ""),
-            data.get("pomucka", ""),
-            data.get("velikost", ""),
-            exp,
-            stav_exp(exp),
-            "",
-            "ANO" if data.get("podpis") else "NE",
-            data.get("zadal", ""),
-            datetime.now().strftime("%d.%m.%Y %H:%M"),
-        ]
-        payload = {"action": "append", "sheet": f"OOPP_{sklad}", "row": row}
-        r = requests.post(GOOGLE_SCRIPT_URL, json=payload, timeout=10)
-        return r.status_code == 200
+        response = requests.post(GEMINI_URL, json=payload, timeout=120)
+        if response.status_code == 200:
+            result = response.json()
+            text = result['candidates'][0]['content']['parts'][0]['text']
+            text = text.replace('```json', '').replace('```', '').strip()
+            return json.loads(text)
+        else:
+            st.error(f"Gemini chyba: {response.status_code} — {response.text[:200]}")
+            return None
     except Exception as e:
-        st.error(f"Chyba odesílání OOPP: {e}")
-        return False
-
-
-def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci):
-    navy   = colors.HexColor('#1a3a6b')
-    lgray  = colors.HexColor('#EEF3FA')
-    red_bg = colors.HexColor('#FFF3F3')
-    dark_red = colors.HexColor('#7B1C1C')
-
-    title_s  = ParagraphStyle('t', fontSize=15, fontName='Helvetica-Bold', textColor=colors.white, alignment=1)
-    sub_s    = ParagraphStyle('s', fontSize=9,  fontName='Helvetica', textColor=colors.white, alignment=1)
-    label_s  = ParagraphStyle('l', fontSize=9,  fontName='Helvetica-Bold', textColor=navy)
-    body_s   = ParagraphStyle('b', fontSize=9,  fontName='Helvetica', textColor=colors.HexColor('#333333'))
-    legal_s  = ParagraphStyle('leg', fontSize=7.5, fontName='Helvetica', textColor=colors.HexColor('#444444'), leading=10)
-
-    buf = io.BytesIO()
-    doc = SimpleDocTemplate(buf, pagesize=A4,
-        rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
-    el = []
-
-    # Hlavička
-    ht = Table([[Paragraph("PŘEDÁVACÍ PROTOKOL — MČDP", title_s)],
-                [Paragraph(f"Mycí a čisticí prostředky · Sklad {sklad} · Chrástany · Facility", sub_s)]],
-               colWidths=[17*cm])
-    ht.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),navy),
-        ('TOPPADDING',(0,0),(-1,-1),8),('BOTTOMPADDING',(0,0),(-1,-1),8),
-        ('LEFTPADDING',(0,0),(-1,-1),12)]))
-    el.append(ht); el.append(Spacer(1, 0.4*cm))
-
-    # Info řádky
-    it = Table([
-        [Paragraph('Zaměstnanec:', label_s), Paragraph(f'<b>{zamestnanec}</b>', body_s),
-         Paragraph('Kvartál / Rok:', label_s), Paragraph(f'<b>{kvartal}</b>', body_s)],
-        [Paragraph('Sklad:', label_s), Paragraph(sklad, body_s),
-         Paragraph('Datum výdeje:', label_s), Paragraph(datetime.now().strftime('%d.%m.%Y'), body_s)],
-        [Paragraph('Vedoucí:', label_s), Paragraph(vedouci or '—', body_s),
-         Paragraph('', label_s), Paragraph('', body_s)],
-    ], colWidths=[3.5*cm, 5*cm, 3.5*cm, 5*cm])
-    it.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),lgray),
-        ('GRID',(0,0),(-1,-1),0.5,colors.HexColor('#CCCCCC')),
-        ('TOPPADDING',(0,0),(-1,-1),5),('BOTTOMPADDING',(0,0),(-1,-1),5),
-        ('LEFTPADDING',(0,0),(-1,-1),6)]))
-    el.append(it); el.append(Spacer(1, 0.4*cm))
-
-    # Tabulka položek
-    ph = ParagraphStyle('ph', fontSize=9, fontName='Helvetica-Bold', textColor=colors.white)
-    polozky_data = [[Paragraph('Položka',ph), Paragraph('Vydáno',ph),
-                     Paragraph('Specifikace',ph), Paragraph('Převzal (podpis)',ph)],
-        ['1× Ručník 50×100cm Siguro', '☑' if vydane_polozky.get('rucnik') else '☐', '50×100 cm, froté', ''],
-        ['1× Tekuté mýdlo',           '☑' if vydane_polozky.get('mydlo')  else '☐', '500 ml', ''],
-        ['1× Ariel tablety 60 ks',    '☑' if vydane_polozky.get('ariel')  else '☐', '60 ks / balení', ''],
-        ['1× Krém Indulona original', '☑' if vydane_polozky.get('krem')   else '☐', 'nebo měsíčkový', ''],
-        ['1× Abrazivní pasta Solvina', '☑' if vydane_polozky.get('solvina') else '☐', '450 g', ''],
-    ]
-    pt = Table(polozky_data, colWidths=[6.5*cm, 2*cm, 4.5*cm, 4*cm])
-    pt.setStyle(TableStyle([
-        ('BACKGROUND',(0,0),(-1,0),navy),
-        ('ROWBACKGROUNDS',(0,1),(-1,-1),[colors.white, lgray]),
-        ('GRID',(0,0),(-1,-1),0.5,colors.HexColor('#CCCCCC')),
-        ('FONTSIZE',(0,1),(-1,-1),9),('ALIGN',(1,0),(1,-1),'CENTER'),
-        ('FONTSIZE',(1,1),(1,-1),14),
-        ('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6),
-        ('LEFTPADDING',(0,0),(-1,-1),8),
-        ('LINEBELOW',(3,1),(3,-1),1,colors.HexColor('#333333')),
-    ]))
-    el.append(pt); el.append(Spacer(1, 0.5*cm))
-
-    # Podpisy
-    st_tbl = Table([
-        [Paragraph('Podpis zaměstnance:', label_s), '',
-         Paragraph('Podpis vedoucího / razítko:', label_s), ''],
-        ['', '', '', ''], ['', '', '', ''],
-    ], colWidths=[4*cm, 4.5*cm, 4*cm, 4.5*cm], rowHeights=[0.5*cm, 1*cm, 0.3*cm])
-    st_tbl.setStyle(TableStyle([
-        ('BACKGROUND',(0,0),(-1,-1),lgray),
-        ('LINEBELOW',(1,1),(1,1),1.5,colors.HexColor('#1a3a6b')),
-        ('LINEBELOW',(3,1),(3,1),1.5,colors.HexColor('#1a3a6b')),
-        ('LEFTPADDING',(0,0),(-1,-1),6),('TOPPADDING',(0,0),(-1,-1),4),
-    ]))
-    el.append(st_tbl); el.append(Spacer(1, 0.4*cm))
-
-    # Právní text
-    lht = Table([[Paragraph('Prohlášení zaměstnance — NV 390/2021 Sb.',
-        ParagraphStyle('lh', fontSize=9, fontName='Helvetica-Bold', textColor=colors.white))]],
-        colWidths=[17*cm])
-    lht.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),dark_red),
-        ('TOPPADDING',(0,0),(-1,-1),5),('BOTTOMPADDING',(0,0),(-1,-1),5),
-        ('LEFTPADDING',(0,0),(-1,-1),8)]))
-    el.append(lht)
-
-    legal_txt = (
-        "Předání a převzetí výše uvedených OOPP a předmětů zaměstnanec i zaměstnavatel potvrzují svým podpisem. "
-        "Dále byl zaměstnanec seznámen s způsobem údržby OOPP dle NV 390/2021 Sb. Zaměstnanec se zavazuje řádně "
-        "hospodařit s OOPP a předměty svěřenými mu zaměstnavatelem na základě tohoto potvrzení a střežit a "
-        "ochraňovat tyto OOPP a předměty zaměstnavatele před poškozením, ztrátou, zničením a zneužitím. "
-        "Zaměstnanec se zavazuje svěřené OOPP a předměty používat pouze pro výkon práce pro zaměstnavatele nebo "
-        "v jeho souvislosti. Zaměstnanec zároveň souhlasí s tím, že v případě ztráty, zničení nebo poškození "
-        "znemožňujícího další používání OOPP a předmětů mu bude zaměstnavatelem svěřen na základě tohoto potvrzení "
-        "mu bude uvedena cena ztracené nebo poškozeného předmětu a předmětů, je sražena ze mzdy v souladu "
-        "s příslušnou Dohodou o srážkách ze mzdy uzavřenou mezi zaměstnancem a zaměstnavatelem."
-    )
-    lbt = Table([[Paragraph(legal_txt, legal_s)]], colWidths=[17*cm])
-    lbt.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),red_bg),
-        ('TOPPADDING',(0,0),(-1,-1),8),('BOTTOMPADDING',(0,0),(-1,-1),8),
-        ('LEFTPADDING',(0,0),(-1,-1),8),('RIGHTPADDING',(0,0),(-1,-1),8)]))
-    el.append(lbt)
-
-    doc.build(el)
-    buf.seek(0)
-    return buf.getvalue()
-
+        st.error(f"Chyba spojení: {e}")
+        return None
 
 # --- KONFIGURACE STRÁNKY ---
 st.set_page_config(page_title="DocScan", layout="wide", page_icon="🔍")
@@ -299,7 +198,6 @@ st.markdown("""
     .fsx-border { border-top: 2px solid #0084ff !important; }
     .gas-border { border-top: 2px solid #FF5722 !important; }
     .water-border { border-top: 2px solid #00BFFF !important; }
-    .oopp-border { border-top: 2px solid #00c864 !important; }
     [data-testid="stFileUploadDropzone"],
     section[data-testid="stFileUploadDropzone"],
     section[data-testid="stFileUploadDropzone"] > div {
@@ -382,10 +280,10 @@ if 'datum_analyzy' not in st.session_state: st.session_state.datum_analyzy = Non
 
 # --- KATEGORIE ---
 kategorie_list = [
-    ("⚡", "Energie",     "Spotřeba & náklady"),
-    ("📄", "Faktury",     "Dodavatel, částky, splatnost"),
-    ("📋", "Smlouvy",     "Strany, podmínky, datum"),
-    ("🦺", "OOPP & MČDP","Evidence & výdej pomůcek"),
+    ("⚡", "Energie", "Spotřeba & náklady"),
+    ("📄", "Faktury", "Dodavatel, částky, splatnost"),
+    ("📋", "Smlouvy", "Strany, podmínky, datum"),
+    ("📦", "Objednávky", "Položky, ceny, dodávky"),
 ]
 
 cols_kat = st.columns(4)
@@ -446,6 +344,7 @@ if st.session_state.kategorie == "Energie":
             if st.button("🗑 Nová analýza", use_container_width=True):
                 st.session_state.vysledky = []
                 st.session_state.pocet_souboru = 0
+                st.markdown('<script>window.location.reload();</script>', unsafe_allow_html=True)
                 st.rerun()
 
     with col_main:
@@ -453,34 +352,22 @@ if st.session_state.kategorie == "Energie":
             st.session_state.vysledky = []
             st.session_state.pocet_souboru = len(uploaded_files)
             st.session_state.datum_analyzy = datetime.now().strftime('%d.%m.%Y %H:%M')
-            webhook_url = "https://n8n.dev.gcp.alza.cz/webhook/faktury-upload"
-            with st.spinner(f"Analyzuji {len(uploaded_files)} faktur..."):
-                try:
-                    def get_mime(name):
-                        if name.endswith('.pdf'): return "application/pdf"
-                        if name.endswith('.docx'): return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        if name.endswith('.xlsx'): return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        if name.endswith('.xls'): return "application/vnd.ms-excel"
-                        return "application/octet-stream"
-                    files = [("data", (f.name, f.getvalue(), get_mime(f.name))) for f in uploaded_files]
-                    payload = {"p": st.session_state.get("obdobi_input", datetime.now().strftime('%Y-%m'))}
-                    response = requests.post(webhook_url, files=files, data=payload)
-                    if response.status_code == 200:
-                        data = response.json()
-                        st.session_state.vysledky = data if isinstance(data, list) else [data]
-                    else:
-                        st.error(f"Chyba: {response.status_code}")
-                except Exception as e:
-                    st.error(f"Chyba spojení: {e}")
+            with st.spinner(f"Gemini analyzuje {len(uploaded_files)} dokumentů..."):
+                result = analyzuj_gemini(uploaded_files, st.session_state.get('obdobi_input', datetime.now().strftime('%Y-%m')))
+                if result:
+                    st.session_state.vysledky = [result]
+                    st.success("✅ Analýza dokončena!")
             st.rerun()
 
         st.subheader("📁 Digitální archiv")
         if st.session_state.vysledky:
             res = st.session_state.vysledky[0]
-            if st.button("✅ ODESLAT DO TABULKY", use_container_width=False):
-                if odeslat_do_google_sheets(res, sklad if 'sklad' in dir() else "CZLC4"):
+
+            if st.button("✅ ODESLAT DO TABULKY"):
+                if odeslat_do_google_sheets(res, sklad):
                     st.balloons()
                     st.success("Uloženo do Google Sheets!")
+
             col_t, col_btns = st.columns([2, 1])
             with col_btns:
                 col_e2, col_p2 = st.columns(2)
@@ -508,8 +395,7 @@ if st.session_state.kategorie == "Energie":
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             with col_p2:
                 pdf_buffer = io.BytesIO()
-                doc = SimpleDocTemplate(pdf_buffer, pagesize=A4,
-                    rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
+                doc = SimpleDocTemplate(pdf_buffer, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
                 elements = []
                 title_style = ParagraphStyle('title', fontSize=18, fontName='Helvetica-Bold', textColor=colors.HexColor('#0052cc'), spaceAfter=6)
                 sub_style = ParagraphStyle('sub', fontSize=10, fontName='Helvetica', textColor=colors.HexColor('#666666'), spaceAfter=20)
@@ -550,8 +436,8 @@ if st.session_state.kategorie == "Energie":
                 doc.build(elements)
                 pdf_buffer.seek(0)
                 st.download_button("📄 Stáhnout PDF", data=pdf_buffer.getvalue(),
-                    file_name=f"DocScan_{periode}.pdf",
-                    mime="application/pdf")
+                    file_name=f"DocScan_{periode}.pdf", mime="application/pdf")
+
             st.dataframe(df_export, use_container_width=True)
             st.write("---")
             st.subheader("📊 Finální přehled")
@@ -565,8 +451,8 @@ if st.session_state.kategorie == "Energie":
             for label, key, style, col in kats:
                 with col:
                     st.markdown(f'<div class="energy-card {style}"><h3>{label}</h3></div>', unsafe_allow_html=True)
-                    for res in st.session_state.vysledky:
-                        data_souboru = {k: v for k, v in res.items() if k.startswith(key) and v and str(v).lower() != "n/a"}
+                    for res_item in st.session_state.vysledky:
+                        data_souboru = {k: v for k, v in res_item.items() if k.startswith(key) and v and str(v).lower() != "n/a"}
                         if data_souboru:
                             st.markdown('<div style="margin-bottom:10px;padding:4px;">', unsafe_allow_html=True)
                             for klic, hodnota in data_souboru.items():
@@ -584,16 +470,15 @@ if st.session_state.kategorie == "Energie":
                                     <span style="color:#fff;font-weight:bold;font-size:0.85rem;">{hodnota_fmt}</span>
                                 </div>""", unsafe_allow_html=True)
                             st.markdown('</div>', unsafe_allow_html=True)
+
             st.write("")
-            res = st.session_state.vysledky[0]
             text_export = f"DocScan — Výsledky analýzy\nObdobí: {res.get('obdobi','—')}\n\n"
             text_export += f"ELEKTŘINA\n  Spotřeba: {res.get('el_spotreba_kwh','n/a')} kWh\n  Cena celkem: {res.get('el_cena_celkem_zaklad_kc','n/a')} Kč\n\n"
             text_export += f"FSX\n  Spotřeba: {res.get('fsx_spotreba_kwh','n/a')} kWh\n  Cena: {res.get('fsx_cena_bez_dph','n/a')} Kč\n\n"
             text_export += f"PLYN\n  Spotřeba: {res.get('plyn_spotreba_kwh','n/a')} kWh\n  Cena celkem: {res.get('plyn_cena_celkem_zaklad_kc','n/a')} Kč\n\n"
             text_export += f"VODA\n  Spotřeba: {res.get('voda_spotreba_m3','n/a')} m³\n  Cena: {res.get('voda_cena_bez_dph','n/a')} Kč"
             st.download_button("📋 Stáhnout jako TXT", data=text_export.encode('utf-8'),
-                file_name=f"DocScan_{res.get('obdobi','export')}.txt",
-                mime="text/plain")
+                file_name=f"DocScan_{res.get('obdobi','export')}.txt", mime="text/plain")
         else:
             st.info("Nahrajte faktury a spusťte analýzu.")
 
@@ -602,7 +487,7 @@ elif st.session_state.kategorie == "Faktury":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
         st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'])
-        st.markdown('<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;margin-top:10px;">🔒 Dostupné po aktivaci API</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;margin-top:10px;">🔒 Dostupné po aktivaci</p>', unsafe_allow_html=True)
     with col_main:
         st.subheader("📄 Faktury — ukázka výstupu")
         cols_f = st.columns(2)
@@ -613,17 +498,17 @@ elif st.session_state.kategorie == "Faktury":
             st.markdown('</div>', unsafe_allow_html=True)
         with cols_f[1]:
             st.markdown('<div class="energy-card el-border"><h4 style="color:#FFD700;">💰 Platební údaje</h4>', unsafe_allow_html=True)
-            for pole, val in [("Datum splatnosti","15.02.2026"),("Celkem bez DPH","10 000 Kč"),("DPH 21%","2 100 Kč"),("Celkem s DPH","12 100 Kč"),("Číslo účtu","123456789/0800"),("Variabilní symbol","20260001")]:
+            for pole, val in [("Datum splatnosti","15.02.2026"),("Celkem bez DPH","10 000 Kč"),("DPH 21%","2 100 Kč"),("Celkem s DPH","12 100 Kč")]:
                 st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
-        st.info("⏳ Funkce bude aktivní po připojení Anthropic API.")
+        st.info("⏳ Funkce bude aktivní brzy.")
 
 # ── SMLOUVY ───────────────────────────────────────────────────────
 elif st.session_state.kategorie == "Smlouvy":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
         st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'])
-        st.markdown('<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;margin-top:10px;">🔒 Dostupné po aktivaci API</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;margin-top:10px;">🔒 Dostupné po aktivaci</p>', unsafe_allow_html=True)
     with col_main:
         st.subheader("📋 Smlouvy — ukázka výstupu")
         cols_s = st.columns(2)
@@ -637,296 +522,25 @@ elif st.session_state.kategorie == "Smlouvy":
             for pole, val in [("Předmět","Dodávka služeb"),("Hodnota","120 000 Kč/rok"),("Výpovědní lhůta","3 měsíce"),("Obnova","Automatická")]:
                 st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
-        st.info("⏳ Funkce bude aktivní po připojení Anthropic API.")
+        st.info("⏳ Funkce bude aktivní brzy.")
 
-# ── OOPP & MČDP ───────────────────────────────────────────────────
-elif st.session_state.kategorie == "OOPP & MČDP":
+# ── OBJEDNÁVKY ────────────────────────────────────────────────────
+elif st.session_state.kategorie == "Objednávky":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
-        sklad_oopp = st.selectbox("Sklad:", ["CZLC4", "LCÚ", "LCZ", "SKLC3"], key="sklad_oopp")
-        rezim = st.radio("Režim:", ["Výdej MČDP", "Evidence OOPP", "Tisk protokolu"])
-
+        st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'])
+        st.markdown('<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;margin-top:10px;">🔒 Dostupné po aktivaci</p>', unsafe_allow_html=True)
     with col_main:
-
-        # ── Výdej MČDP ──
-        if rezim == "Výdej MČDP":
-            # ← změň na svoji GitHub Pages URL po zapnutí Pages
-            PODPIS_URL = "https://janasiva4.github.io/DocScan-Alza/podpis_2fa.html"
-
-            st.subheader("🧴 Výdej MČDP — kvartální")
-
-            if 'mcdp_reset' not in st.session_state:
-                st.session_state.mcdp_reset = 0
-
-            zamestnanec = st.text_input("Zaměstnanec (jméno a příjmení)",
-                key=f"zam_{st.session_state.mcdp_reset}",
-                autocomplete="off")
-            email_zam   = st.text_input("Email zaměstnance",
-                placeholder="jan.novak@firma.cz",
-                key=f"email_{st.session_state.mcdp_reset}",
-                autocomplete="off")
-            stredisko   = st.text_input("Středisko",
-                placeholder="např. Sklad A — příjem",
-                key=f"stredisko_{st.session_state.mcdp_reset}",
-                autocomplete="off")
-            user        = st.text_input("Uživatel / osobní číslo",
-                placeholder="např. 12345",
-                key=f"user_{st.session_state.mcdp_reset}",
-                autocomplete="off")
-            rok_akt = datetime.now().year
-            kvartal_sel = st.selectbox("Kvartál", [
-                f"Q1 / {rok_akt}", f"Q2 / {rok_akt}",
-                f"Q3 / {rok_akt}", f"Q4 / {rok_akt}",
-                f"Q1 / {rok_akt+1}", f"Q2 / {rok_akt+1}",
-                f"Q3 / {rok_akt+1}", f"Q4 / {rok_akt+1}",
-            ])
-            st.write("**Vydávané položky:**")
-            c1, c2 = st.columns(2)
-            rucnik  = c1.checkbox("1× Ručník Siguro 50×100cm", value=True)
-            mydlo   = c2.checkbox("1× Tekuté mýdlo", value=True)
-            ariel   = c1.checkbox("1× Ariel tablety 60 ks", value=True)
-            krem    = c2.checkbox("1× Krém Indulona", value=True)
-            solvina = c1.checkbox("1× Abrazivní pasta Solvina", value=True)
-            vedouci = st.text_input("Zadal / vedoucí")
-
-            # QR kód pro 2FA podpis
-            if zamestnanec and email_zam:
-                polozky_list = []
-                if rucnik:  polozky_list.append("Ručník Siguro")
-                if mydlo:   polozky_list.append("Tekuté mýdlo")
-                if ariel:   polozky_list.append("Ariel 60 ks")
-                if krem:    polozky_list.append("Krém Indulona")
-                if solvina: polozky_list.append("Solvina")
-
-                qr_data = {
-                    "jmeno": zamestnanec, "email": email_zam,
-                    "stredisko": stredisko, "user": user,
-                    "sklad": sklad_oopp, "kvartal": kvartal_sel,
-                    "polozky": ", ".join(polozky_list),
-                }
-                qr_json = json.dumps(qr_data, ensure_ascii=False)
-                qr_payload = base64.b64encode(qr_json.encode('utf-8')).decode('ascii')
-                qr_url = f"{PODPIS_URL}?d={qr_payload}"
-
-                qr = qrcode.QRCode(version=1, box_size=6, border=2)
-                qr.add_data(qr_url)
-                qr.make(fit=True)
-                qr_img = qr.make_image(fill_color="#1a3a6b", back_color="white")
-                buf_qr = io.BytesIO()
-                qr_img.save(buf_qr, format="PNG")
-
-                st.write("---")
-                col_qr, col_info = st.columns([1, 2])
-                with col_qr:
-                    st.image(buf_qr.getvalue(), width=180, caption="Zaměstnanec naskenuje pro podpis")
-                with col_info:
-                    st.markdown(f'''
-                    <div class="energy-card oopp-border" style="padding:12px;">
-                      <p style="color:#00c864;font-size:0.75rem;font-weight:bold;
-                                text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
-                        Čeká na 2FA podpis
-                      </p>
-                      <p style="color:#fff;font-size:0.9rem;"><b>{zamestnanec}</b></p>
-                      <p style="color:#aaa;font-size:0.8rem;">{email_zam}</p>
-                      <p style="color:#aaa;font-size:0.8rem;margin-top:4px;">
-                        {kvartal_sel} · {sklad_oopp}
-                      </p>
-                      <p style="color:#aaa;font-size:0.75rem;margin-top:4px;">
-                        {", ".join(polozky_list)}
-                      </p>
-                    </div>
-                    ''', unsafe_allow_html=True)
-                st.write("---")
-
-            col_btn1, col_btn2 = st.columns(2)
-            with col_btn1:
-                if st.button("✅ ODESLAT DO GOOGLE SHEETS", use_container_width=True):
-                    if not zamestnanec:
-                        st.warning("Zadej jméno zaměstnance.")
-                    else:
-                        data = {
-                            "zamestnanec": zamestnanec, "email": email_zam,
-                            "kvartal": kvartal_sel, "rucnik": rucnik,
-                            "mydlo": mydlo, "ariel": ariel, "krem": krem,
-                            "solvina": solvina, "podpis": True, "zadal": vedouci,
-                        }
-                        if odeslat_mcdp_do_sheets(data, sklad_oopp):
-                            st.balloons()
-                            st.success(f"✅ Záznam uložen — {zamestnanec} · {kvartal_sel}")
-                            st.session_state.mcdp_reset += 1
-                            st.rerun()
-
-            with col_btn2:
-                if zamestnanec:
-                    pdf_bytes = generovat_pdf_protokol(
-                        zamestnanec=zamestnanec, sklad=sklad_oopp,
-                        kvartal=kvartal_sel,
-                        vydane_polozky={"rucnik": rucnik, "mydlo": mydlo, "ariel": ariel, "krem": krem, "solvina": solvina},
-                        vedouci=vedouci
-                    )
-                    jmeno_souboru = zamestnanec.replace(" ", "_")
-                    st.download_button("📄 Stáhnout PDF protokol",
-                        data=pdf_bytes,
-                        file_name=f"Protokol_MCDP_{jmeno_souboru}_{kvartal_sel[:2]}.pdf",
-                        mime="application/pdf",
-                        use_container_width=True)
-
-        # ── Evidence OOPP ──
-        elif rezim == "Evidence OOPP":
-            PODPIS_URL = "https://janasiva4.github.io/DocScan-Alza/podpis_2fa.html"
-
-            st.subheader("🦺 Evidence OOPP — výdej pomůcek")
-
-            if 'oopp_reset' not in st.session_state:
-                st.session_state.oopp_reset = 0
-
-            zamestnanec2 = st.text_input("Zaměstnanec (jméno a příjmení)",
-                key=f"zam2_{st.session_state.oopp_reset}", autocomplete="off")
-            email_zam2   = st.text_input("Email zaměstnance",
-                placeholder="jan.novak@firma.cz",
-                key=f"email2_{st.session_state.oopp_reset}", autocomplete="off")
-            stredisko2   = st.text_input("Středisko",
-                placeholder="např. Sklad A — příjem",
-                key=f"stredisko2_{st.session_state.oopp_reset}", autocomplete="off")
-            user2        = st.text_input("Uživatel / osobní číslo",
-                placeholder="např. 12345",
-                key=f"user2_{st.session_state.oopp_reset}", autocomplete="off")
-            vedouci2     = st.text_input("Zadal / vedoucí",
-                key=f"vedouci2_{st.session_state.oopp_reset}", autocomplete="off")
-
-            st.write("**Vydávané pomůcky:**")
-
-            rok = datetime.now().year
-            # (pomůcka, klíč, expirace_mesice)
-            pomucky_def = [
-                ("Oděv pracovní (montérky)", "odev", None),
-                ("Rukavice bezpečnostní", "rukavice", None),
-                ("Kabát proti chladu", "kabat", 24),
-                ("Tričko", "tricko", 12),
-                ("Mikina", "mikina", 6),
-                ("Čepice / kšiltovka", "cepice", 24),
-                ("Ochranné brýle", "bryle", None),
-                ("Kraťasy", "kratasy", 12),
-                ("Thermo", "thermo", 12),
-                ("Bezpečnostní obuv", "obuv", 12),
-            ]
-
-            o1, o2 = st.columns(2)
-            vydane = {}
-            for i, (nazev, klic, exp_mes) in enumerate(pomucky_def):
-                col = o1 if i % 2 == 0 else o2
-                exp_info = f" ({exp_mes//12}r)" if exp_mes and exp_mes >= 12 else f" ({exp_mes}m)" if exp_mes else " (dle potřeby)"
-                vydane[klic] = col.checkbox(f"{nazev}{exp_info}", key=f"oopp_{klic}_{st.session_state.oopp_reset}")
-
-            # Automatická expirace
-            def exp_datum(mesice):
-                if not mesice: return None
-                from datetime import date
-                d = date.today()
-                mes = d.month + mesice
-                rok_exp = d.year + (mes - 1) // 12
-                mes_exp = (mes - 1) % 12 + 1
-                return f"{mes_exp:02d}/{rok_exp}"
-
-            # QR kód
-            if zamestnanec2 and email_zam2:
-                vydane_nazvy = [nazev for nazev, klic, _ in pomucky_def if vydane.get(klic)]
-                oopp_qr_data = {
-                    "jmeno": zamestnanec2, "email": email_zam2,
-                    "stredisko": stredisko2, "user": user2,
-                    "sklad": sklad_oopp, "kvartal": f"OOPP {datetime.now().strftime('%m/%Y')}",
-                    "polozky": ", ".join(vydane_nazvy) if vydane_nazvy else "—",
-                }
-                qr_json2 = json.dumps(oopp_qr_data, ensure_ascii=False)
-                qr_payload2 = base64.b64encode(qr_json2.encode('utf-8')).decode('ascii')
-                qr_url2 = f"{PODPIS_URL}?d={qr_payload2}"
-
-                qr2 = qrcode.QRCode(version=1, box_size=6, border=2)
-                qr2.add_data(qr_url2)
-                qr2.make(fit=True)
-                qr_img2 = qr2.make_image(fill_color="#0D4F1C", back_color="white")
-                buf_qr2 = io.BytesIO()
-                qr_img2.save(buf_qr2, format="PNG")
-
-                st.write("---")
-                col_qr2, col_info2 = st.columns([1, 2])
-                with col_qr2:
-                    st.image(buf_qr2.getvalue(), width=180, caption="Zaměstnanec naskenuje pro podpis")
-                with col_info2:
-                    st.markdown(f'''
-                    <div class="energy-card oopp-border" style="padding:12px;">
-                      <p style="color:#00c864;font-size:0.75rem;font-weight:bold;
-                                text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
-                        Čeká na 2FA podpis
-                      </p>
-                      <p style="color:#fff;font-size:0.9rem;"><b>{zamestnanec2}</b></p>
-                      <p style="color:#aaa;font-size:0.8rem;">{email_zam2}</p>
-                      <p style="color:#aaa;font-size:0.75rem;margin-top:4px;">
-                        {", ".join(vydane_nazvy) if vydane_nazvy else "—"}
-                      </p>
-                    </div>
-                    ''', unsafe_allow_html=True)
-                st.write("---")
-
-                if st.button("✅ ULOŽIT DO EVIDENCE", use_container_width=False):
-                    ulozeno = 0
-                    for nazev, klic, exp_mes in pomucky_def:
-                        if vydane.get(klic):
-                            exp = exp_datum(exp_mes)
-                            data_oopp = {
-                                "zamestnanec": zamestnanec2,
-                                "email": email_zam2,
-                                "stredisko": stredisko2,
-                                "user": user2,
-                                "pomucka": nazev,
-                                "velikost": "",
-                                "expirace": exp or "",
-                                "podpis": True,
-                                "zadal": vedouci2,
-                            }
-                            if odeslat_oopp_do_sheets(data_oopp, sklad_oopp):
-                                ulozeno += 1
-                    if ulozeno > 0:
-                        st.balloons()
-                        st.success(f"✅ Uloženo {ulozeno} pomůcek — {zamestnanec2}")
-                        st.session_state.oopp_reset += 1
-                        st.rerun()
-            else:
-                st.info("Vyplň jméno a email zaměstnance pro zobrazení QR kódu.")
-
-        # ── Tisk protokolu ──
-        elif rezim == "Tisk protokolu":
-            st.subheader("🖨️ Generátor předávacího protokolu")
-            st.markdown('<p style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Vyplň údaje — dostaneš PDF připravené k tisku a podpisu zaměstnance.</p>', unsafe_allow_html=True)
-
-            zam_tisk = st.text_input("Zaměstnanec")
-            rok_akt2 = datetime.now().year
-            kv_tisk  = st.selectbox("Kvartál", [
-                f"Q1 / {rok_akt2}", f"Q2 / {rok_akt2}",
-                f"Q3 / {rok_akt2}", f"Q4 / {rok_akt2}",
-                f"Q1 / {rok_akt2+1}", f"Q2 / {rok_akt2+1}",
-                f"Q3 / {rok_akt2+1}", f"Q4 / {rok_akt2+1}",
-            ], key="kv_tisk")
-            ved_tisk = st.text_input("Vedoucí", key="ved_tisk")
-            st.write("**Položky pro protokol:**")
-            t1, t2 = st.columns(2)
-            cb1 = t1.checkbox("Ručník Siguro", value=True, key="p1")
-            cb2 = t2.checkbox("Tekuté mýdlo",  value=True, key="p2")
-            cb3 = t1.checkbox("Ariel 60 ks",   value=True, key="p3")
-            cb4 = t2.checkbox("Krém Indulona",  value=True, key="p4")
-            cb5 = t1.checkbox("Solvina",        value=True, key="p5")
-
-            if zam_tisk:
-                pdf_tisk = generovat_pdf_protokol(
-                    zamestnanec=zam_tisk, sklad=sklad_oopp,
-                    kvartal=kv_tisk,
-                    vydane_polozky={"rucnik": cb1, "mydlo": cb2, "ariel": cb3, "krem": cb4, "solvina": cb5},
-                    vedouci=ved_tisk
-                )
-                st.download_button("📄 Stáhnout PDF protokol k tisku",
-                    data=pdf_tisk,
-                    file_name=f"Protokol_MCDP_{zam_tisk.replace(' ', '_')}.pdf",
-                    mime="application/pdf",
-                    use_container_width=False)
-            else:
-                st.info("Zadej jméno zaměstnance pro vygenerování protokolu.")
+        st.subheader("📦 Objednávky — ukázka výstupu")
+        cols_o = st.columns(2)
+        with cols_o[0]:
+            st.markdown('<div class="energy-card el-border"><h4 style="color:#FFD700;">🛒 Základní údaje</h4>', unsafe_allow_html=True)
+            for pole, val in [("Číslo objednávky","OBJ-2026-042"),("Dodavatel","ABC s.r.o."),("Datum","15.03.2026"),("Dodání","30.03.2026")]:
+                st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+        with cols_o[1]:
+            st.markdown('<div class="energy-card fsx-border"><h4 style="color:#0084ff;">💵 Položky & ceny</h4>', unsafe_allow_html=True)
+            for pole, val in [("Položka","Kancelářský materiál"),("Množství","50 ks"),("Cena bez DPH","5 000 Kč"),("Cena s DPH","6 050 Kč")]:
+                st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+        st.info("⏳ Funkce bude aktivní brzy.")

@@ -137,7 +137,7 @@ def analyzuj_gemini(uploaded_files, obdobi):
         "contents": [{"parts": [{"text": prompt_final}]}],
         "generationConfig": {
             "temperature": 0,
-            "maxOutputTokens": 2048
+            "maxOutputTokens": 8192
         }
     }
 

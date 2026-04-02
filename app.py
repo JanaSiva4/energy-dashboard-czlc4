@@ -131,7 +131,7 @@ def analyzuj_gemini(uploaded_files, obdobi):
         st.error("Nepodařilo se extrahovat text z dokumentů.")
         return None
 
-    prompt_final = PROMPT + f"\n\nObdobí: {obdobi}\n\nTEXTY DOKUMENTŮ:\n{vsechny_texty[:50000]}"
+    prompt_final = PROMPT + f"\n\nObdobí: {obdobi}\n\nTEXTY DOKUMENTŮ:\n{vsechny_texty[:150000]}"
 
     payload = {
         "contents": [{"parts": [{"text": prompt_final}]}],
@@ -142,7 +142,7 @@ def analyzuj_gemini(uploaded_files, obdobi):
     }
 
     try:
-        response = requests.post(GEMINI_URL, json=payload, timeout=60)
+        response = requests.post(GEMINI_URL, json=payload, timeout=120)
         if response.status_code == 200:
             result = response.json()
             text = result['candidates'][0]['content']['parts'][0]['text']

@@ -96,7 +96,7 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
         st.error(f"Chyba Google Sheets: {e}")
         return False
 
-# --- EXTRAKCE TEXTU Z PDF ---
+# --- EXTRAKCE TEXTU Z PDF/EXCEL ---
 def extrahuj_text(uploaded_file):
     text = ""
     try:
@@ -104,8 +104,29 @@ def extrahuj_text(uploaded_file):
             reader = pypdf.PdfReader(io.BytesIO(uploaded_file.getvalue()))
             for page in reader.pages:
                 text += page.extract_text() + "\n"
+        elif uploaded_file.name.endswith(('.xlsx', '.xls')):
+            import openpyxl
+            wb = openpyxl.load_workbook(io.BytesIO(uploaded_file.getvalue()), data_only=True)
+            for sheet_name in wb.sheetnames:
+                ws = wb[sheet_name]
+                text += f"\n=== LIST: {sheet_name} ===\n"
+                for row in ws.iter_rows(values_only=True):
+                    radek = [str(c) if c is not None else "" for c in row]
+                    if any(r.strip() for r in radek):
+                        text += " | ".join(radek) + "\n"
+        elif uploaded_file.name.endswith('.docx'):
+            try:
+                import zipfile
+                from xml.etree import ElementTree as ET
+                with zipfile.ZipFile(io.BytesIO(uploaded_file.getvalue())) as z:
+                    with z.open('word/document.xml') as f:
+                        tree = ET.parse(f)
+                        for elem in tree.iter():
+                            if elem.text:
+                                text += elem.text + " "
+            except:
+                text = uploaded_file.getvalue().decode('utf-8', errors='ignore')
         else:
-            # Pro non-PDF zkusíme jako text
             try:
                 text = uploaded_file.getvalue().decode('utf-8', errors='ignore')
             except:

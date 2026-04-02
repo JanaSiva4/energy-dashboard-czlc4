@@ -328,7 +328,8 @@ kategorie_list = [
     ("⚡", "Energie", "Spotřeba & náklady"),
     ("📄", "Faktury", "Dodavatel, částky, splatnost"),
     ("📋", "Smlouvy", "Strany, podmínky, datum"),
-    ("📦", "Objednávky", "Položky, ceny, dodávky"),
+    ("🦺", "OOPP", "Osobní ochranné pomůcky"),
+    ("🧴", "MČDP", "Mycí a čisticí prostředky"),
 ]
 
 cols_kat = st.columns(4)
@@ -571,23 +572,20 @@ elif st.session_state.kategorie == "Smlouvy":
             st.markdown('</div>', unsafe_allow_html=True)
         st.info("⏳ Funkce bude aktivní brzy.")
 
-# ── OBJEDNÁVKY ────────────────────────────────────────────────────
-elif st.session_state.kategorie == "Objednávky":
+# ── OOPP ────────────────────────────────────────────────────────
+elif st.session_state.kategorie == "OOPP":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
-        st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'])
-        st.markdown('<p style="color:rgba(255,255,255,0.3);font-size:0.75rem;margin-top:10px;">🔒 Dostupné po aktivaci</p>', unsafe_allow_html=True)
+        st.selectbox("Sklad:", ["CZLC4", "LCÚ", "LCZ", "SKLC3"], key="oopp_sklad")
     with col_main:
-        st.subheader("📦 Objednávky — ukázka výstupu")
-        cols_o = st.columns(2)
-        with cols_o[0]:
-            st.markdown('<div class="energy-card el-border"><h4 style="color:#FFD700;">🛒 Základní údaje</h4>', unsafe_allow_html=True)
-            for pole, val in [("Číslo objednávky","OBJ-2026-042"),("Dodavatel","ABC s.r.o."),("Datum","15.03.2026"),("Dodání","30.03.2026")]:
-                st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        with cols_o[1]:
-            st.markdown('<div class="energy-card fsx-border"><h4 style="color:#0084ff;">💵 Položky & ceny</h4>', unsafe_allow_html=True)
-            for pole, val in [("Položka","Kancelářský materiál"),("Množství","50 ks"),("Cena bez DPH","5 000 Kč"),("Cena s DPH","6 050 Kč")]:
-                st.markdown(f'<div class="preview-row"><span class="preview-label">{pole}</span><span class="preview-value">{val}</span></div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        st.info("⏳ Funkce bude aktivní brzy.")
+        st.subheader("🦺 OOPP — Osobní ochranné pomůcky")
+        st.info("⏳ Modul bude brzy dostupný.")
+
+# ── MČDP ────────────────────────────────────────────────────────
+elif st.session_state.kategorie == "MČDP":
+    with col_side:
+        st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
+        st.selectbox("Sklad:", ["CZLC4", "LCÚ", "LCZ", "SKLC3"], key="mcdp_sklad")
+    with col_main:
+        st.subheader("🧴 MČDP — Mycí a čisticí prostředky")
+        st.info("⏳ Modul bude brzy dostupný.")

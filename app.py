@@ -146,11 +146,20 @@ def analyzuj_gemini(uploaded_files, obdobi):
         if response.status_code == 200:
             result = response.json()
             text = result['candidates'][0]['content']['parts'][0]['text']
+            # Vyčisti markdown
             text = text.replace('```json', '').replace('```', '').strip()
+            # Najdi JSON objekt v textu
+            start = text.find('{')
+            end = text.rfind('}') + 1
+            if start >= 0 and end > start:
+                text = text[start:end]
             return json.loads(text)
         else:
             st.error(f"Gemini chyba: {response.status_code} — {response.text[:200]}")
             return None
+    except json.JSONDecodeError as e:
+        st.error(f"Chyba parsování JSON: {e}")
+        return None
     except Exception as e:
         st.error(f"Chyba spojení: {e}")
         return None

@@ -33,10 +33,14 @@ Z poskytnutých dokumentů vytáhni POUZE tyto hodnoty pro subjekt "WEST I - Alz
 2. "el_cena_sil_el_bez_dph" - Cena silové elektřiny bez DPH [Kč] z faktury Innogy
 3. "el_cena_distribuce_bez_dph" - Cena distribuce bez DPH [Kč] z faktury Innogy  
 4. "el_cena_celkem_zaklad_kc" - Elektřina celkem základ [Kč] z faktury Innogy
-5. "fsx_spotreba_kwh" - Spotřeba FSX celkem [kWh] - sloupec "Spotřeba celkem (kWh)" NE "Spotřeba vlastní"
+5. "fsx_spotreba_kwh" - Spotřeba FSX celkem [kWh]
+   → Tabulka má sloupce: "Spotřeba vlastní (kWh)" | "Podíl z celk. plochy" | "Podíl ze společné spotřeby (kWh)" | "Spotřeba celkem (kWh)" | "Cena bez DPH (CZK)"
+   → HLEDEJ řádek "WEST I - Alza"
+   → Vezmi sloupec "Spotřeba celkem (kWh)" — NE "Spotřeba vlastní"
    → IGNORUJ řádky: Ecologistics, WEST II, Celkem
-   → Pokud existuje Foodtruck, přičti jeho hodnotu
 6. "fsx_cena_bez_dph" - Cena FSX bez DPH [Kč]
+   → STEJNÝ řádek "WEST I - Alza"
+   → Vezmi sloupec "Cena bez DPH (CZK)" — sloupec HNED ZA "Spotřeba celkem (kWh)"
    → IGNORUJ řádky: Ecologistics, WEST II, Celkem
 7. "plyn_spotreba_kwh" - Spotřeba plynu [kWh]
 8. "plyn_cena_celkem_zaklad_kc" - Plyn celkem základ [Kč]

@@ -29,10 +29,10 @@ PROMPT = """Jsi expert na analýzu energetických faktur pro logistické centrum
 
 Z poskytnutých dokumentů vytáhni POUZE tyto hodnoty pro subjekt "WEST I - Alza":
 
-1. "el_spotreba_kwh" - Spotřeba elektřiny vlastní [kWh] z přefakturace MD
+1. "el_spotreba_kwh" - Spotřeba elektřiny celkem [kWh] z přefakturace MD
 2. "el_cena_sil_el_bez_dph" - Cena silové elektřiny bez DPH [Kč] z faktury Innogy
 3. "el_cena_distribuce_bez_dph" - Cena distribuce bez DPH [Kč] z faktury Innogy  
-4. "el_cena_celkem_zaklad_kc" - Elektřina celkem základ [Kč] z faktury Innogy
+4. "el_cena_celkem_bez_dph" - Elektřina cena bez DPH [CZK] z přefakturace MD
 5. "fsx_spotreba_kwh" - Spotřeba FSX celkem [kWh]
    → Tabulka má sloupce: "Spotřeba vlastní (kWh)" | "Podíl z celk. plochy" | "Podíl ze společné spotřeby (kWh)" | "Spotřeba celkem (kWh)" | "Cena bez DPH (CZK)"
    → HLEDEJ řádek "WEST I - Alza"

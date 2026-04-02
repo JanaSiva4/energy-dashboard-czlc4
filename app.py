@@ -44,12 +44,10 @@ Z poskytnutých dokumentů vytáhni POUZE tyto hodnoty pro subjekt "WEST I - Alz
    → Tabulka má sloupce: "Spotřeba vlastní (m3)" | "Podíl z celk. Plochy" | "Podíl ze společné spotřeby (m3)" | "Spotřeba celkem (m3)" | "Cena bez DPH (CZK)"
    → HLEDEJ řádek "WEST I - Alza"
    → Vezmi ČTVRTÝ číselný sloupec = "Spotřeba celkem (m3)" — NE první sloupec "Spotřeba vlastní"
-   → Příklad: řádek "WEST I - Alza | 704 | 77,58% | 71 | 775 | 55920" → správná hodnota je 775
    → IGNORUJ řádky: Ecologistics, WEST II, Celkem
 10. "voda_cena_bez_dph" - Cena vody bez DPH [Kč]
     → STEJNÝ řádek "WEST I - Alza"
-    → Vezmi sloupec "Cena bez DPH (CZK)" — páté číslo v řádku
-    → Příklad: řádek "WEST I - Alza | 704 | 77,58% | 71 | 775 | 55920,10" → správná hodnota je 55920.10
+    → Vezmi sloupec "Cena bez DPH (CZK)" — sloupec HNED ZA "Spotřeba celkem (m3)"
     → IGNORUJ řádky: Ecologistics, WEST II, Celkem
 
 PRAVIDLA:

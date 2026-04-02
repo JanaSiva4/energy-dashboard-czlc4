@@ -131,8 +131,10 @@ def analyzuj_gemini(uploaded_files, obdobi):
         response = requests.post(GEMINI_URL, json=payload, timeout=120)
         if response.status_code == 200:
             result = response.json()
+            st.write("DEBUG:", result)  # dočasný debug
             text = result['candidates'][0]['content']['parts'][0]['text']
             text = text.replace('```json', '').replace('```', '').strip()
+            st.write("TEXT:", text)  # dočasný debug
             return json.loads(text)
         else:
             st.error(f"Gemini chyba: {response.status_code} — {response.text[:200]}")

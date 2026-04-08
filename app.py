@@ -96,12 +96,12 @@ def extrahuj_text(uploaded_file):
         text = ""
     return text
 
-# --- GEMINI ANALÝZA ---
+# --- n8n ANALÝZA ---
 def analyzuj_gemini(uploaded_files, obdobi):
-    if not GEMINI_API_KEY:
-        st.error("Chybí GEMINI_API_KEY v Streamlit Secrets!")
-        return None
-
+    """
+    Tato funkce posílá texty z dokumentů do n8n webhooku k analýze.
+    Název funkce necháváme 'analyzuj_gemini', aby se nemusel měnit zbytek kódu.
+    """
     vsechny_texty = ""
     for f in uploaded_files:
         text = extrahuj_text(f)
@@ -112,32 +112,26 @@ def analyzuj_gemini(uploaded_files, obdobi):
         st.error("Nepodařilo se extrahovat text z dokumentů.")
         return None
 
-    prompt_final = PROMPT + f"\n\nObdobí: {obdobi}\n\nTEXTY DOKUMENTŮ:\n{vsechny_texty[:150000]}"
-
+    # Balíček dat, který uvidíš v n8n uzlu Webhook
     payload = {
-        "contents": [{"parts": [{"text": prompt_final}]}],
-        "generationConfig": {"temperature": 0, "maxOutputTokens": 8192}
+        "obdobi": obdobi,
+        "sklad": "WEST I - Alza",
+        "text_ke_zpracovani": vsechny_texty[:150000]
     }
 
     try:
-        response = requests.post(GEMINI_URL, json=payload, timeout=120)
+        # Voláme n8n webhook místo přímého Google API
+        response = requests.post(N8N_WEBHOOK_URL, json=payload, timeout=120)
+        
         if response.status_code == 200:
-            result = response.json()
-            text = result['candidates'][0]['content']['parts'][0]['text']
-            text = text.replace('```json', '').replace('```', '').strip()
-            start = text.find('{')
-            end = text.rfind('}') + 1
-            if start >= 0 and end > start:
-                text = text[start:end]
-            return json.loads(text)
+            # Očekáváme, že n8n vrátí čistý JSON: {"el_spotreba_kwh": 123, ...}
+            return response.json()
         else:
-            st.error(f"Gemini chyba: {response.status_code} — {response.text[:200]}")
+            st.error(f"n8n chyba: {response.status_code} — {response.text[:200]}")
             return None
-    except json.JSONDecodeError as e:
-        st.error(f"Chyba parsování JSON: {e}")
-        return None
+            
     except Exception as e:
-        st.error(f"Chyba spojení: {e}")
+        st.error(f"Chyba spojení s n8n: {e}")
         return None
 
 # --- GOOGLE SHEETS ---

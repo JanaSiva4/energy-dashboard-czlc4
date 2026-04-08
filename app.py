@@ -21,7 +21,27 @@ GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfRP2cvMrwjbsCgQPz
 def odeslat_do_google_sheets(res, sklad="CZLC4"):
     try:
         obdobi_raw = str(res.get('obdobi', datetime.now().strftime('%Y-%m')))
-        rok, mesic = map(int, obdobi_raw.split('-'))
+        # Zajisti format RRRR-MM — zkus různé formáty
+        try:
+            if '-' in obdobi_raw and len(obdobi_raw) == 7:
+                # Správný formát 2026-02
+                rok, mesic = map(int, obdobi_raw.split('-'))
+            elif '.' in obdobi_raw:
+                # Formát DD.MM.RRRR nebo rozsah — vezmi rok a měsíc z prvního data
+                prvni_datum = obdobi_raw.split('-')[0].strip()
+                casti = prvni_datum.split('.')
+                if len(casti) == 3:
+                    mesic = int(casti[1])
+                    rok = int(casti[2])
+                else:
+                    rok = datetime.now().year
+                    mesic = datetime.now().month
+            else:
+                rok = datetime.now().year
+                mesic = datetime.now().month
+        except:
+            rok = datetime.now().year
+            mesic = datetime.now().month
 
         def to_f(val):
             if not val or str(val).lower() == 'n/a': return 0.0

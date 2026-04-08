@@ -16,7 +16,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.units import cm
 
 # --- KONFIGURACE GOOGLE SHEETS ---
-GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwR-TVAgAxRuNUeI8MogR4rubtMYvMMaU-AvfavHBI2PNVsjHBgHVzv-WhieMBlyUcNuQ/exec"
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzGV-vnAWMloGczThHXmch7JmgYDNe2WpPzeDeVvGPgcyeRpCEzi4dQfq7IsZWNLt7wg/exec"
 
 def odeslat_do_google_sheets(res, sklad="CZLC4"):
     try:

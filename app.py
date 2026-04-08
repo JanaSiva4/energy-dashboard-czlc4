@@ -73,7 +73,6 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
         ]
 
         payload = {"action": "append", "sheet": sklad, "row": data_row}
-        st.write(f"DEBUG rok={rok} mesic={mesic}")
         requests.post(GOOGLE_SCRIPT_URL, json=payload)
         return True
     except Exception as e:
@@ -408,6 +407,7 @@ if 'kategorie' not in st.session_state: st.session_state.kategorie = "Energie"
 if 'pocet_souboru' not in st.session_state: st.session_state.pocet_souboru = 0
 if 'datum_analyzy' not in st.session_state: st.session_state.datum_analyzy = None
 if 'obdobi_input' not in st.session_state: st.session_state.obdobi_input = ''
+if 'file_uploader_key' not in st.session_state: st.session_state.file_uploader_key = 0
 
 # --- KATEGORIE ---
 kategorie_list = [
@@ -463,7 +463,6 @@ if st.session_state.kategorie == "Energie":
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
         sklad = st.selectbox("Sklad:", ["CZLC4", "LCÚ", "LCZ", "SKLC3"])
 
-        # Období — read only, vyplní se automaticky po analýze
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Období</p>', unsafe_allow_html=True)
         obdobi_val = st.session_state.get('obdobi_input', '')
         if obdobi_val:
@@ -471,7 +470,7 @@ if st.session_state.kategorie == "Energie":
         else:
             st.markdown('<div class="obdobi-box-empty">Vyplní se automaticky po analýze</div>', unsafe_allow_html=True)
 
-        uploaded_files = st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'], help="Nahrajte faktury — PDF, Word nebo Excel.", key=f"uploader_{st.session_state.get('file_uploader_key', 0)}")
+        uploaded_files = st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'], help="Nahrajte faktury — PDF, Word nebo Excel.", key=f"uploader_{st.session_state.file_uploader_key}")
         if uploaded_files:
             st.markdown(f'<p style="color:#00c864;font-size:0.8rem;">✓ {len(uploaded_files)} soubor(ů) připraveno</p>', unsafe_allow_html=True)
         st.write("")
@@ -483,7 +482,7 @@ if st.session_state.kategorie == "Energie":
                 st.session_state.vysledky = []
                 st.session_state.pocet_souboru = 0
                 st.session_state.obdobi_input = ''
-                st.session_state.file_uploader_key = st.session_state.get('file_uploader_key', 0) + 1
+                st.session_state.file_uploader_key += 1
                 st.rerun()
 
     with col_main:
@@ -506,7 +505,6 @@ if st.session_state.kategorie == "Energie":
                     if response.status_code == 200:
                         data = response.json()
                         st.session_state.vysledky = data if isinstance(data, list) else [data]
-                        # Automaticky vyplň období z výsledku analýzy
                         prvni = st.session_state.vysledky[0] if st.session_state.vysledky else {}
                         if prvni.get('obdobi') and str(prvni.get('obdobi')).lower() != 'n/a':
                             st.session_state.obdobi_input = prvni.get('obdobi')
@@ -520,6 +518,7 @@ if st.session_state.kategorie == "Energie":
         if st.session_state.vysledky:
             res = st.session_state.vysledky[0]
             if st.button("✅ ODESLAT DO TABULKY", use_container_width=False):
+                if odeslat_do_google_sheets(res, sklad):
                     st.success("Uloženo do Google Sheets!")
             col_t, col_btns = st.columns([2, 1])
             with col_btns:
@@ -744,6 +743,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         st.warning("Zadej jméno zaměstnance.")
                     else:
                         data = {"zamestnanec": zamestnanec, "email": email_zam, "kvartal": kvartal_sel, "rucnik": rucnik, "mydlo": mydlo, "ariel": ariel, "krem": krem, "solvina": solvina, "podpis": True, "zadal": vedouci}
+                        if odeslat_mcdp_do_sheets(data, sklad_oopp):
                             st.success(f"✅ Záznam uložen — {zamestnanec} · {kvartal_sel}")
                             st.session_state.mcdp_reset += 1
                             st.rerun()
@@ -823,7 +823,6 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                             if odeslat_oopp_do_sheets(data_oopp, sklad_oopp):
                                 ulozeno += 1
                     if ulozeno > 0:
-                        st.balloons()
                         st.success(f"✅ Uloženo {ulozeno} pomůcek — {zamestnanec2}")
                         st.session_state.oopp_reset += 1
                         st.rerun()

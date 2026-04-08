@@ -471,7 +471,7 @@ if st.session_state.kategorie == "Energie":
         else:
             st.markdown('<div class="obdobi-box-empty">Vyplní se automaticky po analýze</div>', unsafe_allow_html=True)
 
-        uploaded_files = st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'], help="Nahrajte faktury — PDF, Word nebo Excel.")
+        uploaded_files = st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'], help="Nahrajte faktury — PDF, Word nebo Excel, key=f"uploader_{st.session_state.get('file_uploader_key', 0)}")
         if uploaded_files:
             st.markdown(f'<p style="color:#00c864;font-size:0.8rem;">✓ {len(uploaded_files)} soubor(ů) připraveno</p>', unsafe_allow_html=True)
         st.write("")
@@ -483,6 +483,7 @@ if st.session_state.kategorie == "Energie":
                 st.session_state.vysledky = []
                 st.session_state.pocet_souboru = 0
                 st.session_state.obdobi_input = ''
+                st.session_state.file_uploader_key = st.session_state.get('file_uploader_key', 0) + 1
                 st.rerun()
 
     with col_main:

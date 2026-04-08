@@ -81,6 +81,7 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
         ]
 
         payload = {"action": "append", "sheet": sklad, "row": data_row}
+        st.write(f"DEBUG rok={rok} mesic={mesic}")
         requests.post(GOOGLE_SCRIPT_URL, json=payload)
         return True
     except Exception as e:

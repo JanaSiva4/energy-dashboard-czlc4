@@ -150,7 +150,6 @@ def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci)
         rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
     el = []
 
-    # Hlavička
     ht = Table([[Paragraph("PŘEDÁVACÍ PROTOKOL — MČDP", title_s)],
                 [Paragraph(f"Mycí a čisticí prostředky · Sklad {sklad} · Chrástany · Facility", sub_s)]],
                colWidths=[17*cm])
@@ -159,7 +158,6 @@ def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci)
         ('LEFTPADDING',(0,0),(-1,-1),12)]))
     el.append(ht); el.append(Spacer(1, 0.4*cm))
 
-    # Info řádky
     it = Table([
         [Paragraph('Zaměstnanec:', label_s), Paragraph(f'<b>{zamestnanec}</b>', body_s),
          Paragraph('Kvartál / Rok:', label_s), Paragraph(f'<b>{kvartal}</b>', body_s)],
@@ -174,7 +172,6 @@ def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci)
         ('LEFTPADDING',(0,0),(-1,-1),6)]))
     el.append(it); el.append(Spacer(1, 0.4*cm))
 
-    # Tabulka položek
     ph = ParagraphStyle('ph', fontSize=9, fontName='Helvetica-Bold', textColor=colors.white)
     polozky_data = [[Paragraph('Položka',ph), Paragraph('Vydáno',ph),
                      Paragraph('Specifikace',ph), Paragraph('Převzal (podpis)',ph)],
@@ -197,7 +194,6 @@ def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci)
     ]))
     el.append(pt); el.append(Spacer(1, 0.5*cm))
 
-    # Podpisy
     st_tbl = Table([
         [Paragraph('Podpis zaměstnance:', label_s), '',
          Paragraph('Podpis vedoucího / razítko:', label_s), ''],
@@ -211,7 +207,6 @@ def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci)
     ]))
     el.append(st_tbl); el.append(Spacer(1, 0.4*cm))
 
-    # Právní text
     lht = Table([[Paragraph('Prohlášení zaměstnance — NV 390/2021 Sb.',
         ParagraphStyle('lh', fontSize=9, fontName='Helvetica-Bold', textColor=colors.white))]],
         colWidths=[17*cm])
@@ -368,6 +363,25 @@ st.markdown("""
         letter-spacing: 0 !important;
         font-weight: normal !important;
     }
+    .obdobi-box {
+        background: rgba(0,200,100,0.06);
+        border: 1px solid rgba(0,200,100,0.3);
+        border-radius: 10px;
+        padding: 12px 16px;
+        color: #00e87a;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+    .obdobi-box-empty {
+        background: rgba(0,200,100,0.06);
+        border: 1px solid rgba(0,200,100,0.3);
+        border-radius: 10px;
+        padding: 12px 16px;
+        color: #555;
+        font-size: 0.85rem;
+        font-style: italic;
+        margin-bottom: 8px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -379,6 +393,7 @@ if 'vysledky' not in st.session_state: st.session_state.vysledky = []
 if 'kategorie' not in st.session_state: st.session_state.kategorie = "Energie"
 if 'pocet_souboru' not in st.session_state: st.session_state.pocet_souboru = 0
 if 'datum_analyzy' not in st.session_state: st.session_state.datum_analyzy = None
+if 'obdobi_input' not in st.session_state: st.session_state.obdobi_input = ''
 
 # --- KATEGORIE ---
 kategorie_list = [
@@ -433,10 +448,15 @@ if st.session_state.kategorie == "Energie":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
         sklad = st.selectbox("Sklad:", ["CZLC4", "LCÚ", "LCZ", "SKLC3"])
-        obdobi_input = st.session_state.get('obdobi_input', '')
-        st.markdown(f'<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Období</p>', unsafe_allow_html=True)
-        st.markdown(f'<div style="background:rgba(0,200,100,0.06);border:1px solid rgba(0,200,100,0.3);border-radius:10px;padding:12px 16px;color:{"#00e87a" if obdobi_input else "#666"};font-size:0.9rem;">{obdobi_input if obdobi_input else "Vyplní se automaticky po analýze"}</div>', unsafe_allow_html=True)
-        st.session_state.obdobi_input = obdobi_input
+
+        # Období — read only, vyplní se automaticky po analýze
+        st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Období</p>', unsafe_allow_html=True)
+        obdobi_val = st.session_state.get('obdobi_input', '')
+        if obdobi_val:
+            st.markdown(f'<div class="obdobi-box">📅 {obdobi_val}</div>', unsafe_allow_html=True)
+        else:
+            st.markdown('<div class="obdobi-box-empty">Vyplní se automaticky po analýze</div>', unsafe_allow_html=True)
+
         uploaded_files = st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'], help="Nahrajte faktury — PDF, Word nebo Excel.")
         if uploaded_files:
             st.markdown(f'<p style="color:#00c864;font-size:0.8rem;">✓ {len(uploaded_files)} soubor(ů) připraveno</p>', unsafe_allow_html=True)
@@ -448,6 +468,7 @@ if st.session_state.kategorie == "Energie":
             if st.button("🗑 Nová analýza", use_container_width=True):
                 st.session_state.vysledky = []
                 st.session_state.pocet_souboru = 0
+                st.session_state.obdobi_input = ''
                 st.rerun()
 
     with col_main:
@@ -470,6 +491,10 @@ if st.session_state.kategorie == "Energie":
                     if response.status_code == 200:
                         data = response.json()
                         st.session_state.vysledky = data if isinstance(data, list) else [data]
+                        # Automaticky vyplň období z výsledku analýzy
+                        prvni = st.session_state.vysledky[0] if st.session_state.vysledky else {}
+                        if prvni.get('obdobi') and str(prvni.get('obdobi')).lower() != 'n/a':
+                            st.session_state.obdobi_input = prvni.get('obdobi')
                     else:
                         st.error(f"Chyba: {response.status_code}")
                 except Exception as e:
@@ -650,38 +675,17 @@ elif st.session_state.kategorie == "OOPP & MČDP":
 
     with col_main:
 
-        # ── Výdej MČDP ──
         if rezim == "Výdej MČDP":
-            # ← změň na svoji GitHub Pages URL po zapnutí Pages
             PODPIS_URL = "https://janasiva4.github.io/DocScan-Alza/podpis_2fa.html"
-
             st.subheader("🧴 Výdej MČDP — kvartální")
-
             if 'mcdp_reset' not in st.session_state:
                 st.session_state.mcdp_reset = 0
-
-            zamestnanec = st.text_input("Zaměstnanec (jméno a příjmení)",
-                key=f"zam_{st.session_state.mcdp_reset}",
-                autocomplete="off")
-            email_zam   = st.text_input("Email zaměstnance",
-                placeholder="jan.novak@firma.cz",
-                key=f"email_{st.session_state.mcdp_reset}",
-                autocomplete="off")
-            stredisko   = st.text_input("Středisko",
-                placeholder="např. Sklad A — příjem",
-                key=f"stredisko_{st.session_state.mcdp_reset}",
-                autocomplete="off")
-            user        = st.text_input("Uživatel / osobní číslo",
-                placeholder="např. 12345",
-                key=f"user_{st.session_state.mcdp_reset}",
-                autocomplete="off")
+            zamestnanec = st.text_input("Zaměstnanec (jméno a příjmení)", key=f"zam_{st.session_state.mcdp_reset}", autocomplete="off")
+            email_zam   = st.text_input("Email zaměstnance", placeholder="jan.novak@firma.cz", key=f"email_{st.session_state.mcdp_reset}", autocomplete="off")
+            stredisko   = st.text_input("Středisko", placeholder="např. Sklad A — příjem", key=f"stredisko_{st.session_state.mcdp_reset}", autocomplete="off")
+            user        = st.text_input("Uživatel / osobní číslo", placeholder="např. 12345", key=f"user_{st.session_state.mcdp_reset}", autocomplete="off")
             rok_akt = datetime.now().year
-            kvartal_sel = st.selectbox("Kvartál", [
-                f"Q1 / {rok_akt}", f"Q2 / {rok_akt}",
-                f"Q3 / {rok_akt}", f"Q4 / {rok_akt}",
-                f"Q1 / {rok_akt+1}", f"Q2 / {rok_akt+1}",
-                f"Q3 / {rok_akt+1}", f"Q4 / {rok_akt+1}",
-            ])
+            kvartal_sel = st.selectbox("Kvartál", [f"Q1 / {rok_akt}", f"Q2 / {rok_akt}", f"Q3 / {rok_akt}", f"Q4 / {rok_akt}", f"Q1 / {rok_akt+1}", f"Q2 / {rok_akt+1}", f"Q3 / {rok_akt+1}", f"Q4 / {rok_akt+1}"])
             st.write("**Vydávané položky:**")
             c1, c2 = st.columns(2)
             rucnik  = c1.checkbox("1× Ručník Siguro 50×100cm", value=True)
@@ -690,8 +694,6 @@ elif st.session_state.kategorie == "OOPP & MČDP":
             krem    = c2.checkbox("1× Krém Indulona", value=True)
             solvina = c1.checkbox("1× Abrazivní pasta Solvina", value=True)
             vedouci = st.text_input("Zadal / vedoucí")
-
-            # QR kód pro 2FA podpis
             if zamestnanec and email_zam:
                 polozky_list = []
                 if rucnik:  polozky_list.append("Ručník Siguro")
@@ -699,107 +701,58 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                 if ariel:   polozky_list.append("Ariel 60 ks")
                 if krem:    polozky_list.append("Krém Indulona")
                 if solvina: polozky_list.append("Solvina")
-
-                qr_data = {
-                    "jmeno": zamestnanec, "email": email_zam,
-                    "stredisko": stredisko, "user": user,
-                    "sklad": sklad_oopp, "kvartal": kvartal_sel,
-                    "polozky": ", ".join(polozky_list),
-                }
+                qr_data = {"jmeno": zamestnanec, "email": email_zam, "stredisko": stredisko, "user": user, "sklad": sklad_oopp, "kvartal": kvartal_sel, "polozky": ", ".join(polozky_list)}
                 qr_json = json.dumps(qr_data, ensure_ascii=False)
                 qr_payload = base64.b64encode(qr_json.encode('utf-8')).decode('ascii')
                 qr_url = f"{PODPIS_URL}?d={qr_payload}"
-
                 qr = qrcode.QRCode(version=1, box_size=6, border=2)
                 qr.add_data(qr_url)
                 qr.make(fit=True)
                 qr_img = qr.make_image(fill_color="#1a3a6b", back_color="white")
                 buf_qr = io.BytesIO()
                 qr_img.save(buf_qr, format="PNG")
-
                 st.write("---")
                 col_qr, col_info = st.columns([1, 2])
                 with col_qr:
                     st.image(buf_qr.getvalue(), width=180, caption="Zaměstnanec naskenuje pro podpis")
                 with col_info:
-                    st.markdown(f'''
-                    <div class="energy-card oopp-border" style="padding:12px;">
-                      <p style="color:#00c864;font-size:0.75rem;font-weight:bold;
-                                text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
-                        Čeká na 2FA podpis
-                      </p>
+                    st.markdown(f'''<div class="energy-card oopp-border" style="padding:12px;">
+                      <p style="color:#00c864;font-size:0.75rem;font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Čeká na 2FA podpis</p>
                       <p style="color:#fff;font-size:0.9rem;"><b>{zamestnanec}</b></p>
                       <p style="color:#aaa;font-size:0.8rem;">{email_zam}</p>
-                      <p style="color:#aaa;font-size:0.8rem;margin-top:4px;">
-                        {kvartal_sel} · {sklad_oopp}
-                      </p>
-                      <p style="color:#aaa;font-size:0.75rem;margin-top:4px;">
-                        {", ".join(polozky_list)}
-                      </p>
-                    </div>
-                    ''', unsafe_allow_html=True)
+                      <p style="color:#aaa;font-size:0.8rem;margin-top:4px;">{kvartal_sel} · {sklad_oopp}</p>
+                      <p style="color:#aaa;font-size:0.75rem;margin-top:4px;">{", ".join(polozky_list)}</p>
+                    </div>''', unsafe_allow_html=True)
                 st.write("---")
-
             col_btn1, col_btn2 = st.columns(2)
             with col_btn1:
                 if st.button("✅ ODESLAT DO GOOGLE SHEETS", use_container_width=True):
                     if not zamestnanec:
                         st.warning("Zadej jméno zaměstnance.")
                     else:
-                        data = {
-                            "zamestnanec": zamestnanec, "email": email_zam,
-                            "kvartal": kvartal_sel, "rucnik": rucnik,
-                            "mydlo": mydlo, "ariel": ariel, "krem": krem,
-                            "solvina": solvina, "podpis": True, "zadal": vedouci,
-                        }
+                        data = {"zamestnanec": zamestnanec, "email": email_zam, "kvartal": kvartal_sel, "rucnik": rucnik, "mydlo": mydlo, "ariel": ariel, "krem": krem, "solvina": solvina, "podpis": True, "zadal": vedouci}
                         if odeslat_mcdp_do_sheets(data, sklad_oopp):
                             st.balloons()
                             st.success(f"✅ Záznam uložen — {zamestnanec} · {kvartal_sel}")
                             st.session_state.mcdp_reset += 1
                             st.rerun()
-
             with col_btn2:
                 if zamestnanec:
-                    pdf_bytes = generovat_pdf_protokol(
-                        zamestnanec=zamestnanec, sklad=sklad_oopp,
-                        kvartal=kvartal_sel,
-                        vydane_polozky={"rucnik": rucnik, "mydlo": mydlo, "ariel": ariel, "krem": krem, "solvina": solvina},
-                        vedouci=vedouci
-                    )
+                    pdf_bytes = generovat_pdf_protokol(zamestnanec=zamestnanec, sklad=sklad_oopp, kvartal=kvartal_sel, vydane_polozky={"rucnik": rucnik, "mydlo": mydlo, "ariel": ariel, "krem": krem, "solvina": solvina}, vedouci=vedouci)
                     jmeno_souboru = zamestnanec.replace(" ", "_")
-                    st.download_button("📄 Stáhnout PDF protokol",
-                        data=pdf_bytes,
-                        file_name=f"Protokol_MCDP_{jmeno_souboru}_{kvartal_sel[:2]}.pdf",
-                        mime="application/pdf",
-                        use_container_width=True)
+                    st.download_button("📄 Stáhnout PDF protokol", data=pdf_bytes, file_name=f"Protokol_MCDP_{jmeno_souboru}_{kvartal_sel[:2]}.pdf", mime="application/pdf", use_container_width=True)
 
-        # ── Evidence OOPP ──
         elif rezim == "Evidence OOPP":
             PODPIS_URL = "https://janasiva4.github.io/DocScan-Alza/podpis_2fa.html"
-
             st.subheader("🦺 Evidence OOPP — výdej pomůcek")
-
             if 'oopp_reset' not in st.session_state:
                 st.session_state.oopp_reset = 0
-
-            zamestnanec2 = st.text_input("Zaměstnanec (jméno a příjmení)",
-                key=f"zam2_{st.session_state.oopp_reset}", autocomplete="off")
-            email_zam2   = st.text_input("Email zaměstnance",
-                placeholder="jan.novak@firma.cz",
-                key=f"email2_{st.session_state.oopp_reset}", autocomplete="off")
-            stredisko2   = st.text_input("Středisko",
-                placeholder="např. Sklad A — příjem",
-                key=f"stredisko2_{st.session_state.oopp_reset}", autocomplete="off")
-            user2        = st.text_input("Uživatel / osobní číslo",
-                placeholder="např. 12345",
-                key=f"user2_{st.session_state.oopp_reset}", autocomplete="off")
-            vedouci2     = st.text_input("Zadal / vedoucí",
-                key=f"vedouci2_{st.session_state.oopp_reset}", autocomplete="off")
-
+            zamestnanec2 = st.text_input("Zaměstnanec (jméno a příjmení)", key=f"zam2_{st.session_state.oopp_reset}", autocomplete="off")
+            email_zam2   = st.text_input("Email zaměstnance", placeholder="jan.novak@firma.cz", key=f"email2_{st.session_state.oopp_reset}", autocomplete="off")
+            stredisko2   = st.text_input("Středisko", placeholder="např. Sklad A — příjem", key=f"stredisko2_{st.session_state.oopp_reset}", autocomplete="off")
+            user2        = st.text_input("Uživatel / osobní číslo", placeholder="např. 12345", key=f"user2_{st.session_state.oopp_reset}", autocomplete="off")
+            vedouci2     = st.text_input("Zadal / vedoucí", key=f"vedouci2_{st.session_state.oopp_reset}", autocomplete="off")
             st.write("**Vydávané pomůcky:**")
-
-            rok = datetime.now().year
-            # (pomůcka, klíč, expirace_mesice)
             pomucky_def = [
                 ("Oděv pracovní (montérky)", "odev", None),
                 ("Rukavice bezpečnostní", "rukavice", None),
@@ -812,15 +765,12 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                 ("Thermo", "thermo", 12),
                 ("Bezpečnostní obuv", "obuv", 12),
             ]
-
             o1, o2 = st.columns(2)
             vydane = {}
             for i, (nazev, klic, exp_mes) in enumerate(pomucky_def):
                 col = o1 if i % 2 == 0 else o2
                 exp_info = f" ({exp_mes//12}r)" if exp_mes and exp_mes >= 12 else f" ({exp_mes}m)" if exp_mes else " (dle potřeby)"
                 vydane[klic] = col.checkbox(f"{nazev}{exp_info}", key=f"oopp_{klic}_{st.session_state.oopp_reset}")
-
-            # Automatická expirace
             def exp_datum(mesice):
                 if not mesice: return None
                 from datetime import date
@@ -829,63 +779,36 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                 rok_exp = d.year + (mes - 1) // 12
                 mes_exp = (mes - 1) % 12 + 1
                 return f"{mes_exp:02d}/{rok_exp}"
-
-            # QR kód
             if zamestnanec2 and email_zam2:
                 vydane_nazvy = [nazev for nazev, klic, _ in pomucky_def if vydane.get(klic)]
-                oopp_qr_data = {
-                    "jmeno": zamestnanec2, "email": email_zam2,
-                    "stredisko": stredisko2, "user": user2,
-                    "sklad": sklad_oopp, "kvartal": f"OOPP {datetime.now().strftime('%m/%Y')}",
-                    "polozky": ", ".join(vydane_nazvy) if vydane_nazvy else "—",
-                }
+                oopp_qr_data = {"jmeno": zamestnanec2, "email": email_zam2, "stredisko": stredisko2, "user": user2, "sklad": sklad_oopp, "kvartal": f"OOPP {datetime.now().strftime('%m/%Y')}", "polozky": ", ".join(vydane_nazvy) if vydane_nazvy else "—"}
                 qr_json2 = json.dumps(oopp_qr_data, ensure_ascii=False)
                 qr_payload2 = base64.b64encode(qr_json2.encode('utf-8')).decode('ascii')
                 qr_url2 = f"{PODPIS_URL}?d={qr_payload2}"
-
                 qr2 = qrcode.QRCode(version=1, box_size=6, border=2)
                 qr2.add_data(qr_url2)
                 qr2.make(fit=True)
                 qr_img2 = qr2.make_image(fill_color="#0D4F1C", back_color="white")
                 buf_qr2 = io.BytesIO()
                 qr_img2.save(buf_qr2, format="PNG")
-
                 st.write("---")
                 col_qr2, col_info2 = st.columns([1, 2])
                 with col_qr2:
                     st.image(buf_qr2.getvalue(), width=180, caption="Zaměstnanec naskenuje pro podpis")
                 with col_info2:
-                    st.markdown(f'''
-                    <div class="energy-card oopp-border" style="padding:12px;">
-                      <p style="color:#00c864;font-size:0.75rem;font-weight:bold;
-                                text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
-                        Čeká na 2FA podpis
-                      </p>
+                    st.markdown(f'''<div class="energy-card oopp-border" style="padding:12px;">
+                      <p style="color:#00c864;font-size:0.75rem;font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Čeká na 2FA podpis</p>
                       <p style="color:#fff;font-size:0.9rem;"><b>{zamestnanec2}</b></p>
                       <p style="color:#aaa;font-size:0.8rem;">{email_zam2}</p>
-                      <p style="color:#aaa;font-size:0.75rem;margin-top:4px;">
-                        {", ".join(vydane_nazvy) if vydane_nazvy else "—"}
-                      </p>
-                    </div>
-                    ''', unsafe_allow_html=True)
+                      <p style="color:#aaa;font-size:0.75rem;margin-top:4px;">{", ".join(vydane_nazvy) if vydane_nazvy else "—"}</p>
+                    </div>''', unsafe_allow_html=True)
                 st.write("---")
-
                 if st.button("✅ ULOŽIT DO EVIDENCE", use_container_width=False):
                     ulozeno = 0
                     for nazev, klic, exp_mes in pomucky_def:
                         if vydane.get(klic):
                             exp = exp_datum(exp_mes)
-                            data_oopp = {
-                                "zamestnanec": zamestnanec2,
-                                "email": email_zam2,
-                                "stredisko": stredisko2,
-                                "user": user2,
-                                "pomucka": nazev,
-                                "velikost": "",
-                                "expirace": exp or "",
-                                "podpis": True,
-                                "zadal": vedouci2,
-                            }
+                            data_oopp = {"zamestnanec": zamestnanec2, "email": email_zam2, "stredisko": stredisko2, "user": user2, "pomucka": nazev, "velikost": "", "expirace": exp or "", "podpis": True, "zadal": vedouci2}
                             if odeslat_oopp_do_sheets(data_oopp, sklad_oopp):
                                 ulozeno += 1
                     if ulozeno > 0:
@@ -896,19 +819,12 @@ elif st.session_state.kategorie == "OOPP & MČDP":
             else:
                 st.info("Vyplň jméno a email zaměstnance pro zobrazení QR kódu.")
 
-        # ── Tisk protokolu ──
         elif rezim == "Tisk protokolu":
             st.subheader("🖨️ Generátor předávacího protokolu")
             st.markdown('<p style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Vyplň údaje — dostaneš PDF připravené k tisku a podpisu zaměstnance.</p>', unsafe_allow_html=True)
-
             zam_tisk = st.text_input("Zaměstnanec")
             rok_akt2 = datetime.now().year
-            kv_tisk  = st.selectbox("Kvartál", [
-                f"Q1 / {rok_akt2}", f"Q2 / {rok_akt2}",
-                f"Q3 / {rok_akt2}", f"Q4 / {rok_akt2}",
-                f"Q1 / {rok_akt2+1}", f"Q2 / {rok_akt2+1}",
-                f"Q3 / {rok_akt2+1}", f"Q4 / {rok_akt2+1}",
-            ], key="kv_tisk")
+            kv_tisk  = st.selectbox("Kvartál", [f"Q1 / {rok_akt2}", f"Q2 / {rok_akt2}", f"Q3 / {rok_akt2}", f"Q4 / {rok_akt2}", f"Q1 / {rok_akt2+1}", f"Q2 / {rok_akt2+1}", f"Q3 / {rok_akt2+1}", f"Q4 / {rok_akt2+1}"], key="kv_tisk")
             ved_tisk = st.text_input("Vedoucí", key="ved_tisk")
             st.write("**Položky pro protokol:**")
             t1, t2 = st.columns(2)
@@ -917,18 +833,8 @@ elif st.session_state.kategorie == "OOPP & MČDP":
             cb3 = t1.checkbox("Ariel 60 ks",   value=True, key="p3")
             cb4 = t2.checkbox("Krém Indulona",  value=True, key="p4")
             cb5 = t1.checkbox("Solvina",        value=True, key="p5")
-
             if zam_tisk:
-                pdf_tisk = generovat_pdf_protokol(
-                    zamestnanec=zam_tisk, sklad=sklad_oopp,
-                    kvartal=kv_tisk,
-                    vydane_polozky={"rucnik": cb1, "mydlo": cb2, "ariel": cb3, "krem": cb4, "solvina": cb5},
-                    vedouci=ved_tisk
-                )
-                st.download_button("📄 Stáhnout PDF protokol k tisku",
-                    data=pdf_tisk,
-                    file_name=f"Protokol_MCDP_{zam_tisk.replace(' ', '_')}.pdf",
-                    mime="application/pdf",
-                    use_container_width=False)
+                pdf_tisk = generovat_pdf_protokol(zamestnanec=zam_tisk, sklad=sklad_oopp, kvartal=kv_tisk, vydane_polozky={"rucnik": cb1, "mydlo": cb2, "ariel": cb3, "krem": cb4, "solvina": cb5}, vedouci=ved_tisk)
+                st.download_button("📄 Stáhnout PDF protokol k tisku", data=pdf_tisk, file_name=f"Protokol_MCDP_{zam_tisk.replace(' ', '_')}.pdf", mime="application/pdf", use_container_width=False)
             else:
                 st.info("Zadej jméno zaměstnance pro vygenerování protokolu.")

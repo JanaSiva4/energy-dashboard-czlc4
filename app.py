@@ -27,15 +27,18 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
                 # Správný formát 2026-02
                 rok, mesic = map(int, obdobi_raw.split('-'))
             elif '.' in obdobi_raw:
-                # Formát DD.MM.RRRR nebo rozsah — vezmi rok a měsíc z prvního data
-                prvni_datum = obdobi_raw.split('-')[0].strip()
-                casti = prvni_datum.split('.')
-                if len(casti) == 3:
-                    mesic = int(casti[1])
-                    rok = int(casti[2])
-                else:
-                    rok = datetime.now().year
-                    mesic = datetime.now().month
+    casti = obdobi_raw.split('.')
+    if len(casti) == 2:
+        # Formát MM.RRRR
+        mesic = int(casti[0])
+        rok = int(casti[1])
+    elif len(casti) == 3:
+        # Formát DD.MM.RRRR
+        mesic = int(casti[1])
+        rok = int(casti[2])
+    else:
+        rok = datetime.now().year
+        mesic = datetime.now().month
             else:
                 rok = datetime.now().year
                 mesic = datetime.now().month

@@ -63,7 +63,7 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
 
         data_row = [
             str(rok),
-            str(mesic).zfill(2)
+            str(mesic).zfill(2),
             to_f(find_val(res, 'SPOTREBA', 'KWH')),
             to_f(find_val(res, 'JEDNOTKOVA')),
             to_f(find_val(res, 'SIL')),

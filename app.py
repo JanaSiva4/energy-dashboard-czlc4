@@ -520,8 +520,6 @@ if st.session_state.kategorie == "Energie":
         if st.session_state.vysledky:
             res = st.session_state.vysledky[0]
             if st.button("✅ ODESLAT DO TABULKY", use_container_width=False):
-                if odeslat_do_google_sheets(res, sklad if 'sklad' in dir() else "CZLC4"):
-                    st.balloons()
                     st.success("Uloženo do Google Sheets!")
             col_t, col_btns = st.columns([2, 1])
             with col_btns:
@@ -746,8 +744,6 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         st.warning("Zadej jméno zaměstnance.")
                     else:
                         data = {"zamestnanec": zamestnanec, "email": email_zam, "kvartal": kvartal_sel, "rucnik": rucnik, "mydlo": mydlo, "ariel": ariel, "krem": krem, "solvina": solvina, "podpis": True, "zadal": vedouci}
-                        if odeslat_mcdp_do_sheets(data, sklad_oopp):
-                            st.balloons()
                             st.success(f"✅ Záznam uložen — {zamestnanec} · {kvartal_sel}")
                             st.session_state.mcdp_reset += 1
                             st.rerun()

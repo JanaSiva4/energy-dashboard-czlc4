@@ -21,24 +21,20 @@ GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfRP2cvMrwjbsCgQPz
 def odeslat_do_google_sheets(res, sklad="CZLC4"):
     try:
         obdobi_raw = str(res.get('obdobi', datetime.now().strftime('%Y-%m')))
-        # Zajisti format RRRR-MM — zkus různé formáty
         try:
             if '-' in obdobi_raw and len(obdobi_raw) == 7:
-                # Správný formát 2026-02
                 rok, mesic = map(int, obdobi_raw.split('-'))
             elif '.' in obdobi_raw:
-    casti = obdobi_raw.split('.')
-    if len(casti) == 2:
-        # Formát MM.RRRR
-        mesic = int(casti[0])
-        rok = int(casti[1])
-    elif len(casti) == 3:
-        # Formát DD.MM.RRRR
-        mesic = int(casti[1])
-        rok = int(casti[2])
-    else:
-        rok = datetime.now().year
-        mesic = datetime.now().month
+                casti = obdobi_raw.split('.')
+                if len(casti) == 2:
+                    mesic = int(casti[0])
+                    rok = int(casti[1])
+                elif len(casti) == 3:
+                    mesic = int(casti[1])
+                    rok = int(casti[2])
+                else:
+                    rok = datetime.now().year
+                    mesic = datetime.now().month
             else:
                 rok = datetime.now().year
                 mesic = datetime.now().month
@@ -57,30 +53,23 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
             except:
                 return 0.0
 
-        def find_val(data, *terms):
-            for k, v in data.items():
-                k_upper = str(k).upper()
-                if any(t.upper() in k_upper for t in terms):
-                    return v
-            return 0.0
-
         data_row = [
             str(rok),
             str(mesic).zfill(2),
-            to_f(find_val(res, 'SPOTREBA', 'KWH')),
-            to_f(find_val(res, 'JEDNOTKOVA')),
-            to_f(find_val(res, 'SIL')),
-            to_f(find_val(res, 'DIST')),
-            to_f(find_val(res, 'ZAKLAD KC', 'CELKEM')),
+            to_f(res.get('el_spotreba_kwh', 0)),
+            0.0,
+            to_f(res.get('el_cena_sil_el_bez_dph', 0)),
+            to_f(res.get('el_cena_distribuce_bez_dph', 0)),
+            to_f(res.get('el_cena_celkem_zaklad_kc', 0)),
             to_f(res.get('fsx_spotreba_kwh', 0)),
-            to_f(res.get('fsx_jednotkova_cena', 0)),
+            0.0,
             to_f(res.get('fsx_cena_bez_dph', 0)),
             to_f(res.get('plyn_spotreba_kwh', 0)),
-            to_f(res.get('plyn_jednotkova_cena_kc', 0)),
+            0.0,
             to_f(res.get('plyn_cena_celkem_zaklad_kc', 0)),
             to_f(res.get('voda_spotreba_m3', 0)),
-            to_f(res.get('voda_jednotkova_cena_kc', 0)),
-            to_f(res.get('voda_cena_bez_dph', 0))
+            0.0,
+            to_f(res.get('voda_cena_bez_dph', 0)),
         ]
 
         payload = {"action": "append", "sheet": sklad, "row": data_row}

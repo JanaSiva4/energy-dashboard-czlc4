@@ -549,7 +549,7 @@ if st.session_state.kategorie == "Energie":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
         sklad = st.selectbox("Sklad:", ["CZLC4", "LCÚ", "LCZ", "SKLC3"])
-        obdobi_input = st.text_input("Období (např. 2026-01)", value=st.session_state.get('obdobi_input', datetime.now().strftime('%Y-%m')), help="Zadejte ve formátu RRRR-MM")
+        obdobi_input = st.text_input("Období (např. 2026-01)", value=st.session_state.get('obdobi_input', ''), help="Vyplní se automaticky po analýze")
         st.session_state.obdobi_input = obdobi_input
         uploaded_files = st.file_uploader("Vložte dokumenty", accept_multiple_files=True, type=['pdf', 'docx', 'xlsx', 'xls'], help="Nahrajte faktury — PDF, Word nebo Excel.")
         if uploaded_files:

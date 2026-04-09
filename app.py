@@ -16,7 +16,8 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.units import cm
 
 # --- KONFIGURACE GOOGLE SHEETS ---
-GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPl2zGwaHD4hEm7Pab1ZqWtx0vKmdTVMjLy5el3gC_SAbZOt4Mn_NVgHpTaY3f6NYSyQ/exec"
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzGV-vnAWMloGczThHXmch7JmgYDNe2WpPzeDeVvGPgcyeRpCEzi4dQfq7IsZWNLt7wg/exec"
+FACILITY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPl2zGwaHD4hEm7Pab1ZqWtx0vKmdTVMjLy5el3gC_SAbZOt4Mn_NVgHpTaY3f6NYSyQ/exec"
 
 def odeslat_do_google_sheets(res, sklad="CZLC4"):
     try:
@@ -102,7 +103,7 @@ def odeslat_mcdp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
             datetime.now().strftime("%d.%m.%Y %H:%M"),
         ]
         payload = {"action": "append", "sheet": f"MCDP_{sklad}", "row": row}
-        r = requests.post(GOOGLE_SCRIPT_URL, json=payload, timeout=10)
+        r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=10)
         return r.status_code == 200
     except Exception as e:
         st.error(f"Chyba odesílání MČDP: {e}")
@@ -139,7 +140,7 @@ def odeslat_oopp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
             datetime.now().strftime("%d.%m.%Y %H:%M"),
         ]
         payload = {"action": "append", "sheet": f"OOPP_{sklad}", "row": row}
-        r = requests.post(GOOGLE_SCRIPT_URL, json=payload, timeout=10)
+        r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=10)
         return r.status_code == 200
     except Exception as e:
         st.error(f"Chyba odesílání OOPP: {e}")

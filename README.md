@@ -1,19 +1,90 @@
 # 🔍 DocScan-Alza
-**AI extrakce dat z dokumentů + Evidence energií & OOPP | Verze 2.0 | Duben 2026**
+**AI extrakce dat z faktur za energie | Verze 2.0 | Duben 2026**
 
 [![Streamlit App](https://img.shields.io/badge/Streamlit-docscan--alza.streamlit.app-FF4B4B?logo=streamlit)](https://docscan-alza.streamlit.app)
-[![Energie Dashboard](https://img.shields.io/badge/GitHub%20Pages-energie--dashboard-222?logo=github)](https://janasiva4.github.io/energie-dashboard)
 [![GitHub](https://img.shields.io/badge/GitHub-JanaSiva4%2FDocScan--Alza-181717?logo=github)](https://github.com/JanaSiva4/DocScan-Alza)
 
 ---
 
 ## 📋 O projektu
 
-DocScan-Alza je sada nástrojů pro facility management skladu CZLC4 (WEST I – Alza, Chrástany):
+DocScan je webová aplikace pro automatickou extrakci dat z faktur za energie pomocí AI. Uživatel nahraje PDF, Excel nebo Word soubory a aplikace automaticky vytáhne klíčové hodnoty — bez ručního opisování a bez Excelu.
 
-- **DocScan** — AI extrakce dat z faktur za energie (PDF/Excel/Word) pomocí Google Gemini
-- **Energie Dashboard** — webový přehled spotřeby a nákladů na GitHub Pages
-- **OOPP & MČDP** — evidence výdeje ochranných pomůcek a mycích prostředků
+Aktuálně funkční modul zpracovává faktury za energie pro objekt **WEST I – Alza (CZLC4, Chrástany)**. AI extrahuje 10 klíčových hodnot (elektřina, FSX, plyn, voda) z libovolného počtu faktur najednou.
+
+---
+
+## ✅ Co aplikace umí
+
+### ⚡ Extrakce dat z faktur (hlavní funkce)
+- Nahrání libovolného počtu PDF, Excel nebo Word faktur najednou
+- AI (Google Gemini 2.5 Flash) automaticky extrahuje 10 hodnot pro subjekt WEST I – Alza
+- AI ignoruje data ostatních nájemců (Ecologistics, WEST II) — bere pouze správné řádky
+- Přehledný dashboard s kartami pro každou kategorii energie
+- Digitální archiv — tabulka všech extrahovaných dat v jednom pohledu
+- Export výsledků do Excel (.xlsx) a PDF souboru
+- Uložení do Google Sheets — historie po měsících → napojení na Energie Dashboard
+
+### 📊 Napojení na Energie Dashboard
+Po uložení dat do Google Sheets se hodnoty automaticky promítnou do webového dashboardu na GitHub Pages — grafy spotřeby, nákladů, trendů, predikce 2027 a SJL kalkulačka.
+
+**Dashboard:** [janasiva4.github.io/energie-dashboard](https://janasiva4.github.io/energie-dashboard)
+
+### 🦺 OOPP & MČDP (součást aplikace)
+- Evidence výdeje osobních ochranných pracovních prostředků a mycích prostředků
+- Podrobnosti viz sekce níže
+
+---
+
+## 🤖 AI extrakce — jak to funguje
+
+```
+Uživatel nahraje PDF/Excel/Word faktury
+        ↓
+pypdf / openpyxl extrahuje text ze souborů
+        ↓
+Texty se agregují do jednoho vstupu (max 150 000 znaků)
+        ↓
+Google Gemini 2.5 Flash analyzuje text
+        ↓
+JSON s 10 hodnotami výhradně pro WEST I – Alza
+        ↓
+Zobrazení v dashboardu + export Excel/PDF
+        ↓
+Uložení do Google Sheets → Energie Dashboard
+```
+
+### Extrahované hodnoty
+
+| Pole | Popis | Zdroj |
+|------|-------|-------|
+| `el_spotreba_kwh` | Spotřeba elektřiny vlastní (kWh) | Přefakturace MD |
+| `el_cena_sil_el_bez_dph` | Cena silové elektřiny bez DPH | Faktura Innogy |
+| `el_cena_distribuce_bez_dph` | Cena distribuce bez DPH | Faktura Innogy |
+| `el_cena_celkem_zaklad_kc` | Elektřina celkem základ Kč | Faktura Innogy |
+| `fsx_spotreba_kwh` | Spotřeba FSX celkem (kWh) | Přefakturace FSX |
+| `fsx_cena_bez_dph` | Cena FSX bez DPH | Přefakturace FSX |
+| `plyn_spotreba_kwh` | Spotřeba plynu (kWh) | Faktura plyn |
+| `plyn_cena_celkem_zaklad_kc` | Plyn celkem základ Kč | Faktura plyn |
+| `voda_spotreba_m3` | Spotřeba vody celkem (m³) | Přefakturace vody |
+| `voda_cena_bez_dph` | Cena vody bez DPH | Přefakturace vody |
+
+---
+
+## 🛠️ Technický stack
+
+| Komponenta | Popis |
+|-----------|-------|
+| Hosting | Streamlit Community Cloud |
+| Frontend | Python + Streamlit |
+| Verzování | GitHub (JanaSiva4/DocScan-Alza) |
+| AI model | Google Gemini 2.5 Flash — API klíč v Streamlit Secrets |
+| PDF extrakce | pypdf |
+| Excel extrakce | openpyxl |
+| Export dat | Excel (.xlsx) + PDF (reportlab) |
+| Google Sheets | Apps Script webhook — ukládání dat po měsících |
+| Energie Dashboard | GitHub Pages + Chart.js |
+| OOPP podpis | QR kód + 2FA + EmailJS |
 
 ---
 
@@ -21,7 +92,7 @@ DocScan-Alza je sada nástrojů pro facility management skladu CZLC4 (WEST I –
 
 ```
 DocScan-Alza/
-├── app.py                  # Streamlit aplikace — DocScan + OOPP/MČDP
+├── app.py                  # Hlavní Streamlit aplikace
 ├── requirements.txt        # Python závislosti
 ├── podpis_2fa.html         # Podpisová stránka pro 2FA (QR kód)
 ├── Energie CZLC4.json      # Záloha původního n8n workflow
@@ -30,131 +101,53 @@ DocScan-Alza/
 
 ---
 
-## ⚡ Modul 1 — Energie Dashboard
+## ⚙️ Instalace a spuštění
 
-**URL:** [janasiva4.github.io/energie-dashboard](https://janasiva4.github.io/energie-dashboard)
+### Závislosti
+```
+streamlit
+pandas
+requests
+openpyxl
+reportlab
+qrcode[pil]
+pypdf
+```
 
-Webová aplikace na GitHub Pages pro sledování měsíční spotřeby a nákladů za energie. Data se načítají z Google Sheets přes Apps Script webhook.
+### Streamlit Secrets
+```toml
+GEMINI_API_KEY = "váš_api_klíč"
+```
 
-### Záložky
-
-**📊 Přehled**
-- Karty s poslední měsíční spotřebou — elektřina (Innogy), FSX, plyn, voda
-- Graf spotřeby elektřiny a nákladů po měsících
-- 📈 Trendy — meziroční změna — náklady (Kč) a spotřeba el. (kWh) napříč roky
-- 📈 Trendy — energetický benchmarking — průměrná cena elektřiny Kč/kWh v čase
-
-**📉 Grafy**
-- Podrobné grafy spotřeby a nákladů pro každou kategorii energie
-- Elektřina (Innogy + FSX), plyn, voda — spotřeba i náklady zvlášť
-
-**📋 Historie**
-- Tabulka všech měsíčních odečtů včetně sloupce 📦 SJL
-
-**📈 Predikce**
-- OTE cena — ruční zadání spot ceny z [OTE-CR.cz](https://www.ote-cr.cz/cs/kratkodobe-trhy/elektrina/den-dopredu), ukládá se do localStorage
-- Alert — červené upozornění při ceně nad 2 500 Kč/MWh
-- SJL kalkulačka — koeficient 0,069 kWh/SJL (průměr 2025–2026, 13 měsíců), auto-předvyplnění z posledního měsíce
-- Predikce 2027 — odhad ročních nákladů s +5% nárůstem
-
-**✏️ Zadání dat**
-- Formulář pro ruční zadání měsíčních hodnot, uložení do Google Sheets
-
-### Struktura záložky CZLC4 (sloupce A–R)
-
-| Sloupec | Index | Hodnota |
-|---------|-------|---------|
-| A | 0 | Rok |
-| B | 1 | Měsíc |
-| C | 2 | Elektřina spotřeba kWh |
-| D | 3 | Elektřina Ø cena Kč/kWh |
-| E | 4 | Elektřina silová el. Kč |
-| F | 5 | Elektřina distribuce Kč |
-| G | 6 | Elektřina celkem Kč |
-| H | 7 | FSX spotřeba kWh |
-| I | 8 | FSX Ø cena Kč/kWh |
-| J | 9 | FSX celkem Kč |
-| K | 10 | Plyn spotřeba kWh |
-| L | 11 | Plyn Ø cena Kč/kWh |
-| M | 12 | Plyn celkem Kč |
-| N | 13 | Voda spotřeba m³ |
-| O | 14 | Voda Ø cena Kč/m³ |
-| P | 15 | Voda celkem Kč |
-| R | 17 | SJL (Store Job Lines) |
+### Lokální spuštění
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
 
 ---
 
-## 🦺 Modul 2 — OOPP & MČDP
+## 🦺 Modul OOPP & MČDP
 
-Evidence výdeje osobních ochranných pracovních prostředků (OOPP) a mycích a čisticích prostředků (MČDP) v souladu s **NV 390/2021 Sb.**
+Evidence výdeje ochranných pomůcek a mycích prostředků dle **NV 390/2021 Sb.**
 
-### Funkce
-
-**🧴 MČDP — Mycí a čisticí prostředky**
+### 🧴 MČDP — Mycí a čisticí prostředky
 - Formulář pro výdej prostředků zaměstnanci (ručník Siguro, tekuté mýdlo, abrazivní pasta, Ariel 60ks, krém Indulona)
 - Generování QR kódu pro 2FA podpis zaměstnance na telefonu
 - Uložení záznamu do Google Sheets — záložka `MCDP_CZLC4`
+- Eviduje se: datum výdeje, kvartál, zaměstnanec, vydané položky, stav podpisu
 
-**🦺 OOPP — Osobní ochranné pracovní prostředky**
+### 🦺 OOPP — Osobní ochranné pracovní prostředky
 - Formulář pro výdej pomůcky (boty, rukavice, vesta, helma atd.)
-- Automatický výpočet expirace dle NV 390/2021 Sb.
-- Stav: `v pořádku` / `brzy expiruje` / `expirováno`
-- Tisk protokolu — PDF dle NV 390/2021 Sb.
+- Automatický výpočet data expirace dle NV 390/2021 Sb.
+- Stav pomůcky: `v pořádku` / `brzy expiruje` / `expirováno`
+- Tisk protokolu PDF dle NV 390/2021 Sb.
 - Uložení záznamu do Google Sheets — záložka `OOPP_CZLC4`
 
-**🔔 Týdenní email alert**
-- Přehled expirovaných a brzy expirujících pomůcek
+### 🔔 Týdenní email alert
+- Automatický přehled expirovaných a brzy expirujících pomůcek
 - Upozornění na MČDP čekající na podpis v aktuálním kvartálu
 - Odesílá se na: petr.jurasek@alza.cz
-
-### Struktura záložky `MCDP_CZLC4`
-
-| Sloupec | Hodnota |
-|---------|---------|
-| A | ID záznamu |
-| B | Datum výdeje |
-| C | Kvartál |
-| D | Rok |
-| E | Sklad |
-| F | Zaměstnanec |
-| G | Email zaměstnance |
-| H–L | Vydané položky (ručník, mýdlo, pasta, Ariel, Indulona) |
-| M | Vše vydáno (ANO/NE) |
-| N | Podpis potvrzen |
-| O | Zadal |
-| P | Timestamp |
-
-### Struktura záložky `OOPP_CZLC4`
-
-| Sloupec | Hodnota |
-|---------|---------|
-| A | ID záznamu |
-| B | Datum výdeje |
-| C | Sklad |
-| D | Zaměstnanec |
-| E | Email zaměstnance |
-| F | Pomůcka |
-| G | Velikost |
-| H | Expirace (MM/RRRR) |
-| I | Stav |
-| J | Dní do expirace |
-| K | Podpis |
-| L | Zadal |
-| M | Timestamp |
-
----
-
-## 🛠️ Technický stack
-
-| Komponenta | Popis |
-|-----------|-------|
-| Streamlit | Python webová aplikace — DocScan + OOPP/MČDP |
-| Google Gemini 2.5 Flash | AI extrakce dat z faktur |
-| GitHub Pages | Energie Dashboard (HTML + Chart.js) |
-| Google Sheets | Databáze — záložky CZLC4, MCDP_CZLC4, OOPP_CZLC4 |
-| Apps Script | Webhook proxy (doGet / doPost) + email alert |
-| pypdf / openpyxl | Extrakce textu z PDF a Excel souborů |
-| reportlab + qrcode | Generování PDF protokolů a QR kódů |
 
 ---
 
@@ -175,8 +168,7 @@ https://script.google.com/macros/s/AKfycbzfRP2cvMrwjbsCgQPzfbQsVABB68OYdpTPajGRT
 
 ## ⚠️ Známá omezení
 
-- OTE cena — zadávána ručně jednou týdně (CORS blokuje přímé načítání z GitHub Pages)
-- ENTSO-E API — registrace proběhla, čeká se na token pro live ceny
+- FSX a voda — Gemini občas bere špatný sloupec (probíhá ladění promptu)
 - Aplikace nemá přihlášení — přístup má kdokoli s odkazem
 - Email alert — nutno nastavit trigger v Google Sheets → Rozšíření → Apps Script → Triggery
 
@@ -184,11 +176,11 @@ https://script.google.com/macros/s/AKfycbzfRP2cvMrwjbsCgQPzfbQsVABB68OYdpTPajGRT
 
 ## 🗺️ Plánovaný rozvoj
 
-- ENTSO-E API — automatické načítání live cen OTE
-- Více skladů — LCÚ, LCZ, SKLC3
+- Dopracovat prompt pro FSX a vodu — spolehlivější extrakce
+- ENTSO-E API — automatické načítání live cen OTE do dashboardu
+- Moduly Faktury a Smlouvy — aktivace Gemini prompty
 - Google OAuth — omezení přístupu na firemní účty
 - Automatické měsíční reporty emailem
-- Moduly Faktury a Smlouvy — aktivace Gemini prompty
 
 ---
 

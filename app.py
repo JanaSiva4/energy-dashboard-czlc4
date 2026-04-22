@@ -17,7 +17,7 @@ from reportlab.lib.units import cm
 
 # --- KONFIGURACE GOOGLE SHEETS ---
 GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzGV-vnAWMloGczThHXmch7JmgYDNe2WpPzeDeVvGPgcyeRpCEzi4dQfq7IsZWNLt7wg/exec"
-FACILITY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFfi5JeR1O-2_8kfcLYx3R4i1Ew1G51kJz-eCPH3L2hRhneq2wOWovmuL_WYKbAKVlAg/exec"
+FACILITY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5GYfHtGeQ33pXY6m4coN8V1JDZ3sFCF9fZ1QARLR5z_dPypxmXtmk-1uj1AVdaYg5kw/exec"
 
 def odeslat_do_google_sheets(res, sklad="CZLC4"):
     try:

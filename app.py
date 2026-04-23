@@ -22,14 +22,29 @@ GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzGV-vnAWMloGczThH
 FACILITY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzGV-vnAWMloGczThHXmch7JmgYDNe2WpPzeDeVvGPgcyeRpCEzi4dQfq7IsZWNLt7wg/exec"
 
 # --- FONTY S CESKOU DIAKRITIKOU ---
-try:
-    pdfmetrics.registerFont(TTFont('DejaVu', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'))
-    pdfmetrics.registerFont(TTFont('DejaVu-Bold', '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'))
-    PDF_FONT = 'DejaVu'
-    PDF_FONT_BOLD = 'DejaVu-Bold'
-except Exception:
-    PDF_FONT = 'Helvetica'
-    PDF_FONT_BOLD = 'Helvetica-Bold'
+import os as _os
+
+def _registruj_font():
+    _base = _os.path.dirname(_os.path.abspath(__file__))
+    _mozne_cesty = [
+        # 1) font v repozitáři — složka fonts/ vedle app.py (nejspolehlivější na Streamlit Cloud)
+        (_os.path.join(_base, 'fonts', 'DejaVuSans.ttf'),
+         _os.path.join(_base, 'fonts', 'DejaVuSans-Bold.ttf')),
+        # 2) systémová cesta (Linux / lokální vývoj)
+        ('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+         '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'),
+    ]
+    for _regular, _bold in _mozne_cesty:
+        if _os.path.exists(_regular) and _os.path.exists(_bold):
+            try:
+                pdfmetrics.registerFont(TTFont('DejaVu', _regular))
+                pdfmetrics.registerFont(TTFont('DejaVu-Bold', _bold))
+                return 'DejaVu', 'DejaVu-Bold'
+            except Exception:
+                continue
+    return 'Helvetica', 'Helvetica-Bold'
+
+PDF_FONT, PDF_FONT_BOLD = _registruj_font()
 
 
 def odeslat_do_google_sheets(res, sklad="CZLC4"):

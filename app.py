@@ -682,7 +682,7 @@ def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci,
     W = 17.0 * cm
 
     # Hlavička s logem
-    el.extend(_hlavicka_alza("Předávací protokol — MČDP", W))
+    el.extend(_hlavicka_alza("Předávací protokol — MČDP ( Mycí a čisticí prostředky )", W))
     el.append(Spacer(1, 0.4*cm))
 
     # Společnost

@@ -682,7 +682,7 @@ def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci,
     W = 17.0 * cm
 
     # Hlavička s logem
-    el.extend(_hlavicka_alza("Předávací protokol — MČDP ( Mycí a čisticí prostředky )", W))
+    el.extend(_hlavicka_alza("Předávací protokol — MČDP", W))
     el.append(Spacer(1, 0.4*cm))
 
     # Společnost
@@ -720,7 +720,7 @@ def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci,
     el.append(Spacer(1, 0.5*cm))
 
     # Úvodní text — OPRAVENO
-    el.append(Paragraph("Předávající předává a přebírající přejímá:", body_s))
+    el.append(Paragraph("Předávající předává a přebírající přijímá:", body_s))
     el.append(Spacer(1, 0.3*cm))
 
     # Tabulka položek
@@ -884,7 +884,7 @@ def generovat_pdf_oopp(zamestnanec, email, sklad, vydane_pomucky, velikosti_oopp
     el.append(Spacer(1, 0.3*cm))
 
     # Úvod — OPRAVENO
-    el.append(Paragraph("Předávající předává a přebírající přejímá:", body_s))
+    el.append(Paragraph("Předávající předává a přebírající přijímá:", body_s))
     el.append(Spacer(1, 0.2*cm))
 
     # Tabulka pomůcek

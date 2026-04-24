@@ -658,7 +658,7 @@ def _podpisy_alza(W):
 # PDF PROTOKOL — MCDP (mycí a čisticí prostředky)
 # ═══════════════════════════════════════════════════════════════════
 def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci, velikosti=None):
-    """Předávací protokol MČDP — čistý Alza styl, originální logo."""
+    """Předávací protokol MČDP ( Mycí a čisticí prostředky ) — čistý Alza styl, originální logo."""
     if velikosti is None:
         velikosti = {}
 

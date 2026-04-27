@@ -99,44 +99,26 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
         return False
 
 
-def odeslat_oopp_batch_do_sheets(rows_data: list, sklad: str = "CZLC4") -> bool:
-    """Pošle více OOPP záznamů jedním requestem (rychlejší než po jednom)."""
-    def stav_exp(exp_str):
-        if not exp_str:
-            return "—"
-        try:
-            p = exp_str.split("/")
-            exp = datetime(int(p[1]), int(p[0]), 1)
-            dnes = datetime.now()
-            if exp < dnes:
-                return "expirovano"
-            if (exp - dnes).days <= 60:
-                return "brzy expiruje"
-            return "v poradku"
-        except Exception:
-            return "—"
-
+def odeslat_mcdp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
+    def yn(val):
+        return "ANO" if val else "NE"
     try:
-        rows = []
-        timestamp_base = datetime.now().strftime('%Y%m%d%H%M%S')
-        for idx, data in enumerate(rows_data):
-            exp = data.get("expirace", "")
-            row = [
-                f"OOPP-{sklad}-{timestamp_base}-{idx}",
-                datetime.now().strftime("%d.%m.%Y"), sklad,
-                data.get("zamestnanec", ""), data.get("email", ""),
-                data.get("pomucka", ""), data.get("velikost", ""),
-                exp, stav_exp(exp), "",
-                "ANO" if data.get("podpis") else "NE",
-                data.get("zadal", ""), datetime.now().strftime("%d.%m.%Y %H:%M"),
-            ]
-            rows.append(row)
-        
-        payload = {"action": "append_batch", "sheet": f"OOPP_{sklad}", "rows": rows}
-        r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=30)
+        row = [
+            f"MCDP-{sklad}-{datetime.now().strftime('%Y%m%d%H%M')}",
+            data.get("datum_vydeje", datetime.now().strftime("%d.%m.%Y")),
+            data.get("kvartal", ""), datetime.now().year, sklad,
+            data.get("zamestnanec", ""), data.get("email", ""),
+            yn(data.get("rucnik")), yn(data.get("mydlo")),
+            yn(data.get("ariel")), yn(data.get("krem")), yn(data.get("solvina")),
+            yn(all([data.get("rucnik"), data.get("mydlo"), data.get("ariel"),
+                    data.get("krem"), data.get("solvina")])),
+            data.get("zadal", ""), datetime.now().strftime("%d.%m.%Y %H:%M"),
+        ]
+        payload = {"action": "append", "sheet": f"MCDP_{sklad}", "row": row}
+        r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=10)
         return r.status_code == 200
     except Exception as e:
-        st.error(f"Chyba odesilani OOPP: {e}")
+        st.error(f"Chyba odesilani MCDP: {e}")
         return False
 
 
@@ -168,16 +150,12 @@ def odeslat_oopp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
             data.get("zadal", ""), datetime.now().strftime("%d.%m.%Y %H:%M"),
         ]
         payload = {"action": "append", "sheet": f"OOPP_{sklad}", "row": row}
-        st.info(f"📤 Posílám: sheet=OOPP_{sklad}")
-        st.info(f"📤 URL: {FACILITY_SCRIPT_URL[:80]}...")
-        st.info(f"📤 Payload: {payload}")
-        r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=15)
-        st.info(f"📡 Status: {r.status_code}")
-        st.info(f"📡 Odpověď: {r.text[:500]}")
+        r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=10)
         return r.status_code == 200
     except Exception as e:
-        st.error(f"❌ Chyba odesilani OOPP: {e}")
+        st.error(f"Chyba odesilani OOPP: {e}")
         return False
+
 
 # ═══════════════════════════════════════════════════════════════════
 # PDF PROTOKOLY — Alza styl (bílý papír, originální logo)
@@ -1410,7 +1388,6 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         data = {"zamestnanec": zamestnanec, "email": email_zam, "kvartal": kvartal_sel,
                                 "rucnik": rucnik, "mydlo": mydlo, "ariel": ariel, "krem": krem,
                                 "solvina": solvina, "podpis": True, "zadal": vedouci}
-                        
                         if odeslat_mcdp_do_sheets(data, sklad_oopp):
                             st.success(f"✅ Záznam uložen — {zamestnanec} · {kvartal_sel}")
                             st.session_state.mcdp_reset += 1
@@ -1432,7 +1409,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         use_container_width=True,
                         key=f"dl_mcdp_{st.session_state.mcdp_reset}")
 
-       # ═══════════════ EVIDENCE OOPP ═══════════════
+         # ═══════════════ EVIDENCE OOPP ═══════════════
         elif rezim == "Evidence OOPP":
             st.subheader("🦺 Evidence OOPP — výdej pomůcek")
             if 'oopp_reset' not in st.session_state:
@@ -1480,7 +1457,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                 rok_exp = d.year + (mes - 1) // 12
                 mes_exp = (mes - 1) % 12 + 1
                 return f"{mes_exp:02d}/{rok_exp}"
-                
+ 
             # QR kód se zobrazí pouze pokud je vyplněno jméno a email
             if zamestnanec2 and email_zam2:
                 vydane_nazvy = [nazev for nazev, klic, _ in pomucky_def if vydane.get(klic)]
@@ -1511,12 +1488,11 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         f'<p style="color:#aaa;font-size:0.75rem;margin-top:4px;">{nazvy_str}</p>'
                         f'</div>', unsafe_allow_html=True)
                 st.write("---")
-
-           # === TLAČÍTKA JSOU VŽDY VIDITELNÁ (mimo if blok) — fungují stejně jako v MČDP ===
+ 
+            # === TLAČÍTKA JSOU VŽDY VIDITELNÁ (mimo if blok) ===
             col_btn_o1, col_btn_o2 = st.columns(2)
             with col_btn_o1:
                 if st.button("✅ ULOŽIT DO EVIDENCE", use_container_width=True):
-                    # Validace vstupů — stejně jako u MČDP
                     if not zamestnanec2:
                         st.warning("Zadej jméno zaměstnance.")
                     elif not email_zam2:
@@ -1524,7 +1500,6 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                     elif not any(vydane.get(klic) for _, klic, _ in pomucky_def):
                         st.warning("Označ alespoň jednu pomůcku k vydání.")
                     else:
-                        # Sestavíme všechny záznamy do jednoho seznamu
                         rows_data = []
                         for nazev, klic, exp_mes in pomucky_def:
                             if vydane.get(klic):
@@ -1540,7 +1515,6 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                                     "podpis": True,
                                     "zadal": vedouci2,
                                 })
-                        # Jeden request pro všechny pomůcky
                         if odeslat_oopp_batch_do_sheets(rows_data, sklad_oopp):
                             st.success(f"✅ Uloženo {len(rows_data)} pomůcek do Google Sheets — {zamestnanec2}")
                             st.session_state.oopp_reset += 1

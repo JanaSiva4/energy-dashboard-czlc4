@@ -1546,8 +1546,6 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         mime="application/pdf",
                         use_container_width=True,
                         key=f"dl_oopp_{st.session_state.oopp_reset}")
-            else:
-                st.info("Vyplň jméno a email zaměstnance pro zobrazení QR kódu.")
 
         # ═══════════════ TISK PROTOKOLU MČDP ═══════════════
         elif rezim == "Tisk protokolu MČDP":

@@ -121,7 +121,6 @@ def odeslat_mcdp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
         st.error(f"Chyba odesilani MCDP: {e}")
         return False
 
-
 def odeslat_oopp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
     def stav_exp(exp_str):
         if not exp_str:
@@ -137,7 +136,6 @@ def odeslat_oopp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
             return "v poradku"
         except Exception:
             return "—"
-
     try:
         exp = data.get("expirace", "")
         row = [
@@ -155,15 +153,16 @@ def odeslat_oopp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
     except Exception as e:
         st.error(f"Chyba odesilani OOPP: {e}")
         return False
-    
-    def odeslat_oopp_batch_do_sheets(rows: list, sklad: str = "CZLC4") -> bool:
-        if not rows:
-            return False
-        uspech = 0
-        for data in rows:
-            if odeslat_oopp_do_sheets(data, sklad):
-                uspech += 1
-        return uspech > 0
+
+
+def odeslat_oopp_batch_do_sheets(rows: list, sklad: str = "CZLC4") -> bool:
+    if not rows:
+        return False
+    uspech = 0
+    for data in rows:
+        if odeslat_oopp_do_sheets(data, sklad):
+            uspech += 1
+    return uspech > 0
 
 
 # ═══════════════════════════════════════════════════════════════════

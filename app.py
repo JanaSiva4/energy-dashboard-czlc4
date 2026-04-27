@@ -99,26 +99,44 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
         return False
 
 
-def odeslat_mcdp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
-    def yn(val):
-        return "ANO" if val else "NE"
+def odeslat_oopp_batch_do_sheets(rows_data: list, sklad: str = "CZLC4") -> bool:
+    """Pošle více OOPP záznamů jedním requestem (rychlejší než po jednom)."""
+    def stav_exp(exp_str):
+        if not exp_str:
+            return "—"
+        try:
+            p = exp_str.split("/")
+            exp = datetime(int(p[1]), int(p[0]), 1)
+            dnes = datetime.now()
+            if exp < dnes:
+                return "expirovano"
+            if (exp - dnes).days <= 60:
+                return "brzy expiruje"
+            return "v poradku"
+        except Exception:
+            return "—"
+
     try:
-        row = [
-            f"MCDP-{sklad}-{datetime.now().strftime('%Y%m%d%H%M')}",
-            data.get("datum_vydeje", datetime.now().strftime("%d.%m.%Y")),
-            data.get("kvartal", ""), datetime.now().year, sklad,
-            data.get("zamestnanec", ""), data.get("email", ""),
-            yn(data.get("rucnik")), yn(data.get("mydlo")),
-            yn(data.get("ariel")), yn(data.get("krem")), yn(data.get("solvina")),
-            yn(all([data.get("rucnik"), data.get("mydlo"), data.get("ariel"),
-                    data.get("krem"), data.get("solvina")])),
-            data.get("zadal", ""), datetime.now().strftime("%d.%m.%Y %H:%M"),
-        ]
-        payload = {"action": "append", "sheet": f"MCDP_{sklad}", "row": row}
-        r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=10)
+        rows = []
+        timestamp_base = datetime.now().strftime('%Y%m%d%H%M%S')
+        for idx, data in enumerate(rows_data):
+            exp = data.get("expirace", "")
+            row = [
+                f"OOPP-{sklad}-{timestamp_base}-{idx}",
+                datetime.now().strftime("%d.%m.%Y"), sklad,
+                data.get("zamestnanec", ""), data.get("email", ""),
+                data.get("pomucka", ""), data.get("velikost", ""),
+                exp, stav_exp(exp), "",
+                "ANO" if data.get("podpis") else "NE",
+                data.get("zadal", ""), datetime.now().strftime("%d.%m.%Y %H:%M"),
+            ]
+            rows.append(row)
+        
+        payload = {"action": "append_batch", "sheet": f"OOPP_{sklad}", "rows": rows}
+        r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=30)
         return r.status_code == 200
     except Exception as e:
-        st.error(f"Chyba odesilani MCDP: {e}")
+        st.error(f"Chyba odesilani OOPP: {e}")
         return False
 
 

@@ -1523,12 +1523,12 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                     elif not any(vydane.get(klic) for _, klic, _ in pomucky_def):
                         st.warning("Označ alespoň jednu pomůcku k vydání.")
                    else:
-                        ulozeno = 0
-                        chyby = 0
+                        # Sestavíme všechny záznamy do jednoho seznamu
+                        rows_data = []
                         for nazev, klic, exp_mes in pomucky_def:
                             if vydane.get(klic):
                                 exp = exp_datum(exp_mes)
-                                data_oopp = {
+                                rows_data.append({
                                     "zamestnanec": zamestnanec2,
                                     "email": email_zam2,
                                     "stredisko": stredisko2,
@@ -1538,17 +1538,12 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                                     "expirace": exp or "",
                                     "podpis": True,
                                     "zadal": vedouci2,
-                                }
-                                if odeslat_oopp_do_sheets(data_oopp, sklad_oopp):
-                                    ulozeno += 1
-                                else:
-                                    chyby += 1
-                        if ulozeno > 0 and chyby == 0:
-                            st.success(f"✅ Uloženo {ulozeno} pomůcek do Google Sheets — {zamestnanec2}")
+                                })
+                        # Jeden request pro všechny pomůcky
+                        if odeslat_oopp_batch_do_sheets(rows_data, sklad_oopp):
+                            st.success(f"✅ Uloženo {len(rows_data)} pomůcek do Google Sheets — {zamestnanec2}")
                             st.session_state.oopp_reset += 1
                             st.rerun()
-                        elif ulozeno > 0 and chyby > 0:
-                            st.warning(f"Uloženo {ulozeno} pomůcek, {chyby} se nepodařilo odeslat.")
                         else:
                             st.error("Záznam se nepodařilo odeslat do Google Sheets.")
             with col_btn_o2:

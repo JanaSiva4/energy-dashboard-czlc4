@@ -150,12 +150,16 @@ def odeslat_oopp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
             data.get("zadal", ""), datetime.now().strftime("%d.%m.%Y %H:%M"),
         ]
         payload = {"action": "append", "sheet": f"OOPP_{sklad}", "row": row}
-        r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=10)
+        st.info(f"📤 Posílám: sheet=OOPP_{sklad}")
+        st.info(f"📤 URL: {FACILITY_SCRIPT_URL[:80]}...")
+        st.info(f"📤 Payload: {payload}")
+        r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=15)
+        st.info(f"📡 Status: {r.status_code}")
+        st.info(f"📡 Odpověď: {r.text[:500]}")
         return r.status_code == 200
     except Exception as e:
-        st.error(f"Chyba odesilani OOPP: {e}")
+        st.error(f"❌ Chyba odesilani OOPP: {e}")
         return False
-
 
 # ═══════════════════════════════════════════════════════════════════
 # PDF PROTOKOLY — Alza styl (bílý papír, originální logo)

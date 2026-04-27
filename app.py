@@ -1522,7 +1522,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         st.warning("Zadej email zaměstnance.")
                     elif not any(vydane.get(klic) for _, klic, _ in pomucky_def):
                         st.warning("Označ alespoň jednu pomůcku k vydání.")
-                    else:
+                   else:
                         ulozeno = 0
                         chyby = 0
                         for nazev, klic, exp_mes in pomucky_def:

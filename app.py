@@ -155,6 +155,15 @@ def odeslat_oopp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
     except Exception as e:
         st.error(f"Chyba odesilani OOPP: {e}")
         return False
+    
+    def odeslat_oopp_batch_do_sheets(rows: list, sklad: str = "CZLC4") -> bool:
+        if not rows:
+            return False
+        uspech = 0
+        for data in rows:
+            if odeslat_oopp_do_sheets(data, sklad):
+                uspech += 1
+        return uspech > 0
 
 
 # ═══════════════════════════════════════════════════════════════════

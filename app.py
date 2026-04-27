@@ -1511,7 +1511,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         f'</div>', unsafe_allow_html=True)
                 st.write("---")
 
-            # === TLAČÍTKA JSOU VŽDY VIDITELNÁ (mimo if blok) — fungují stejně jako v MČDP ===
+           # === TLAČÍTKA JSOU VŽDY VIDITELNÁ (mimo if blok) — fungují stejně jako v MČDP ===
             col_btn_o1, col_btn_o2 = st.columns(2)
             with col_btn_o1:
                 if st.button("✅ ULOŽIT DO EVIDENCE", use_container_width=True):
@@ -1522,7 +1522,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         st.warning("Zadej email zaměstnance.")
                     elif not any(vydane.get(klic) for _, klic, _ in pomucky_def):
                         st.warning("Označ alespoň jednu pomůcku k vydání.")
-                   else:
+                    else:
                         # Sestavíme všechny záznamy do jednoho seznamu
                         rows_data = []
                         for nazev, klic, exp_mes in pomucky_def:

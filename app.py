@@ -1410,6 +1410,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         data = {"zamestnanec": zamestnanec, "email": email_zam, "kvartal": kvartal_sel,
                                 "rucnik": rucnik, "mydlo": mydlo, "ariel": ariel, "krem": krem,
                                 "solvina": solvina, "podpis": True, "zadal": vedouci}
+                        
                         if odeslat_mcdp_do_sheets(data, sklad_oopp):
                             st.success(f"✅ Záznam uložen — {zamestnanec} · {kvartal_sel}")
                             st.session_state.mcdp_reset += 1

@@ -17,14 +17,14 @@ from reportlab.lib.units import cm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.graphics.shapes import Drawing, Circle, String
- 
+
 # --- KONFIGURACE GOOGLE SHEETS ---
 GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzGV-vnAWMloGczThHXmch7JmgYDNe2WpPzeDeVvGPgcyeRpCEzi4dQfq7IsZWNLt7wg/exec"
 FACILITY_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzGV-vnAWMloGczThHXmch7JmgYDNe2WpPzeDeVvGPgcyeRpCEzi4dQfq7IsZWNLt7wg/exec"
- 
+
 # --- FONTY S CESKOU DIAKRITIKOU ---
 import os as _os
- 
+
 def _registruj_font():
     _base = _os.path.dirname(_os.path.abspath(__file__))
     _mozne_cesty = [
@@ -42,10 +42,10 @@ def _registruj_font():
             except Exception:
                 continue
     return 'Helvetica', 'Helvetica-Bold'
- 
+
 PDF_FONT, PDF_FONT_BOLD = _registruj_font()
- 
- 
+
+
 def odeslat_do_google_sheets(res, sklad="CZLC4"):
     try:
         obdobi_raw = str(res.get('obdobi', datetime.now().strftime('%Y-%m')))
@@ -64,7 +64,7 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
                 rok, mesic = datetime.now().year, datetime.now().month
         except Exception:
             rok, mesic = datetime.now().year, datetime.now().month
- 
+
         def to_f(val):
             if not val or str(val).lower() == 'n/a':
                 return 0.0
@@ -77,7 +77,7 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
                 return float(s)
             except Exception:
                 return 0.0
- 
+
         data_row = [
             str(rok), str(mesic).zfill(2),
             to_f(res.get('el_spotreba_kwh', 0)), 0.0,
@@ -97,8 +97,8 @@ def odeslat_do_google_sheets(res, sklad="CZLC4"):
     except Exception as e:
         st.error(f"Chyba: {e}")
         return False
- 
- 
+
+
 def odeslat_mcdp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
     def yn(val):
         return "ANO" if val else "NE"
@@ -120,9 +120,10 @@ def odeslat_mcdp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
     except Exception as e:
         st.error(f"Chyba odesilani MCDP: {e}")
         return False
- 
- 
-def odeslat_oopp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
+
+
+def odeslat_oopp_batch_do_sheets(rows_data: list, sklad: str = "CZLC4") -> bool:
+    """Odešle všechny pomůcky najednou pomocí append_batch — stejně efektivně jako MČDP."""
     def stav_exp(exp_str):
         if not exp_str:
             return "—"
@@ -137,19 +138,25 @@ def odeslat_oopp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
             return "v poradku"
         except Exception:
             return "—"
+
+    if not rows_data:
+        return False
     try:
-        exp = data.get("expirace", "")
-        row = [
-            f"OOPP-{sklad}-{datetime.now().strftime('%Y%m%d%H%M%S')}",
-            datetime.now().strftime("%d.%m.%Y"), sklad,
-            data.get("zamestnanec", ""), data.get("email", ""),
-            data.get("pomucka", ""), data.get("velikost", ""),
-            exp, stav_exp(exp), "",
-            "ANO" if data.get("podpis") else "NE",
-            data.get("zadal", ""), datetime.now().strftime("%d.%m.%Y %H:%M"),
-        ]
-        payload = {"action": "append", "sheet": f"OOPP_{sklad}", "row": row}
-        r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=10)
+        rows = []
+        for data in rows_data:
+            exp = data.get("expirace", "")
+            row = [
+                f"OOPP-{sklad}-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                datetime.now().strftime("%d.%m.%Y"), sklad,
+                data.get("zamestnanec", ""), data.get("email", ""),
+                data.get("pomucka", ""), data.get("velikost", ""),
+                exp, stav_exp(exp), "",
+                "ANO" if data.get("podpis") else "NE",
+                data.get("zadal", ""), datetime.now().strftime("%d.%m.%Y %H:%M"),
+            ]
+            rows.append(row)
+        payload = {"action": "append_batch", "sheet": f"OOPP_{sklad}", "rows": rows}
+        r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=30)
         return r.status_code == 200
     except Exception as e:
         st.error(f"Chyba odesilani OOPP: {e}")

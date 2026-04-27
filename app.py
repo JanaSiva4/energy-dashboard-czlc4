@@ -538,20 +538,26 @@ LINE_GRAY    = colors.HexColor('#CCCCCC')
 ROW_ALT      = colors.HexColor('#F8F9FB')
 
 
+from reportlab.platypus import Image as RLImage
+ 
+ALZA_BLUE    = colors.HexColor('#0A3D91')
+ALZA_BLUE_DK = colors.HexColor('#072B5E')
+TEXT_DARK    = colors.HexColor('#1A1A1A')
+TEXT_MUTED   = colors.HexColor('#666666')
+LINE_GRAY    = colors.HexColor('#CCCCCC')
+ROW_ALT      = colors.HexColor('#F8F9FB')
+ 
+ 
 def _alza_logo_image(width=2.5*cm):
-    """Vrátí obrázek loga Alza.cz z embeded base64 (čtvercové logo 600x600)."""
     import base64 as _b64
     logo_bytes = _b64.b64decode(_ALZA_LOGO_B64)
     logo_io = io.BytesIO(logo_bytes)
-    # Poměr loga: 600x600 (čtverec) → výška = width
     return RLImage(logo_io, width=width, height=width)
-
-
+ 
+ 
 def _hlavicka_alza(titulek_text, W):
-    """Hlavička: logo vlevo, nadpis vpravo, pod tím horizontální linka."""
     title_s = ParagraphStyle('t', fontSize=18, fontName=PDF_FONT_BOLD,
                              textColor=TEXT_DARK, alignment=2, leading=22)
-
     logo_img = _alza_logo_image(width=2.5*cm)
     ht = Table([[logo_img, Paragraph(titulek_text, title_s)]],
                colWidths=[3.0*cm, W - 3.0*cm])
@@ -564,20 +570,14 @@ def _hlavicka_alza(titulek_text, W):
         ('TOPPADDING', (0, 0), (-1, -1), 0),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
     ]))
-    # Horizontální linka pod hlavičkou
     linka = Table([['']], colWidths=[W], rowHeights=[1])
-    linka.setStyle(TableStyle([
-        ('LINEBELOW', (0, 0), (-1, -1), 1.5, ALZA_BLUE),
-    ]))
-
+    linka.setStyle(TableStyle([('LINEBELOW', (0, 0), (-1, -1), 1.5, ALZA_BLUE)]))
     return [ht, Spacer(1, 0.3*cm), linka]
-
-
+ 
+ 
 def _alza_spolecnost(W):
-    """Informace o společnosti Alza.cz a.s."""
     s = ParagraphStyle('c', fontSize=9.5, fontName=PDF_FONT, textColor=TEXT_DARK, leading=13)
     b = ParagraphStyle('cb', fontSize=9.5, fontName=PDF_FONT_BOLD, textColor=TEXT_DARK, leading=13)
-
     data = [
         [Paragraph('<b>Společnost:</b>', b), Paragraph('Alza.cz a.s.', s)],
         [Paragraph('<b>Sídlo:</b>', b), Paragraph('Jankovcova 1522/53, 170 00 Praha 7', s)],
@@ -592,25 +592,21 @@ def _alza_spolecnost(W):
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
     ]))
     return t
-
-
+ 
+ 
 def _paticka_alza():
-    """Diskrétní patička."""
-    footer_s = ParagraphStyle('f', fontSize=7.5, fontName=PDF_FONT,
-                              textColor=TEXT_MUTED, alignment=1)
+    footer_s = ParagraphStyle('f', fontSize=7.5, fontName=PDF_FONT, textColor=TEXT_MUTED, alignment=1)
     return Paragraph(
         f"Alza.cz a.s. &nbsp;·&nbsp; Facility &nbsp;·&nbsp; "
         f"Dokument vygenerován {datetime.now().strftime('%d.%m.%Y %H:%M')}",
         footer_s)
-
-
+ 
+ 
 def _pravni_text(W):
-    """Právní prohlášení — diskrétní, bez barev."""
     legal_s = ParagraphStyle('leg', fontSize=8, fontName=PDF_FONT,
                              textColor=TEXT_DARK, leading=11, alignment=4)
     nadpis_s = ParagraphStyle('ln', fontSize=9, fontName=PDF_FONT_BOLD,
                               textColor=ALZA_BLUE, leading=12)
-
     elementy = [
         Paragraph("Prohlášení zaměstnance — NV č. 390/2021 Sb.", nadpis_s),
         Spacer(1, 0.15*cm),
@@ -627,29 +623,19 @@ def _pravni_text(W):
     )
     elementy.append(Paragraph(legal_txt, legal_s))
     return elementy
-
-
+ 
+ 
 def _podpisy_alza(W):
-    """Podpisová sekce — dvě linky s popiskami 'Předávající' a 'Přebírající'."""
-    label_s = ParagraphStyle('pl', fontSize=10, fontName=PDF_FONT_BOLD,
-                             textColor=TEXT_DARK, alignment=1)
-    date_s = ParagraphStyle('pd', fontSize=9, fontName=PDF_FONT,
-                            textColor=TEXT_MUTED, alignment=1)
-
+    label_s = ParagraphStyle('pl', fontSize=10, fontName=PDF_FONT_BOLD, textColor=TEXT_DARK, alignment=1)
+    date_s = ParagraphStyle('pd', fontSize=9, fontName=PDF_FONT, textColor=TEXT_MUTED, alignment=1)
     data = [
-        # prostor pro podpisy
         ['', '', '', ''],
-        # linky
         ['', '', '', ''],
-        # popisky pod linkami
-        [Paragraph('Předávající', label_s), '',
-         Paragraph('Přebírající', label_s), ''],
-        # datum
+        [Paragraph('Předávající', label_s), '', Paragraph('Přebírající', label_s), ''],
         [Paragraph(f'V Chrášťanech dne {datetime.now().strftime("%d.%m.%Y")}', date_s), '',
          Paragraph(f'V Chrášťanech dne {datetime.now().strftime("%d.%m.%Y")}', date_s), ''],
     ]
-    t = Table(data,
-              colWidths=[W/2 - 0.5*cm, 1.0*cm, W/2 - 0.5*cm, 0],
+    t = Table(data, colWidths=[W/2 - 0.5*cm, 1.0*cm, W/2 - 0.5*cm, 0],
               rowHeights=[1.5*cm, 0.1*cm, 0.5*cm, 0.4*cm])
     t.setStyle(TableStyle([
         ('LINEABOVE', (0, 1), (0, 1), 1.0, TEXT_DARK),
@@ -660,333 +646,186 @@ def _podpisy_alza(W):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
     ]))
     return t
-
-
-# ═══════════════════════════════════════════════════════════════════
-# PDF PROTOKOL — MCDP (mycí a čisticí prostředky)
-# ═══════════════════════════════════════════════════════════════════
+ 
+ 
 def generovat_pdf_protokol(zamestnanec, sklad, kvartal, vydane_polozky, vedouci, velikosti=None):
-    """Předávací protokol MČDP ( Mycí a čisticí prostředky ) — čistý Alza styl, originální logo."""
     if velikosti is None:
         velikosti = {}
-
-    body_s  = ParagraphStyle('b', fontSize=10, fontName=PDF_FONT,
-                             textColor=TEXT_DARK, leading=14)
-    body_b  = ParagraphStyle('bb', fontSize=10, fontName=PDF_FONT_BOLD,
-                             textColor=TEXT_DARK, leading=14)
-    section_s = ParagraphStyle('sec', fontSize=11, fontName=PDF_FONT_BOLD,
-                               textColor=ALZA_BLUE, leading=14, spaceAfter=4)
-    th_s = ParagraphStyle('th', fontSize=9.5, fontName=PDF_FONT_BOLD,
-                          textColor=colors.white, alignment=1)
-    td_s = ParagraphStyle('td', fontSize=10, fontName=PDF_FONT,
-                          textColor=TEXT_DARK, leading=13)
-
+    body_s  = ParagraphStyle('b', fontSize=10, fontName=PDF_FONT, textColor=TEXT_DARK, leading=14)
+    body_b  = ParagraphStyle('bb', fontSize=10, fontName=PDF_FONT_BOLD, textColor=TEXT_DARK, leading=14)
+    section_s = ParagraphStyle('sec', fontSize=11, fontName=PDF_FONT_BOLD, textColor=ALZA_BLUE, leading=14, spaceAfter=4)
+    th_s = ParagraphStyle('th', fontSize=9.5, fontName=PDF_FONT_BOLD, textColor=colors.white, alignment=1)
+    td_s = ParagraphStyle('td', fontSize=10, fontName=PDF_FONT, textColor=TEXT_DARK, leading=13)
     buf = io.BytesIO()
-    doc = SimpleDocTemplate(buf, pagesize=A4,
-        rightMargin=2.0*cm, leftMargin=2.0*cm,
-        topMargin=1.0*cm, bottomMargin=1.0*cm,
-        title="Předávací protokol MČDP")
+    doc = SimpleDocTemplate(buf, pagesize=A4, rightMargin=2.0*cm, leftMargin=2.0*cm,
+        topMargin=1.0*cm, bottomMargin=1.0*cm, title="Předávací protokol MČDP")
     el = []
     W = 17.0 * cm
-
-    # Hlavička s logem
     el.extend(_hlavicka_alza("Předávací protokol — MČDP", W))
     el.append(Spacer(1, 0.4*cm))
-
-    # Společnost
     el.append(_alza_spolecnost(W))
     el.append(Spacer(1, 0.2*cm))
     el.append(Paragraph('Dále jen „předávající"', body_s))
     el.append(Spacer(1, 0.3*cm))
     el.append(Paragraph("<b>a</b>", body_s))
     el.append(Spacer(1, 0.3*cm))
-
-    # Info o zaměstnanci - inline styl (jako originál)
     udaje_data = [
-        [Paragraph('<b>Jméno a příjmení:</b>', body_b),
-         Paragraph(zamestnanec or '…………………………………………', body_s)],
-        [Paragraph('<b>Sklad:</b>', body_b),
-         Paragraph(sklad, body_s)],
-        [Paragraph('<b>Kvartál / rok:</b>', body_b),
-         Paragraph(kvartal, body_s)],
-        [Paragraph('<b>Datum výdeje:</b>', body_b),
-         Paragraph(datetime.now().strftime('%d.%m.%Y'), body_s)],
-        [Paragraph('<b>Vedoucí / zadal:</b>', body_b),
-         Paragraph(vedouci or '—', body_s)],
-        [Paragraph('<b>Číslo protokolu:</b>', body_b),
-         Paragraph(f"MCDP-{sklad}-{datetime.now().strftime('%Y%m%d%H%M')}", body_s)],
+        [Paragraph('<b>Jméno a příjmení:</b>', body_b), Paragraph(zamestnanec or '…………………………………………', body_s)],
+        [Paragraph('<b>Sklad:</b>', body_b), Paragraph(sklad, body_s)],
+        [Paragraph('<b>Kvartál / rok:</b>', body_b), Paragraph(kvartal, body_s)],
+        [Paragraph('<b>Datum výdeje:</b>', body_b), Paragraph(datetime.now().strftime('%d.%m.%Y'), body_s)],
+        [Paragraph('<b>Vedoucí / zadal:</b>', body_b), Paragraph(vedouci or '—', body_s)],
+        [Paragraph('<b>Číslo protokolu:</b>', body_b), Paragraph(f"MCDP-{sklad}-{datetime.now().strftime('%Y%m%d%H%M')}", body_s)],
     ]
     ut = Table(udaje_data, colWidths=[4.0*cm, W - 4.0*cm])
     ut.setStyle(TableStyle([
-        ('LEFTPADDING', (0, 0), (-1, -1), 0),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
-        ('TOPPADDING', (0, 0), (-1, -1), 3),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 3), ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
     ]))
     el.append(ut)
     el.append(Spacer(1, 0.5*cm))
-
-    # Úvodní text — OPRAVENO
     el.append(Paragraph("Předávající předává a přebírající přijímá:", body_s))
     el.append(Spacer(1, 0.3*cm))
-
-    # Tabulka položek
     el.append(Paragraph("Vydávané položky", section_s))
-
     def mark(val):
         return '✓' if val else '—'
-
-    # OPRAVENO: ručník má False (nemá prázdnou linku na velikost)
     polozky_def = [
-        ('1× Ručník Siguro 50×100 cm', 'rucnik',  '50×100 cm, froté',        False),
-        ('1× Tekuté mýdlo',             'mydlo',   '500 ml',                   False),
-        ('1× Ariel tablety',            'ariel',   '60 ks / balení',           False),
-        ('1× Krém Indulona',            'krem',    'originál nebo měsíčkový', False),
-        ('1× Abrazivní pasta Solvina',  'solvina', '450 g',                    False),
+        ('1× Ručník Siguro 50×100 cm', 'rucnik',  '50×100 cm, froté', False),
+        ('1× Tekuté mýdlo', 'mydlo', '500 ml', False),
+        ('1× Ariel tablety', 'ariel', '60 ks / balení', False),
+        ('1× Krém Indulona', 'krem', 'originál nebo měsíčkový', False),
+        ('1× Abrazivní pasta Solvina', 'solvina', '450 g', False),
     ]
-
-    header_row = [
-        Paragraph('Položka', th_s),
-        Paragraph('Vydáno', th_s),
-        Paragraph('Velikost', th_s),
-        Paragraph('Specifikace', th_s),
-        Paragraph('Podpis', th_s),
-    ]
+    header_row = [Paragraph('Položka', th_s), Paragraph('Vydáno', th_s),
+                  Paragraph('Velikost', th_s), Paragraph('Specifikace', th_s), Paragraph('Podpis', th_s)]
     polozky_data = [header_row]
     for nazev, klic, spec, je_odev in polozky_def:
         vel_val = velikosti.get(klic, '') if je_odev else ''
         velikost_cell = vel_val if vel_val else ('__________' if je_odev else '—')
-        polozky_data.append([
-            Paragraph(nazev, td_s),
-            mark(vydane_polozky.get(klic)),
-            velikost_cell,
-            Paragraph(spec, td_s),
-            '',
-        ])
-
+        polozky_data.append([Paragraph(nazev, td_s), mark(vydane_polozky.get(klic)),
+                              velikost_cell, Paragraph(spec, td_s), ''])
     col_w = [5.8*cm, 1.6*cm, 2.2*cm, 4.0*cm, 3.4*cm]
-    pt = Table(polozky_data, colWidths=col_w,
-               rowHeights=[0.8*cm] + [0.85*cm]*len(polozky_def))
+    pt = Table(polozky_data, colWidths=col_w, rowHeights=[0.8*cm] + [0.85*cm]*len(polozky_def))
     pt.setStyle(TableStyle([
-        # Hlavička tabulky - tmavě modrá Alza
         ('BACKGROUND', (0, 0), (-1, 0), ALZA_BLUE),
-        # Zebrování
         ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, ROW_ALT]),
-        # Rámeček
         ('BOX', (0, 0), (-1, -1), 0.8, TEXT_DARK),
         ('INNERGRID', (0, 0), (-1, -1), 0.3, LINE_GRAY),
-        # Text ve sloupci Vydáno - větší, modrý
-        ('FONTNAME', (1, 1), (1, -1), PDF_FONT_BOLD),
-        ('FONTSIZE', (1, 1), (1, -1), 14),
+        ('FONTNAME', (1, 1), (1, -1), PDF_FONT_BOLD), ('FONTSIZE', (1, 1), (1, -1), 14),
         ('TEXTCOLOR', (1, 1), (1, -1), ALZA_BLUE),
-        ('ALIGN', (1, 0), (1, -1), 'CENTER'),
-        ('ALIGN', (2, 0), (2, -1), 'CENTER'),
+        ('ALIGN', (1, 0), (1, -1), 'CENTER'), ('ALIGN', (2, 0), (2, -1), 'CENTER'),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ('LEFTPADDING', (0, 0), (-1, -1), 8),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-        # Linka ve sloupci podpis
+        ('TOPPADDING', (0, 0), (-1, -1), 6), ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8), ('RIGHTPADDING', (0, 0), (-1, -1), 8),
         ('LINEBELOW', (4, 1), (4, -1), 0.6, TEXT_MUTED),
     ]))
     el.append(pt)
     el.append(Spacer(1, 0.5*cm))
-
-    # OPRAVENO: Přebírající stvrzuje (ne Předávající)
-    el.append(Paragraph(
-        "Přebírající stvrzuje, že se řádně seznámil se stavem předmětu "
-        "a převzal jej v pořádku.",
-        body_s))
-    el.append(Spacer(1, 0.2*cm))
-    el.append(Paragraph(
-        "Pokud je předmět kód, čip nebo klíče, přebírající potvrzuje, "
-        "že v případě ztráty je povinen uhradit částku ve výši odpovídající "
-        "skutečným nákladům.",
-        body_s))
+    el.append(Paragraph("Přebírající stvrzuje, že se řádně seznámil se stavem předmětu a převzal jej v pořádku.", body_s))
     el.append(Spacer(1, 0.4*cm))
-
-    # Podpisy
     el.append(_podpisy_alza(W))
     el.append(Spacer(1, 0.3*cm))
-
-    # Právní text
     el.extend(_pravni_text(W))
-
-    # Patička
     el.append(Spacer(1, 0.4*cm))
     el.append(_paticka_alza())
-
     doc.build(el)
     buf.seek(0)
     return buf.getvalue()
-
-
-# ═══════════════════════════════════════════════════════════════════
-# PDF PROTOKOL — OOPP (osobní ochranné pracovní pomůcky)
-# ═══════════════════════════════════════════════════════════════════
+ 
+ 
 def generovat_pdf_oopp(zamestnanec, email, sklad, vydane_pomucky, velikosti_oopp,
                         expirace_oopp, vedouci, stredisko="", osobni_cislo=""):
-    """Předávací protokol OOPP — čistý Alza styl, originální logo."""
     if velikosti_oopp is None:
         velikosti_oopp = {}
     if expirace_oopp is None:
         expirace_oopp = {}
-
-    body_s  = ParagraphStyle('b', fontSize=10, fontName=PDF_FONT,
-                             textColor=TEXT_DARK, leading=14)
-    body_b  = ParagraphStyle('bb', fontSize=10, fontName=PDF_FONT_BOLD,
-                             textColor=TEXT_DARK, leading=14)
-    section_s = ParagraphStyle('sec', fontSize=11, fontName=PDF_FONT_BOLD,
-                               textColor=ALZA_BLUE, leading=14, spaceAfter=4)
-    th_s = ParagraphStyle('th', fontSize=9.5, fontName=PDF_FONT_BOLD,
-                          textColor=colors.white, alignment=1)
-    td_s = ParagraphStyle('td', fontSize=9.5, fontName=PDF_FONT,
-                          textColor=TEXT_DARK, leading=12)
-
+    body_s  = ParagraphStyle('b', fontSize=10, fontName=PDF_FONT, textColor=TEXT_DARK, leading=14)
+    body_b  = ParagraphStyle('bb', fontSize=10, fontName=PDF_FONT_BOLD, textColor=TEXT_DARK, leading=14)
+    section_s = ParagraphStyle('sec', fontSize=11, fontName=PDF_FONT_BOLD, textColor=ALZA_BLUE, leading=14, spaceAfter=4)
+    th_s = ParagraphStyle('th', fontSize=9.5, fontName=PDF_FONT_BOLD, textColor=colors.white, alignment=1)
+    td_s = ParagraphStyle('td', fontSize=9.5, fontName=PDF_FONT, textColor=TEXT_DARK, leading=12)
     buf = io.BytesIO()
-    doc = SimpleDocTemplate(buf, pagesize=A4,
-        rightMargin=2.0*cm, leftMargin=2.0*cm,
-        topMargin=1.0*cm, bottomMargin=1.0*cm,
-        title="Předávací protokol OOPP")
+    doc = SimpleDocTemplate(buf, pagesize=A4, rightMargin=2.0*cm, leftMargin=2.0*cm,
+        topMargin=1.0*cm, bottomMargin=1.0*cm, title="Předávací protokol OOPP")
     el = []
     W = 17.0 * cm
-
-    # Hlavička s logem
     el.extend(_hlavicka_alza("Předávací protokol — OOPP", W))
     el.append(Spacer(1, 0.3*cm))
-
-    # Společnost
     el.append(_alza_spolecnost(W))
     el.append(Spacer(1, 0.25*cm))
-
-    # Info o zaměstnanci - dvousloupcová tabulka pro úsporu místa
     udaje_data = [
-        [Paragraph('<b>Jméno a příjmení:</b>', body_b),
-         Paragraph(zamestnanec or '…………………………………………', body_s),
-         Paragraph('<b>Sklad:</b>', body_b),
-         Paragraph(sklad, body_s)],
-        [Paragraph('<b>Email:</b>', body_b),
-         Paragraph(email or '—', body_s),
-         Paragraph('<b>Datum výdeje:</b>', body_b),
-         Paragraph(datetime.now().strftime('%d.%m.%Y'), body_s)],
-        [Paragraph('<b>Středisko:</b>', body_b),
-         Paragraph(stredisko or '—', body_s),
-         Paragraph('<b>Vedoucí / zadal:</b>', body_b),
-         Paragraph(vedouci or '—', body_s)],
-        [Paragraph('<b>Osobní číslo:</b>', body_b),
-         Paragraph(osobni_cislo or '—', body_s),
-         Paragraph('<b>Číslo protokolu:</b>', body_b),
-         Paragraph(f"OOPP-{sklad}-{datetime.now().strftime('%Y%m%d%H%M')}", body_s)],
+        [Paragraph('<b>Jméno a příjmení:</b>', body_b), Paragraph(zamestnanec or '…………………………………………', body_s),
+         Paragraph('<b>Sklad:</b>', body_b), Paragraph(sklad, body_s)],
+        [Paragraph('<b>Email:</b>', body_b), Paragraph(email or '—', body_s),
+         Paragraph('<b>Datum výdeje:</b>', body_b), Paragraph(datetime.now().strftime('%d.%m.%Y'), body_s)],
+        [Paragraph('<b>Středisko:</b>', body_b), Paragraph(stredisko or '—', body_s),
+         Paragraph('<b>Vedoucí / zadal:</b>', body_b), Paragraph(vedouci or '—', body_s)],
+        [Paragraph('<b>Osobní číslo:</b>', body_b), Paragraph(osobni_cislo or '—', body_s),
+         Paragraph('<b>Číslo protokolu:</b>', body_b), Paragraph(f"OOPP-{sklad}-{datetime.now().strftime('%Y%m%d%H%M')}", body_s)],
     ]
-    _unused_fix_udaje = []
     ut = Table(udaje_data, colWidths=[3.5*cm, (W/2 - 3.5*cm), 3.5*cm, (W/2 - 3.5*cm)])
     ut.setStyle(TableStyle([
-        ('LEFTPADDING', (0, 0), (-1, -1), 0),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
-        ('TOPPADDING', (0, 0), (-1, -1), 3),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 3), ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
     ]))
     el.append(ut)
     el.append(Spacer(1, 0.3*cm))
-
-    # Úvod — OPRAVENO
     el.append(Paragraph("Předávající předává a přebírající přijímá:", body_s))
     el.append(Spacer(1, 0.2*cm))
-
-    # Tabulka pomůcek
     el.append(Paragraph("Vydávané pomůcky", section_s))
-
     pomucky_def = [
-        ('Oděv pracovní (montérky)', 'odev',     'dle standardu firmy'),
-        ('Rukavice bezpečnostní',    'rukavice', 'dle potřeby pozice'),
-        ('Kabát proti chladu',       'kabat',    'zimní období'),
-        ('Tričko',                   'tricko',   'letní období'),
-        ('Mikina',                   'mikina',   'přechodné období'),
-        ('Čepice / kšiltovka',       'cepice',   'dle potřeby'),
-        ('Ochranné brýle',           'bryle',    'dle pracoviště'),
-        ('Kraťasy',                  'kratasy',  'letní období'),
-        ('Thermo prádlo',            'thermo',   'zimní období'),
-        ('Bezpečnostní obuv',        'obuv',     'S1P / S3'),
+        ('Oděv pracovní (montérky)', 'odev', 'dle standardu firmy'),
+        ('Rukavice bezpečnostní', 'rukavice', 'dle potřeby pozice'),
+        ('Kabát proti chladu', 'kabat', 'zimní období'),
+        ('Tričko', 'tricko', 'letní období'),
+        ('Mikina', 'mikina', 'přechodné období'),
+        ('Čepice / kšiltovka', 'cepice', 'dle potřeby'),
+        ('Ochranné brýle', 'bryle', 'dle pracoviště'),
+        ('Kraťasy', 'kratasy', 'letní období'),
+        ('Thermo prádlo', 'thermo', 'zimní období'),
+        ('Bezpečnostní obuv', 'obuv', 'S1P / S3'),
     ]
-
     def mark(val):
         return '✓' if val else '—'
-
-    header_row = [
-        Paragraph('Pomůcka', th_s),
-        Paragraph('Vydáno', th_s),
-        Paragraph('Velikost', th_s),
-        Paragraph('Expirace', th_s),
-        Paragraph('Specifikace', th_s),
-        Paragraph('Podpis', th_s),
-    ]
+    header_row = [Paragraph('Pomůcka', th_s), Paragraph('Vydáno', th_s),
+                  Paragraph('Velikost', th_s), Paragraph('Expirace', th_s),
+                  Paragraph('Specifikace', th_s), Paragraph('Podpis', th_s)]
     polozky_data = [header_row]
     for nazev, klic, spec in pomucky_def:
         vydano = vydane_pomucky.get(klic, False)
         vel = velikosti_oopp.get(klic, '') if vydano else ''
         exp = expirace_oopp.get(klic, '') if vydano else ''
-        polozky_data.append([
-            Paragraph(nazev, td_s),
-            mark(vydano),
-            vel if vel else ('__________' if vydano else '—'),
-            exp if exp else '—',
-            Paragraph(spec, td_s),
-            '',
-        ])
-
+        polozky_data.append([Paragraph(nazev, td_s), mark(vydano),
+                              vel if vel else ('__________' if vydano else '—'),
+                              exp if exp else '—', Paragraph(spec, td_s), ''])
     col_w = [4.3*cm, 1.4*cm, 2.2*cm, 2.0*cm, 3.6*cm, 3.5*cm]
-    pt = Table(polozky_data, colWidths=col_w,
-               rowHeights=[0.75*cm] + [0.7*cm]*len(pomucky_def))
+    pt = Table(polozky_data, colWidths=col_w, rowHeights=[0.75*cm] + [0.7*cm]*len(pomucky_def))
     pt.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), ALZA_BLUE),
         ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, ROW_ALT]),
         ('BOX', (0, 0), (-1, -1), 0.8, TEXT_DARK),
         ('INNERGRID', (0, 0), (-1, -1), 0.3, LINE_GRAY),
-        ('FONTNAME', (1, 1), (1, -1), PDF_FONT_BOLD),
-        ('FONTSIZE', (1, 1), (1, -1), 13),
+        ('FONTNAME', (1, 1), (1, -1), PDF_FONT_BOLD), ('FONTSIZE', (1, 1), (1, -1), 13),
         ('TEXTCOLOR', (1, 1), (1, -1), ALZA_BLUE),
-        ('ALIGN', (1, 0), (3, -1), 'CENTER'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('ALIGN', (1, 0), (3, -1), 'CENTER'), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 5), ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6), ('RIGHTPADDING', (0, 0), (-1, -1), 6),
         ('LINEBELOW', (5, 1), (5, -1), 0.6, TEXT_MUTED),
     ]))
     el.append(pt)
     el.append(Spacer(1, 0.5*cm))
-
-    # OPRAVENO: Přebírající stvrzuje (ne Předávající)
-    el.append(Paragraph(
-        "Přebírající stvrzuje, že se řádně seznámil se stavem předmětu "
-        "a převzal jej v pořádku.",
-        body_s))
-    el.append(Spacer(1, 0.2*cm))
-    el.append(Paragraph(
-        "Pokud je předmět kód, čip nebo klíče, přebírající potvrzuje, "
-        "že v případě ztráty je povinen uhradit částku ve výši odpovídající "
-        "skutečným nákladům.",
-        body_s))
+    el.append(Paragraph("Přebírající stvrzuje, že se řádně seznámil se stavem předmětu a převzal jej v pořádku.", body_s))
     el.append(Spacer(1, 0.4*cm))
-
-    # Podpisy
     el.append(_podpisy_alza(W))
     el.append(Spacer(1, 0.3*cm))
-
-    # Právní text
     el.extend(_pravni_text(W))
-
-    # Patička
     el.append(Spacer(1, 0.4*cm))
     el.append(_paticka_alza())
-
     doc.build(el)
     buf.seek(0)
     return buf.getvalue()
-
-
 
 # ═══════════════════════════════════════════════════════════════════
 # KONFIGURACE STRÁNKY
@@ -1040,9 +879,9 @@ if 'obdobi_input' not in st.session_state: st.session_state.obdobi_input = ''
 if 'file_uploader_key' not in st.session_state: st.session_state.file_uploader_key = 0
 
 kategorie_list = [
-    ("⚡", "Energie",      "Spotřeba & náklady"),
-    ("📄", "Faktury",      "Dodavatel, částky, splatnost"),
-    ("📋", "Smlouvy",      "Strany, podmínky, datum"),
+    ("⚡", "Energie", "Spotřeba & náklady"),
+    ("📄", "Faktury", "Dodavatel, částky, splatnost"),
+    ("📋", "Smlouvy", "Strany, podmínky, datum"),
     ("🦺", "OOPP & MČDP", "Evidence & výdej pomůcek"),
 ]
 
@@ -1082,7 +921,6 @@ with c4: st.metric("Celkem nákladů", f"{celkem_nakladu:,.0f} Kč".replace(",",
 st.write("---")
 col_side, col_main = st.columns([1, 3])
 
-# ── ENERGIE ──────────────────────────────────────────────────────
 if st.session_state.kategorie == "Energie":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
@@ -1094,8 +932,7 @@ if st.session_state.kategorie == "Energie":
         else:
             st.markdown('<div class="obdobi-box-empty">Vyplní se automaticky po analýze</div>', unsafe_allow_html=True)
         uploaded_files = st.file_uploader("Vložte dokumenty", accept_multiple_files=True,
-            type=['pdf', 'docx', 'xlsx', 'xls'],
-            key=f"uploader_{st.session_state.file_uploader_key}")
+            type=['pdf', 'docx', 'xlsx', 'xls'], key=f"uploader_{st.session_state.file_uploader_key}")
         if uploaded_files:
             st.markdown(f'<p style="color:#00c864;font-size:0.8rem;">✓ {len(uploaded_files)} soubor(ů) připraveno</p>', unsafe_allow_html=True)
         st.write("")
@@ -1232,15 +1069,14 @@ if st.session_state.kategorie == "Energie":
             st.subheader("📊 Finální přehled")
             cols = st.columns(4)
             kats = [
-                ("⚡ Elektřina", "el_",   "el-border",    cols[0]),
-                ("🏢 FSX",       "fsx_",  "fsx-border",   cols[1]),
-                ("🔥 Plyn",      "plyn_", "gas-border",   cols[2]),
-                ("💧 Voda",      "voda_", "water-border", cols[3]),
+                ("⚡ Elektřina", "el_", "el-border", cols[0]),
+                ("🏢 FSX", "fsx_", "fsx-border", cols[1]),
+                ("🔥 Plyn", "plyn_", "gas-border", cols[2]),
+                ("💧 Voda", "voda_", "water-border", cols[3]),
             ]
             for label, key, style, col in kats:
                 with col:
-                    st.markdown(f'<div class="energy-card {style}"><h3>{label}</h3></div>',
-                        unsafe_allow_html=True)
+                    st.markdown(f'<div class="energy-card {style}"><h3>{label}</h3></div>', unsafe_allow_html=True)
                     for res in st.session_state.vysledky:
                         data_souboru = {k: v for k, v in res.items()
                             if k.startswith(key) and v and str(v).lower() != "n/a"}
@@ -1275,7 +1111,6 @@ if st.session_state.kategorie == "Energie":
         else:
             st.info("Nahrajte faktury a spusťte analýzu.")
 
-# ── FAKTURY ──────────────────────────────────────────────────────
 elif st.session_state.kategorie == "Faktury":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
@@ -1296,7 +1131,6 @@ elif st.session_state.kategorie == "Faktury":
             st.markdown('</div>', unsafe_allow_html=True)
         st.info("⏳ Funkce bude aktivní po připojení Anthropic API.")
 
-# ── SMLOUVY ──────────────────────────────────────────────────────
 elif st.session_state.kategorie == "Smlouvy":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
@@ -1317,7 +1151,6 @@ elif st.session_state.kategorie == "Smlouvy":
             st.markdown('</div>', unsafe_allow_html=True)
         st.info("⏳ Funkce bude aktivní po připojení Anthropic API.")
 
-# ── OOPP & MCDP ──────────────────────────────────────────────────
 elif st.session_state.kategorie == "OOPP & MČDP":
     with col_side:
         st.markdown('<p style="color:#00c864;font-size:0.75rem;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">Konfigurace</p>', unsafe_allow_html=True)
@@ -1327,7 +1160,6 @@ elif st.session_state.kategorie == "OOPP & MČDP":
     with col_main:
         PODPIS_URL = "https://janasiva4.github.io/DocScan-Alza/podpis_2fa.html"
 
-        # ═══════════════ VÝDEJ MČDP ═══════════════
         if rezim == "Výdej MČDP":
             st.subheader("🧴 Výdej MČDP — kvartální")
             if 'mcdp_reset' not in st.session_state:
@@ -1347,11 +1179,9 @@ elif st.session_state.kategorie == "OOPP & MČDP":
             ariel   = c1.checkbox("1x Ariel tablety 60 ks", value=True)
             krem    = c2.checkbox("1x Krém Indulona", value=True)
             solvina = c1.checkbox("1x Abrazivní pasta Solvina", value=True)
-            # Kolonka velikost pro ručník
             velikost_rucnik = st.text_input("Velikost ručníku (volitelně, pro tisk)",
                 placeholder="např. 50x100 cm", key=f"velrucnik_{st.session_state.mcdp_reset}")
             vedouci = st.text_input("Zadal / vedoucí")
-
             if zamestnanec and email_zam:
                 polozky_list = []
                 if rucnik:  polozky_list.append("Ručník Siguro")
@@ -1386,7 +1216,6 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         f'<p style="color:#aaa;font-size:0.75rem;margin-top:4px;">{polozky_str}</p>'
                         f'</div>', unsafe_allow_html=True)
                 st.write("---")
-
             col_btn1, col_btn2 = st.columns(2)
             with col_btn1:
                 if st.button("✅ ODESLAT DO GOOGLE SHEETS", use_container_width=True):
@@ -1417,7 +1246,6 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         use_container_width=True,
                         key=f"dl_mcdp_{st.session_state.mcdp_reset}")
 
-         # ═══════════════ EVIDENCE OOPP ═══════════════
         elif rezim == "Evidence OOPP":
             st.subheader("🦺 Evidence OOPP — výdej pomůcek")
             if 'oopp_reset' not in st.session_state:
@@ -1456,7 +1284,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                     velikosti_vyd[klic] = col.text_input(f"Velikost — {nazev}",
                         key=f"vel_{klic}_{st.session_state.oopp_reset}",
                         placeholder="např. L, XL, 42, …")
- 
+
             def exp_datum(mesice):
                 if not mesice:
                     return None
@@ -1465,8 +1293,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                 rok_exp = d.year + (mes - 1) // 12
                 mes_exp = (mes - 1) % 12 + 1
                 return f"{mes_exp:02d}/{rok_exp}"
- 
-            # QR kód se zobrazí pouze pokud je vyplněno jméno a email
+
             if zamestnanec2 and email_zam2:
                 vydane_nazvy = [nazev for nazev, klic, _ in pomucky_def if vydane.get(klic)]
                 oopp_qr_data = {"jmeno": zamestnanec2, "email": email_zam2, "stredisko": stredisko2,
@@ -1496,8 +1323,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         f'<p style="color:#aaa;font-size:0.75rem;margin-top:4px;">{nazvy_str}</p>'
                         f'</div>', unsafe_allow_html=True)
                 st.write("---")
- 
-            # === TLAČÍTKA JSOU VŽDY VIDITELNÁ (mimo if blok) ===
+
             col_btn_o1, col_btn_o2 = st.columns(2)
             with col_btn_o1:
                 if st.button("✅ ULOŽIT DO EVIDENCE", use_container_width=True):
@@ -1547,7 +1373,6 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         use_container_width=True,
                         key=f"dl_oopp_{st.session_state.oopp_reset}")
 
-        # ═══════════════ TISK PROTOKOLU MČDP ═══════════════
         elif rezim == "Tisk protokolu MČDP":
             st.subheader("🖨️ Generátor předávacího protokolu — MČDP")
             st.markdown('<p style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Vyplň údaje — dostaneš PDF připravené k tisku a podpisu zaměstnance.</p>', unsafe_allow_html=True)
@@ -1561,21 +1386,17 @@ elif st.session_state.kategorie == "OOPP & MČDP":
             st.write("**Položky pro protokol:**")
             t1, t2 = st.columns(2)
             cb1 = t1.checkbox("Ručník Siguro", value=True, key="p1")
-            cb2 = t2.checkbox("Tekuté mýdlo",  value=True, key="p2")
-            cb3 = t1.checkbox("Ariel 60 ks",   value=True, key="p3")
-            cb4 = t2.checkbox("Krém Indulona",  value=True, key="p4")
-            cb5 = t1.checkbox("Solvina",        value=True, key="p5")
+            cb2 = t2.checkbox("Tekuté mýdlo", value=True, key="p2")
+            cb3 = t1.checkbox("Ariel 60 ks", value=True, key="p3")
+            cb4 = t2.checkbox("Krém Indulona", value=True, key="p4")
+            cb5 = t1.checkbox("Solvina", value=True, key="p5")
             vel_rucnik_tisk = st.text_input("Velikost ručníku (volitelně)",
                 placeholder="např. 50×100 cm", key="vel_rucnik_tisk")
-
             pdf_tisk = generovat_pdf_protokol(
-                zamestnanec=zam_tisk or "—",
-                sklad=sklad_oopp,
-                kvartal=kv_tisk,
+                zamestnanec=zam_tisk or "—", sklad=sklad_oopp, kvartal=kv_tisk,
                 vydane_polozky={"rucnik": cb1, "mydlo": cb2, "ariel": cb3, "krem": cb4, "solvina": cb5},
                 vedouci=ved_tisk,
-                velikosti={"rucnik": vel_rucnik_tisk} if vel_rucnik_tisk else None
-            )
+                velikosti={"rucnik": vel_rucnik_tisk} if vel_rucnik_tisk else None)
             jmeno_souboru = (zam_tisk or "protokol").replace(" ", "_")
             st.download_button(
                 label="📄 Stáhnout PDF protokol k tisku",
@@ -1584,21 +1405,18 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                 mime="application/pdf",
                 use_container_width=False,
                 disabled=not zam_tisk,
-                key=f"dl_tisk_{zam_tisk or 'empty'}"
-            )
+                key=f"dl_tisk_{zam_tisk or 'empty'}")
             if not zam_tisk:
                 st.info("Zadej jméno zaměstnance pro aktivaci tlačítka stažení.")
 
-        # ═══════════════ TISK PROTOKOLU OOPP ═══════════════
         elif rezim == "Tisk protokolu OOPP":
             st.subheader("🖨️ Generátor předávacího protokolu — OOPP")
-            st.markdown('<p style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Vyplň údaje — dostaneš PDF připravené k tisku a podpisu zaměstnance. Velikosti lze doplnit ručně na papíru.</p>', unsafe_allow_html=True)
+            st.markdown('<p style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Vyplň údaje — dostaneš PDF připravené k tisku a podpisu zaměstnance.</p>', unsafe_allow_html=True)
             zam_oopp_tisk = st.text_input("Zaměstnanec", key="zam_oopp_tisk")
             email_oopp_tisk = st.text_input("Email", key="email_oopp_tisk", placeholder="jan.novak@firma.cz")
             stredisko_oopp_tisk = st.text_input("Středisko", key="stredisko_oopp_tisk")
             user_oopp_tisk = st.text_input("Osobní číslo", key="user_oopp_tisk")
             ved_oopp_tisk = st.text_input("Vedoucí", key="ved_oopp_tisk")
-
             pomucky_tisk_def = [
                 ("Oděv pracovní (montérky)", "odev", None),
                 ("Rukavice bezpečnostní", "rukavice", None),
@@ -1620,8 +1438,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                 vydane_tisk[klic] = col.checkbox(nazev, key=f"tiskoopp_{klic}", value=True)
                 if vydane_tisk[klic]:
                     velikosti_tisk[klic] = col.text_input(f"Velikost — {nazev}",
-                        key=f"tiskvel_{klic}",
-                        placeholder="např. L, 42, …")
+                        key=f"tiskvel_{klic}", placeholder="např. L, 42, …")
 
             def exp_datum_tisk(mesice):
                 if not mesice:
@@ -1634,18 +1451,11 @@ elif st.session_state.kategorie == "OOPP & MČDP":
 
             expirace_tisk = {klic: exp_datum_tisk(exp_mes)
                              for nazev, klic, exp_mes in pomucky_tisk_def if vydane_tisk.get(klic)}
-
             pdf_oopp_tisk = generovat_pdf_oopp(
-                zamestnanec=zam_oopp_tisk or "—",
-                email=email_oopp_tisk,
-                sklad=sklad_oopp,
-                vydane_pomucky=vydane_tisk,
-                velikosti_oopp=velikosti_tisk,
-                expirace_oopp=expirace_tisk,
-                vedouci=ved_oopp_tisk,
-                stredisko=stredisko_oopp_tisk,
-                osobni_cislo=user_oopp_tisk
-            )
+                zamestnanec=zam_oopp_tisk or "—", email=email_oopp_tisk, sklad=sklad_oopp,
+                vydane_pomucky=vydane_tisk, velikosti_oopp=velikosti_tisk,
+                expirace_oopp=expirace_tisk, vedouci=ved_oopp_tisk,
+                stredisko=stredisko_oopp_tisk, osobni_cislo=user_oopp_tisk)
             jmeno_soub_tisk = (zam_oopp_tisk or "protokol").replace(" ", "_")
             st.download_button(
                 label="📄 Stáhnout PDF protokol OOPP k tisku",
@@ -1654,7 +1464,6 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                 mime="application/pdf",
                 use_container_width=False,
                 disabled=not zam_oopp_tisk,
-                key=f"dl_tisk_oopp_{zam_oopp_tisk or 'empty'}"
-            )
+                key=f"dl_tisk_oopp_{zam_oopp_tisk or 'empty'}")
             if not zam_oopp_tisk:
                 st.info("Zadej jméno zaměstnance pro aktivaci tlačítka stažení.")

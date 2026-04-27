@@ -1431,7 +1431,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         use_container_width=True,
                         key=f"dl_mcdp_{st.session_state.mcdp_reset}")
 
-      # ═══════════════ EVIDENCE OOPP ═══════════════
+       # ═══════════════ EVIDENCE OOPP ═══════════════
         elif rezim == "Evidence OOPP":
             st.subheader("🦺 Evidence OOPP — výdej pomůcek")
             if 'oopp_reset' not in st.session_state:
@@ -1470,7 +1470,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                     velikosti_vyd[klic] = col.text_input(f"Velikost — {nazev}",
                         key=f"vel_{klic}_{st.session_state.oopp_reset}",
                         placeholder="např. L, XL, 42, …")
-
+ 
             def exp_datum(mesice):
                 if not mesice:
                     return None
@@ -1479,7 +1479,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                 rok_exp = d.year + (mes - 1) // 12
                 mes_exp = (mes - 1) % 12 + 1
                 return f"{mes_exp:02d}/{rok_exp}"
-
+                
             # QR kód se zobrazí pouze pokud je vyplněno jméno a email
             if zamestnanec2 and email_zam2:
                 vydane_nazvy = [nazev for nazev, klic, _ in pomucky_def if vydane.get(klic)]

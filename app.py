@@ -1409,7 +1409,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         use_container_width=True,
                         key=f"dl_mcdp_{st.session_state.mcdp_reset}")
 
-        # ═══════════════ EVIDENCE OOPP ═══════════════
+      # ═══════════════ EVIDENCE OOPP ═══════════════
         elif rezim == "Evidence OOPP":
             st.subheader("🦺 Evidence OOPP — výdej pomůcek")
             if 'oopp_reset' not in st.session_state:
@@ -1458,6 +1458,7 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                 mes_exp = (mes - 1) % 12 + 1
                 return f"{mes_exp:02d}/{rok_exp}"
 
+            # QR kód se zobrazí pouze pokud je vyplněno jméno a email
             if zamestnanec2 and email_zam2:
                 vydane_nazvy = [nazev for nazev, klic, _ in pomucky_def if vydane.get(klic)]
                 oopp_qr_data = {"jmeno": zamestnanec2, "email": email_zam2, "stredisko": stredisko2,
@@ -1488,25 +1489,48 @@ elif st.session_state.kategorie == "OOPP & MČDP":
                         f'</div>', unsafe_allow_html=True)
                 st.write("---")
 
-                col_btn_o1, col_btn_o2 = st.columns(2)
-                with col_btn_o1:
-                    if st.button("✅ ULOŽIT DO EVIDENCE", use_container_width=True):
+            # === TLAČÍTKA JSOU VŽDY VIDITELNÁ (mimo if blok) — fungují stejně jako v MČDP ===
+            col_btn_o1, col_btn_o2 = st.columns(2)
+            with col_btn_o1:
+                if st.button("✅ ULOŽIT DO EVIDENCE", use_container_width=True):
+                    # Validace vstupů — stejně jako u MČDP
+                    if not zamestnanec2:
+                        st.warning("Zadej jméno zaměstnance.")
+                    elif not email_zam2:
+                        st.warning("Zadej email zaměstnance.")
+                    elif not any(vydane.get(klic) for _, klic, _ in pomucky_def):
+                        st.warning("Označ alespoň jednu pomůcku k vydání.")
+                    else:
                         ulozeno = 0
+                        chyby = 0
                         for nazev, klic, exp_mes in pomucky_def:
                             if vydane.get(klic):
                                 exp = exp_datum(exp_mes)
-                                data_oopp = {"zamestnanec": zamestnanec2, "email": email_zam2,
-                                             "stredisko": stredisko2, "user": user2,
-                                             "pomucka": nazev, "velikost": velikosti_vyd.get(klic, ""),
-                                             "expirace": exp or "", "podpis": True, "zadal": vedouci2}
+                                data_oopp = {
+                                    "zamestnanec": zamestnanec2,
+                                    "email": email_zam2,
+                                    "stredisko": stredisko2,
+                                    "user": user2,
+                                    "pomucka": nazev,
+                                    "velikost": velikosti_vyd.get(klic, ""),
+                                    "expirace": exp or "",
+                                    "podpis": True,
+                                    "zadal": vedouci2,
+                                }
                                 if odeslat_oopp_do_sheets(data_oopp, sklad_oopp):
                                     ulozeno += 1
-                        if ulozeno > 0:
-                            st.success(f"✅ Uloženo {ulozeno} pomůcek — {zamestnanec2}")
+                                else:
+                                    chyby += 1
+                        if ulozeno > 0 and chyby == 0:
+                            st.success(f"✅ Uloženo {ulozeno} pomůcek do Google Sheets — {zamestnanec2}")
                             st.session_state.oopp_reset += 1
                             st.rerun()
-                with col_btn_o2:
-                    # PDF protokol OOPP
+                        elif ulozeno > 0 and chyby > 0:
+                            st.warning(f"Uloženo {ulozeno} pomůcek, {chyby} se nepodařilo odeslat.")
+                        else:
+                            st.error("Záznam se nepodařilo odeslat do Google Sheets.")
+            with col_btn_o2:
+                if zamestnanec2:
                     expirace_dict = {klic: exp_datum(exp_mes) or ""
                                      for nazev, klic, exp_mes in pomucky_def if vydane.get(klic)}
                     pdf_oopp_bytes = generovat_pdf_oopp(

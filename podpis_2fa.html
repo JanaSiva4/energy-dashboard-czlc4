@@ -249,7 +249,7 @@ function odeslat() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       action: "append",
-      sheet: "Podpisy_MCDP",
+      sheet: "Podpisy",
       row: [
         "MCDP-" + (params.sklad || "CZLC4") + "-" + Date.now(),
         params.jmeno || "",

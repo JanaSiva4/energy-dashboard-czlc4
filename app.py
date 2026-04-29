@@ -122,8 +122,49 @@ def odeslat_mcdp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
         return False
 
 
+def zkontroluj_podpis_oopp(zamestnanec: str, email: str, sklad: str = "CZLC4") -> bool:
+    """Zjistí, zda existuje dnešní 2FA podpis pro OOPP daného zaměstnance."""
+    if not zamestnanec or not email:
+        return False
+    try:
+        url = f"{FACILITY_SCRIPT_URL}?sheet=Podpisy_MCDP"
+        r = requests.get(url, timeout=10)
+        if r.status_code != 200:
+            return False
+        data = r.json()
+        rows = data.get("values", [])
+        if len(rows) < 2:
+            return False
+
+        dnes_str = datetime.now().strftime("%Y-%m-%d")
+        zam_norm = zamestnanec.strip().lower()
+        email_norm = email.strip().lower()
+
+        for row in rows[1:]:
+            if len(row) < 7:
+                continue
+            r_zam = str(row[1]).strip().lower()
+            r_email = str(row[2]).strip().lower()
+            r_sklad = str(row[3]).strip()
+            r_kvartal = str(row[4]).strip()
+            r_potvrzeno = str(row[5]).strip()
+            r_stav = str(row[6]).strip().upper()
+
+            if (r_zam == zam_norm
+                and r_email == email_norm
+                and r_sklad == sklad
+                and r_kvartal.startswith("OOPP")
+                and r_stav == "POTVRZENO"
+                and dnes_str in r_potvrzeno):
+                return True
+        return False
+    except Exception:
+        return False
+
+
 def odeslat_oopp_batch_do_sheets(rows_data: list, sklad: str = "CZLC4") -> bool:
-    """Pošle více OOPP záznamů — každý jako samostatný append (jako MČDP)."""
+    """Pošle více OOPP záznamů — každý jako samostatný append (jako MČDP).
+    Sloupec Podpis se nastaví podle skutečného 2FA podpisu v Podpisy_MCDP."""
     def stav_exp(exp_str):
         if not exp_str:
             return "—"
@@ -140,9 +181,17 @@ def odeslat_oopp_batch_do_sheets(rows_data: list, sklad: str = "CZLC4") -> bool:
             return "—"
 
     try:
+        # Zjisti podpis JEDNOU pro celý batch (jeden zaměstnanec = jeden podpis)
+        if rows_data:
+            zam_kontrola = rows_data[0].get("zamestnanec", "")
+            email_kontrola = rows_data[0].get("email", "")
+            podepsano = zkontroluj_podpis_oopp(zam_kontrola, email_kontrola, sklad)
+        else:
+            podepsano = False
+
         ulozeno = 0
         timestamp_base = datetime.now().strftime('%Y%m%d%H%M%S')
-        
+
         for idx, data in enumerate(rows_data):
             exp = data.get("expirace", "")
             row = [
@@ -151,16 +200,16 @@ def odeslat_oopp_batch_do_sheets(rows_data: list, sklad: str = "CZLC4") -> bool:
                 data.get("zamestnanec", ""), data.get("email", ""),
                 data.get("pomucka", ""), data.get("velikost", ""),
                 exp, stav_exp(exp), "",
-                "ANO" if data.get("podpis") else "NE",
+                "ANO" if podepsano else "NE",
                 data.get("zadal", ""), datetime.now().strftime("%d.%m.%Y %H:%M"),
             ]
-            
+
             # POUŽIJ STEJNÝ "append" JAKO MČDP — jeden řádek za request
             payload = {"action": "append", "sheet": f"OOPP_{sklad}", "row": row}
             r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=10)
             if r.status_code == 200:
                 ulozeno += 1
-        
+
         return ulozeno > 0
     except Exception as e:
         st.error(f"Chyba odesilani OOPP: {e}")

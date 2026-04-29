@@ -127,7 +127,7 @@ def zkontroluj_podpis_oopp(zamestnanec: str, email: str, sklad: str = "CZLC4") -
     if not zamestnanec or not email:
         return False
     try:
-        url = f"{FACILITY_SCRIPT_URL}?sheet=Podpisy_MCDP"
+        url = f"{FACILITY_SCRIPT_URL}?sheet=Podpisy"
         r = requests.get(url, timeout=10)
         if r.status_code != 200:
             return False
@@ -164,7 +164,7 @@ def zkontroluj_podpis_oopp(zamestnanec: str, email: str, sklad: str = "CZLC4") -
 
 def odeslat_oopp_batch_do_sheets(rows_data: list, sklad: str = "CZLC4") -> bool:
     """Pošle více OOPP záznamů — každý jako samostatný append (jako MČDP).
-    Sloupec Podpis se nastaví podle skutečného 2FA podpisu v Podpisy_MCDP."""
+    Sloupec Podpis se nastaví podle skutečného 2FA podpisu v Podpisy."""
     def stav_exp(exp_str):
         if not exp_str:
             return "—"

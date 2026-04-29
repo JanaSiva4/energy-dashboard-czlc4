@@ -123,7 +123,7 @@ def odeslat_mcdp_do_sheets(data: dict, sklad: str = "CZLC4") -> bool:
 
 
 def odeslat_oopp_batch_do_sheets(rows_data: list, sklad: str = "CZLC4") -> bool:
-    """Odešle všechny pomůcky najednou pomocí append_batch — stejně efektivně jako MČDP."""
+    """Pošle více OOPP záznamů — každý jako samostatný append (jako MČDP)."""
     def stav_exp(exp_str):
         if not exp_str:
             return "—"
@@ -139,14 +139,14 @@ def odeslat_oopp_batch_do_sheets(rows_data: list, sklad: str = "CZLC4") -> bool:
         except Exception:
             return "—"
 
-    if not rows_data:
-        return False
     try:
-        rows = []
-        for data in rows_data:
+        ulozeno = 0
+        timestamp_base = datetime.now().strftime('%Y%m%d%H%M%S')
+        
+        for idx, data in enumerate(rows_data):
             exp = data.get("expirace", "")
             row = [
-                f"OOPP-{sklad}-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                f"OOPP-{sklad}-{timestamp_base}-{idx}",
                 datetime.now().strftime("%d.%m.%Y"), sklad,
                 data.get("zamestnanec", ""), data.get("email", ""),
                 data.get("pomucka", ""), data.get("velikost", ""),
@@ -154,10 +154,14 @@ def odeslat_oopp_batch_do_sheets(rows_data: list, sklad: str = "CZLC4") -> bool:
                 "ANO" if data.get("podpis") else "NE",
                 data.get("zadal", ""), datetime.now().strftime("%d.%m.%Y %H:%M"),
             ]
-            rows.append(row)
-        payload = {"action": "append_batch", "sheet": f"OOPP_{sklad}", "rows": rows}
-        r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=30)
-        return r.status_code == 200
+            
+            # POUŽIJ STEJNÝ "append" JAKO MČDP — jeden řádek za request
+            payload = {"action": "append", "sheet": f"OOPP_{sklad}", "row": row}
+            r = requests.post(FACILITY_SCRIPT_URL, json=payload, timeout=10)
+            if r.status_code == 200:
+                ulozeno += 1
+        
+        return ulozeno > 0
     except Exception as e:
         st.error(f"Chyba odesilani OOPP: {e}")
         return False
